@@ -378,6 +378,7 @@ async def suggestions():
     data = AddTrackRequest.model_validate(await request.get_json())
 
     query = players.execute(players.bot.node.get_tracks(data.query))
+    
 
     if type(query) == pomice.Playlist:
         query = query.tracks
