@@ -1,0 +1,109 @@
+function render_track(info) {
+    return `
+    <tr id="track_${info.url}" class="group/item track hover:bg-base-300 rounded-xl">
+    <td>
+      <div class="flex items-center space-x-3">
+        <div class="avatar">
+          <div class="mask rounded-xl w-12 h-12">
+            <div class=""group/edit absolute inset-0 bg-black bg-opacity-75 rounded-lg flex items-center justify-center invisible group-hover/item:visible group-hover/item:backdrop-blur-sm">
+              <button class="btn btn-sm btn-ghost btn-square text-white" onclick="player.add_track('${info.url}')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+              <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+            </svg>
+              </button>
+            </div>
+            <img src="${info.thumbnail}">
+          </div>
+        </div>
+        <div>
+          <div class="font-bold">${info.title}</div>
+          <div class="text-sm opacity-50">${info.author}</div>
+        </div>
+      </div>
+    </td>
+    <td class="flex justify-end space-x-2">
+          <div class="badge badge-neutral badge-sm text-sm opacity-50 self-center">
+          ${info.type}
+          </div>
+      
+      
+      <div class="dropdown dropdown-hover dropdown-top dropdown-end">
+      <label tabindex="0" class="btn btn-circle self-center"><span class="material-symbols-outlined">more_horiz</span></label>
+      <ul tabindex="0" class="mt-3 z-[1] p-2 shadow menu dropdown-content bg-base-300 rounded-box w-52">
+        <li>
+          <a onclick="window.open('${info.url}', '_blank')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-link-45deg" viewBox="0 0 16 16">
+            <path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.002 1.002 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z"></path>
+            <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243L6.586 4.672z"></path>
+            </svg> Открыть</a>
+        </li>
+        
+        
+        
+        <li><a class="text-error" onclick="apistars.remove_track(this, '${info.url}')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"></path>
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"></path>
+          </svg> Удалить</a>
+        </li>
+        
+        
+        
+      </ul>
+    </div>
+  </td>
+  </tr>
+    `;
+};
+
+function render_track_queue(info) {
+  return `
+  <tr id="track_${info.url}" draggable="true" style="cursor: move;" class="group/item track hover:bg-base-300 rounded-xl">
+    <td>
+      <div class="flex items-center space-x-3">
+        <div class="avatar">
+          <div class="mask rounded-xl w-12 h-12">
+            <div class="group/edit absolute inset-0 bg-black bg-opacity-75 rounded-lg flex items-center justify-center invisible group-hover/item:visible group-hover/item:backdrop-blur-sm">
+              <button class="btn btn-sm btn-ghost btn-square text-white" onclick="player.jump('${info.url}')">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+                <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393"/>
+              </svg>
+              </button>
+            </div>
+            <img src="${info.thumbnail}"/>
+          </div>
+        </div>
+        <div>
+          <div class="font-bold">${info.title}</div>
+          <div class="text-sm opacity-50">${info.author}</div>
+        </div>
+      </div>
+    </td>
+    <td class="flex justify-end space-x-2">
+          <div class="badge badge-neutral badge-sm text-sm opacity-50 self-center">
+          ${info.type}
+          </div>
+      <div class="dropdown dropdown-hover dropdown-top dropdown-end">
+      <label tabindex="0" class="btn btn-circle self-center"><span class="material-symbols-outlined">more_horiz</span></label>
+      <ul tabindex="0" class="mt-3 z-[1] p-2 shadow menu dropdown-content bg-base-300 rounded-box w-52">
+        <li>
+          <a onclick="window.open('${info.url}', '_blank')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-link-45deg" viewBox="0 0 16 16">
+            <path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.002 1.002 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z"/>
+            <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243L6.586 4.672z"/>
+            </svg> Открыть</a>
+        </li>
+        <li><a onclick="apistars.add_track(this, '${info.url}')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star" viewBox="0 0 16 16">
+          <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288L8 2.223l1.847 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.565.565 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z"/>
+          </svg> Поставить зведочку</a>
+        </li>
+
+        <li><a class="text-error" onclick="player.remove('${info.url}')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+          </svg> Удалить</a>
+        </li>
+      </ul>
+    </div>
+  </td>
+  </tr>
+  `;
+};

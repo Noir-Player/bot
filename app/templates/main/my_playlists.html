@@ -1,0 +1,116 @@
+<!doctype html>
+{% include 'components/head.html' %}
+
+{% include 'components/navbar.html' %}
+
+<body>
+
+<main class="drawer-content">
+
+
+  <div>
+
+    <div class="relative isolate overflow-hidden py-24 sm:py-32">
+      <div class="hidden sm:absolute sm:-top-10 sm:right-1/2 sm:-z-10 sm:mr-10 sm:block sm:transform-gpu sm:blur-3xl" aria-hidden="true">
+        
+      </div>
+      <div class="absolute -top-52 left-1/2 -z-10 -translate-x-1/2 transform-gpu blur-3xl sm:top-[-28rem] sm:ml-16 sm:translate-x-0 sm:transform-gpu" aria-hidden="true">
+        
+      </div>
+      <div class="mx-auto max-w-7xl px-6 lg:px-8">
+        <div class="mx-auto max-w-2xl lg:mx-0">
+          <h2 class="text-4xl font-bold tracking-tight  sm:text-6xl">Ваши плейлисты</h2>
+          <p class="mt-6 text-lg leading-8 ">Используйте <code>/playlist create</code>, чтобы создать свой!<br>Кликните на плейлист, чтобы посмотреть подробности.</p>
+  
+        </div>
+      </div>
+    </div>
+  
+    <div class="album py-5 bg-body-tertiary">
+      <div class="justify-center">
+    
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+          {% if playlists %}
+          {% for playlist in playlists %}
+          {% include 'components/card_playlist.html' %}
+          {% endfor %}
+          {% endif %}
+          <div class="flex justify-center col-md-4">
+            <div class="card w-60 bg-primary shadow-xl" onclick="create.showModal()">
+              <div class="card-body">
+                <h2 class="card-title">
+                  Новый плейлист <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                  </svg>
+                </h2>
+                <div class="card-actions justify-end">
+                </div>
+              </div>
+              <figure><img src=""/></figure>
+            </div>
+          </div>
+        </div>
+  
+      </div>
+    </div>
+    
+  </div>
+
+<dialog class="modal" id="create">
+  <div class="modal-box">
+    <div class="modal-content bg-body">
+        <h1 class="font-bold text-lg" id="CreateModalLabel">Создать плейлист</h1>
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onclick="create.close()">✕</button>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label class="label">
+              <span> Название</span>
+            </label>
+            <input name="title" class="input input-bordered w-full" id="Title" placeholder="Мой плейлист" minlength="3" aria-labelledby="CoverHelpBlock" required>
+            <label class="label">
+              <span class="label-text-alt">Название плейлиста</span>
+            </label>
+          </div>
+          <div class="mb-3">
+            <label class="label">
+              <span> Ссылка на обложку</span>
+            </label>
+            <input name="thumbnail" class="input input-bordered w-full" id="Thumbnail" placeholder="https://example.com/cover.png" aria-labelledby="CoverHelpBlock">
+            <label class="label">
+              <span class="label-text-alt">Ссылка должна вести на картинку с окончанием на .png, .jpg или .gif</span>
+            </label>
+          </div>
+          <div class="mb-3">
+            <label class="label">
+              <span> Публичный</span>
+            </label>
+            <label>
+              <input type="checkbox" name="public" id="Public" class="toggle toggle-primary"/>
+            </label>
+          </div>
+          <div class="mb-3">
+            <label class="label">
+              <span>Описание плейлиста</span>
+            </label>
+            <textarea name="description" class="textarea textarea-bordered textarea-md w-full" id="Description" rows="3" aria-labelledby="NotesHelpBlock"></textarea>
+            <label class="label">
+              <span class="label-text-alt">Поддерживает форматирование в markdown</span>
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-outline btn-light" id="create_playlist" onclick="apiplaylists.create(this)">Создать</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+</main>
+
+</body>
+
+{% include 'components/footer.html' %}
+</html>

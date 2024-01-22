@@ -1,0 +1,15 @@
+<a class="flex justify-center col-md-4" href="/playlists/{{ playlist.get('uuid') }}" id="card">
+    <div class="card lg:w-[300px] bg-base-100 shadow-xl">
+    <img class="rounded-lg aspect-square" src="{{ playlist['tracks'][0].get('thumbnail') if playlist.get('tracks') and not playlist.get('thumbnail') else playlist.get('thumbnail') }}" onerror="this.src='https://mir-s3-cdn-cf.behance.net/project_modules/disp/a11a4893658133.5e98adbead405.gif'" alt="{{ playlist.get('title') }}"/>
+    <div class="absolute inset-0 bg-black bg-opacity-75 rounded-lg flex items-center justify-center opacity-0 hover:opacity-100 hover:backdrop-blur-lg text-white ease-out duration-200">
+        <div class="card-body truncate">
+        <h2 class="card-title text-wrap">
+            {{ playlist.get('title') }}
+        </h2>
+        <div class="card-actions">
+            <div class="badge badge-secondary font-bold" id="length">{{ playlist.get('tracks')|length if playlist.get('tracks') else "нет" }} треков</div> 
+        </div>
+        </div>
+    </div>
+    </div>
+</a>

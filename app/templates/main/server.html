@@ -1,0 +1,123 @@
+<!doctype html>
+{% include 'components/head.html' %}
+
+{% include 'components/navbar.html' %}
+
+<body>
+
+<main class="drawer-content">
+    <div class="hero min-h-screen">
+        <div class="hero-content flex-col lg:flex-row">
+            <img src="https://cdn.discordapp.com/icons/{{ server.get('id') }}/{{ server.get('icon') }}?size=1024" onerror="this.src='https://cataas.com/cat/says/%D0%9D%D0%B5%D1%82%20%D0%BE%D0%B1%D0%BB%D0%BE%D0%B6%D0%BA%D0%B8?type=square&width=300'" class="lg:max-w-sm rounded-lg shadow-2xl" />
+            <div>   
+                <h1 class="text-5xl font-bold">{{ server.get('name') }}</h1>
+                <p class="py-6">Ваш сервер. Вы можете настроить его здесь!</p>
+                <button class="btn btn-outline" onclick="edit.showModal()">Настроить</button>
+            </div> 
+        </div>
+    </div>
+
+<dialog class="modal" id="edit">
+  <div class="modal-box">
+    <div class="modal-content bg-body">
+      <h1 class="font-bold text-lg" id="EditModalLabel">Настроить сервер</h1>
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onclick="edit.close()">✕</button>
+    <form method="dialog">
+        <div class="modal-body">
+            <div class="mb-3">
+              <label class="label">
+                <span> DJ-Роль</span>
+              </label>
+              <input class="input input-bordered w-full" name="role" id="Role" value="{{ settings.get('role') if settings and settings.get('role') else '' }}">
+              <label class="label">
+                <span class="label-text-alt">ID роли. Оставьте пустым, если она не требуется</span>
+              </label>
+            </div>
+            <div class="divider divider-primary">Предустановки</div>
+            <div class="mb-3">
+              <label class="label">
+                <span> Шаг громкости</span>
+              </label>
+              <input class="input input-bordered w-full" name="volume_step" id="Volume_step" value="{{ settings.get('volume_step') if settings and settings.get('volume_step') else '' }}">
+              <label class="label">
+                <span class="label-text-alt">На сколько изменять громкость при нажатии кнопки</span>
+              </label>
+            </div>
+            <label class="label cursor-pointer">
+              <input type="checkbox" class="toggle toggle-primary" name="disable_eq" id="Disable_eq" {{ 'checked' | safe if settings and settings.get('disable_eq') else '' }}/>
+              <span class="label-text">Отключить эквалайзер</span> 
+            </label>
+            <div class="divider divider-primary">Вебхук</div>
+            <!-- <div class="mb-3">
+              <label class="label">
+                <span> ID Вебхука</span>
+              </label>
+              <input class="input input-bordered w-full" name="hook" id="Hook" value="{{ settings['webhook'].get('id') if settings and settings.get('webhook') else '' }}">
+              <label class="label">
+                <span class="label-text-alt">Кастомный бот для отображения вашей иконки</span>
+              </label>
+            </div> -->
+            {% if settings and settings.get('webhook') %}
+            <div class="mb-3">
+                <label class="label">
+                  <span> Url Иконки Вебхука</span>
+                </label>
+                <input class="input input-bordered w-full" name="hook_icon" id="Hook_icon" value="{{ settings['webhook'].get('icon', '') if settings.get('webhook') else '' }}">
+                <label class="label">
+                  <span class="label-text-alt">Кастомный бот для отображения вашей иконки</span>
+                </label>
+              </div>
+              <div class="mb-3">
+                <label class="label">
+                  <span> Имя Вебхука</span>
+                </label>
+                <input class="input input-bordered w-full" name="hook_name" id="Hook_name" value="{{ settings['webhook'].get('name', '') if settings.get('webhook') else '' }}">
+                <label class="label">
+                  <span class="label-text-alt">Имя для заданного вебхука</span>
+                </label>
+              </div>
+              {% else %}
+              <div id="create_webhook">
+                <div class="mb-3" id="create_webhook">
+                  <label class="label">
+                    <span>ID канала для вебхука</span>
+                  </label>
+                  <input class="input input-bordered w-full" name="hook_channel" id="Hook_channel">
+                  <label class="label">
+                    <span class="label-text-alt">Создать вебхук для этого канала</span>
+                  </label>
+                </div>
+                <a class="btn btn-outline btn-light" onclick="apiservers.create_webhook(document.getElementById('create_webhook'), '{{ server.id }}', 'Noir Player', document.getElementById('Hook_channel').value)">Создать</a>
+              </div>
+              {% endif %}
+              <div class="divider divider-primary">Прочие настройки</div>
+            <div class="my-3 flex flex-nowrap justify-center gap-8">
+            <div>
+              <label class="label">
+                <span>24/7</span>
+              </label>
+              <label>
+                <input type="checkbox" name="check" id="Check" class="toggle toggle-primary" {{ 'checked' | safe if settings and settings.get('24/7') else '' }}/>
+              </label>
+            </div>
+            <!-- </div>
+            <div class="mb-3"> -->
+            <div>
+                <label class="label">
+                    <span>Цвет эмбеда</span>
+                </label>
+                <input type="color" class="form-control form-control-color" id="Color" name="color" title="Choose color" value="{{ settings.get('color') if settings and settings.get('color') else '' }}">
+            </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button onclick="apiservers.edit(document.forms[0], '{{ server.id }}')" class="btn btn-outline btn-light">Сохранить</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  </dialog>
+</main>
+</body>
+{% include 'components/footer.html' %}
+</html>

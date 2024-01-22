@@ -1,0 +1,80 @@
+<!doctype html>
+{% include 'components/head.html' %}
+
+{% include 'components/navbar.html' %}
+
+<body>
+
+<main class="drawer-content">
+
+    <div class="hero min-h-[60vh] bg-base-200">
+      <div class="hero-content flex-col lg:flex-row">
+        <img src="{{ playlist['tracks'][0].get('thumbnail') if playlist.get('tracks') and not playlist.get('thumbnail') else playlist.get('thumbnail') }}" onerror="this.src='https://mir-s3-cdn-cf.behance.net/project_modules/disp/a11a4893658133.5e98adbead405.gif'" class="lg:max-w-sm rounded-lg shadow-2xl aspect-square" />
+        <div>
+          <h1 class="text-5xl font-bold">{{ playlist.get('title') }}</h1>
+          <div class="py-6">
+          <div class="prose">
+            {{ (playlist.get('html_notes') | safe) if playlist.get('html_notes') else '' }}
+          </div>
+          <p id="playlist_author" class="text-accent">{{ playlist['author']['name'] }}</p>
+          <p id="tracks_count">{{ len(playlist.get('tracks')) if playlist.get('tracks') else "нет" }} треков</p>
+          <p id="public_type">{{ add_count + " добавлений" if playlist.get('public') else "приватный" }}</p>
+          </div>
+          <div class="">
+            <button class="btn btn-neutral rounded-xl" onclick="player.add_playlist('{{ playlist.get('uuid') }}', this)" {% if not session.get('me') %} disabled{% endif %}>
+              Играть
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+                <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+              </svg>
+            </button>
+            {% include 'components/ctx_playlist_menu.html' %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider divider-primary">
+      {% if editable %}
+      <div class="dropdown" id="search_dropdown">
+        <div class="join my-4">
+          <input type="text" placeholder="Добавить поиском..." class="join-item input input-bordered input-sm w-80" id="search_input" onchange="listen_tracks(this.value, document.getElementById('search_list'), '{{ playlist.uuid }}')"/>
+          <button class="join-item btn rounded-l-lg btn-primary btn-sm no-animation"><code>enter</code></button>
+        </div>
+        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-80" id="search_list">
+        </ul>
+      </div>
+      {% else %}
+      Треки
+      {% endif %}
+    </div>
+    <div class="flex justify-center">
+      <div class="md:container">
+        <table class="table bg-base-200 rounded-xl">
+          <tbody id="tracks_table" class="tracks_container">
+            {% if playlist.get('tracks') %}
+            {% for track in playlist.get('tracks', []) %}
+            {% include 'components/track.html' %}
+            {% endfor %}
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="text-center py-6 w-full text-base-content/25">Дата создания: {{ timestamp }}</div>
+  
+    <br>
+
+{% if editable %}
+{% include 'components/edit_playlist.html' %}
+{% endif %}
+
+
+<script>
+  uuid = '{{ playlist.uuid }}';
+</script>
+
+</main>
+</body>
+{% include 'components/footer.html' %}
+</html>

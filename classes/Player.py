@@ -1,0 +1,342 @@
+from typing import Coroutine, Any
+import pomice
+import disnake
+import json
+from utils.build import Build
+
+from clients.database import Database
+
+from disnake.ext import tasks
+from cogs.components.buttons import Soundpad
+from classes.Queue import NoirQueue
+from classes.Player_view import state
+
+build = Build()
+db = Database()
+
+
+class NoirPlayer(pomice.Player):
+    """Кастомный плеер `pomice.Player`. Хранит в себе информацию об очереди, саундбаре и функции для их изменения."""
+
+    def __init__(
+        self,
+        client: disnake.Client,
+        channel: disnake.VoiceChannel,
+        *,
+        node: pomice.Node | None = None,
+    ) -> None:
+        super().__init__(client, channel, node=node)
+
+        """Первоначальная настройка очереди"""
+        self._queue = NoirQueue(1000)
+        self._queue.set_player(self)
+
+        """Настройки по умолчанию"""
+        self.soundbar = None
+        self.dj = None
+        self.radio = False
+        self._disable_eq = False
+        self._volume_step = 25
+
+        """Вебхук"""
+        self._webhook: disnake.Webhook | None = None
+        self._username: str = ...
+        self._icon: str = ...
+
+        """Кастом плеер"""
+        self._color = disnake.Colour.blurple()
+
+        """Брокер сокетов"""
+        # self._broker = Broker(self.bot.redis, self)
+
+        # NOTE: перенесено в очередь classes.Queue
+        # """Генерация треков"""
+        # self._nonstop = False
+
+        self.bot.loop.create_task(self.refresh_init())
+
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    # Таск для пада
+
+    @tasks.loop()
+    async def update_bar(self):
+        """Таск для обновления бара через интервал времени."""
+
+        if not self.is_connected or not self.soundbar:
+            return
+
+        await self.update_bar_once()
+
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    # Функции
+
+    async def update_bar_once(self, force=False, ctx=None) -> bool:
+        """Обновляет бар один раз. Если `force = True`, удаляет и вызывает `edit_bar()`, также вам нужно передать `ctx`, чтобы бар корректно отправился."""
+        try:
+            if force:
+                try:
+                    await self.soundbar.delete()
+                except BaseException:
+                    pass
+
+                return await self.edit_bar(ctx)
+
+            await self.soundbar.edit(embed=await state(self))
+        except Exception as exp:
+            return False
+
+    async def edit_bar(self, ctx=None, embed=None, without_view=False):
+        """Обновляет бар. Если нет, то посылает новый исходя из `def __init__()` или `ctx`"""
+        if not embed:
+            embed = await state(self)
+
+        try:
+            await self.soundbar.edit(
+                embed=embed, view=None if without_view else Soundpad(player=self)
+            )
+        except BaseException:
+            try:
+                await self.soundbar.delete()
+            except BaseException:
+                pass
+            try:
+                self.soundbar = await self._webhook.send(
+                    embed=embed,
+                    username=self._username,
+                    avatar_url=self._icon,
+                    view=None if without_view else Soundpad(player=self),
+                    wait=True,
+                )
+            except BaseException:
+                try:
+                    self.soundbar = await ctx.channel.send(
+                        embed=embed,
+                        view=None if without_view else Soundpad(player=self),
+                    )
+                except BaseException:
+                    return
+
+    async def pub(self, key: str, value: Any, **kwargs) -> None:
+        """
+        #### Отправитьсообщение в брокер
+
+        #### `key: str`
+        Ключ без гильдии
+
+        #### `value: Any`
+        Значение
+        """
+
+        kwargs['action'] = key
+        kwargs['value'] = value
+
+        await self.bot.redis.publish(f'player-{self.guild.id}', json.dumps(kwargs))
+
+
+        # if not without_set:
+        #     await self.redis.set(f"{key}-{self.guild.id}", json.dumps(value))
+
+        # await self.redis.publish(
+        #     f"noir-{self.guild.id}", json.dumps({"action": key, "value": value})
+        # )
+
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    # Переназначение play и stop
+
+    async def play(
+        self,
+        track,
+        *,
+        start: int = 0,
+        end: int = 0,
+        ignore_if_playing: bool = False,
+    ) -> None:
+        await super().play(
+            track, start=start, end=end, ignore_if_playing=ignore_if_playing
+        )
+
+        await self.pub(
+            "play", build.track(track.info, track.track_type.value, track.thumbnail)
+        )
+
+        if track.requester:
+            db.metrics.add_last_track(build.track(track.info, track.track_type.value), track.requester.id)
+
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    # Команды для js
+
+    async def skip(self) -> None:
+        if self.current:
+            if self.queue.loop_mode != pomice.LoopMode.TRACK:
+                track = self.queue.next()
+                if track:
+                    await self.play(track)
+
+    async def prev(self) -> None:
+        if self.current:
+            if self.queue.loop_mode != pomice.LoopMode.TRACK:
+                track = self.queue.prev()
+                if track:
+                    await self.play(track)
+
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    # Стандартные команды, переписанные под пад и сокет
+
+    async def set_pause(self, pause: bool):
+        if not self.current:
+            return
+        await super().set_pause(pause)
+        await self.update_bar_once()
+        await self.pub('pause', self._paused, position = self.position.__int__())
+
+    # ==========================
+        
+    async def set_volume(self, volume: int) -> Coroutine[Any, Any, int]:
+        value = await super().set_volume(volume)
+        await self.update_bar_once()
+        await self.pub("volume", value)
+
+    async def volume_up(self) -> Coroutine[Any, Any, None]:
+        if (self._volume + self._volume_step) >= 0 and (
+            self._volume + self._volume_step
+        ) <= 500:
+            await self.set_volume(self._volume + self._volume_step)
+
+    async def volume_down(self) -> Coroutine[Any, Any, None]:
+        if (self._volume - self._volume_step) >= 0 and (
+            self._volume - self._volume_step
+        ) <= 500:
+            await self.set_volume(self._volume - self._volume_step)
+
+    # ==========================
+
+    async def seek(self, position: float) -> Coroutine[Any, Any, float]:
+        value = await super().seek(position)
+        await self.update_bar_once()
+        await self.pub("seek", value)
+
+    async def destroy(self) -> Coroutine[Any, Any, None]:
+        if self.update_bar.is_running():  # Stop if running
+            self.update_bar.stop()
+
+        try:
+            await self.bar.delete()  # Delete text-bar
+        except BaseException:
+            pass
+
+        try:
+            await super().destroy()
+        except BaseException:
+            pass
+
+        await self.pub("destroy", True)
+        # await self.redis.delete(f"*{self.guild.id}")
+
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    # Обновление плеера
+
+    async def refresh_init(self, force=False):
+        """Получает информацию с бд и переписывает `self`. В конце вызывается `update_bar_once(force=force)`"""
+        params = self.bot.db.setup.get_setup(self.guild.id)
+
+        if not params:
+            return await self.update_bar_once(force=force)
+
+        try:
+            self._webhook = await self.bot.fetch_webhook(params["webhook"]["id"])
+            self._username = params["webhook"].get("name", ...)
+            self._icon = params["webhook"].get("icon", ...)
+
+        except BaseException:
+            self.bot.db.setup.webhook(self.guild.id)
+
+        self.radio = params.get("24/7", False)
+
+        self.dj = params.get("role")
+
+        self._volume_step = params.get("volume_step", 25)
+
+        self._disable_eq = params.get("disable_eq", False)
+
+        try:
+            self._color = int(params.get("color").replace("#", ""), base=16)
+        except BaseException:
+            pass
+
+        await self.update_bar_once(force=force)
+
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    # Listener
+        
+    # async def on_voice_state_update(
+    #     self,
+    #     member: disnake.Member,
+    #     before: disnake.VoiceState,
+    #     after: disnake.VoiceState,
+    # ):
+
+    #     await self.bot.redis.publish(
+    #         f'player-{member.guild.id}',
+    #         json.dumps(
+    #             {
+    #                 "members": [user.id for user in (before.channel.members if before.channel else after.channel.members)]
+    #             }
+    #         )
+    #     )
+
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    # Переменные
+
+    @property
+    def is_radio(self) -> bool:
+        """Стоит ли режим радио"""
+        return self.radio
+
+    @property
+    def dj_role(self) -> int | None:
+        """Возвращает массив с `roles` и `users`"""
+        return self.dj
+
+    @property
+    def queue(self) -> NoirQueue:
+        """Текущая очередь"""
+        return self._queue
+
+    # @property
+    # def broker(self) -> Broker:
+    #     """Брокер сокетов"""
+    #     return self._broker
+
+    @property
+    def bar(self) -> disnake.WebhookMessage | disnake.Message:
+        """Сообщение с саундбаром"""
+        return self.soundbar
+
+    @property
+    def color(self) -> int:
+        """Цвет плеера в `int`"""
+        return self._color
+
+    @property
+    def webhook(self) -> disnake.Webhook | None:
+        """Вебхук плеера (если есть)"""
+        return self._webhook
+
+    @property
+    def disable_eq(self) -> bool:
+        """Отключить эквалайзер"""
+        return self._disable_eq
+
+    @property
+    def volume_step(self) -> int:
+        """Шаг громкости"""
+        return self._volume_step
+
+    @property
+    def current_build(self) -> dict | None:
+        """Текущий билд трека"""
+        return (
+            build.track(
+                self.current.info,
+                self.current.track_type.value,
+                self.current.thumbnail) if self.current else None)

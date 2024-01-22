@@ -1,0 +1,53 @@
+<!-- FOOTER -->
+<footer class="footer p-10 bg-base-300 text-base-content">
+  <div>
+    <h3 class="text-3xl font-planet">Noir Player</h3>
+    <p>Мы не являемся аффилированным лицом Discord inc.</p>
+    <a class="text-primary" href="https://qiwi.com/n/PERSIFOX">Поддержать разработку</a>
+  </div> 
+  <div>
+    <span class="footer-title">Помощь</span> 
+    <a class="link link-hover" href="https://docs.noirplayer.su/">Документация</a> 
+    <a class="link link-hover" href="https://discord.gg/ua4kpgzpWJ">Поддержка</a> 
+  </div> 
+  <div>
+    <span class="footer-title">Политика</span> 
+    <a class="link link-hover" href="/privacy">Политика конфиденциальности</a> 
+    <a class="link link-hover" href="/terms">Условия использования</a> 
+  </div> 
+  <div>
+    <span class="footer-title">Мониторинги</span> 
+    <a class="link link-hover" href="https://bots.server-discord.com/1094893876164169829">SDC</a> 
+    <a class="link link-hover" href="https://top.gg/bot/1094893876164169829">Top GG</a>
+  </div>
+  <div>
+    <span class="footer-title">Связь</span> 
+    <a class="link link-hover" href="/about">О нас</a> 
+    <a class="link link-hover" href="https://persifox.t.me/">Telegram</a>
+    <a href="https://discord.gg/ua4kpgzpWJ">Discord сервер</a>
+  </div>
+</footer>
+
+{% if session.me %}
+<!-- DRAWER -->
+<script src="{{ url_for('static', filename='script/drawer.js') }}"></script>
+
+<!-- TOASTS -->
+<div class="toast toast-bottom toast-end" id="toast"></div>
+
+<!-- Player -->
+<script src="{{ url_for('static', filename='websockets/player.js') }}"></script>
+
+<!-- Variable of player -->
+<script>var player = new Player();</script>
+
+<!-- Api's -->
+<script>
+apistars = new Stars();
+apiplaylists = new Playlists();
+apiservers = new Servers();
+</script>
+
+{% endif %}
+
+<tempscript></tempscript>

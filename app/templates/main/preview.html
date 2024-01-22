@@ -1,0 +1,27 @@
+<!doctype html>
+{% include 'components/head.html' %}
+
+{% include 'components/navbar.html' %}
+
+
+<body>
+<main class="drawer-content">
+
+    
+  {% if not session.get('me') %}
+  <div class="hero min-h-screen">
+    <div class="hero-overlay bg-opacity-90 reveal"></div>
+    <div class="hero-content text-center text-neutral-content">
+      <div class="max-w-md">
+        <h1 class="text-5xl font-bold text-base-content">Начните сейчас</h1>
+        <p class="py-6">Войдите и получите кучу возможностей с Noir Player!</p>
+        <a class="btn btn-primary shadow-lg" href="/oauth">Войти</a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</main>
+{% include 'components/footer.html' %}
+</body>
+
+</html>

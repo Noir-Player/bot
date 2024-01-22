@@ -1,0 +1,44 @@
+{
+  "title": "Добро пожаловать в Noir Player",
+  "description": "## {}\n**Текущие настройки:**\n```yaml\n# Основные\n24/7    - {}\nwebhook - {}\ncolor   - {}\nrole    - {}\n\n# Подписка\nlevel  - {}\nperiod - from {} to {}\n\n```",
+  "color": 16711679,
+  "fields": [
+    {
+      "name": "Ссылки",
+      "value": "- [Веб-панель](https://noirplayer.su/me) \n- [Плейлисты](https://noirplayer.su/playlists)  \n- [Сервер поддержки](https://discord.gg/ua4kpgzpWJ) \n- [Команды и возможности](https://docs.noirplayer.su/) ",
+      "inline": true
+    },
+    {
+      "name": "Последний релиз",
+      "value": "```yaml\n# 16.11.2023\n- Новые команды rewind, now\n- Улучшение сайта\n- Исправление ошибок\n```",
+      "inline": true
+    },
+    {
+      "name": "Команды воспроизведения",
+      "value": "```yaml\n- play search   # Добавить трек в очередь\n- play now      # Проигрывать вне очереди\n- play zaycevfm # Добавить zaycevFM в очередь\n- play multiple # Добавить несколько\n- play stars    # Добавить звездочки в очередь\n- play playlist # Добавить плейлист\n```"
+    },
+    {
+      "name": "Команды плейлистов",
+      "value": "```yaml\n- playlist create # Создать плейлист\n- playlist view   # Открыть плейлист\n- playlist edit   # Изменить плейлист\n- playlist clear  # Очистить плейлист\n- playlist remove # Удалить трек из плейлиста\n- playlist delete # Удалить плейлист\n```"
+    },
+    {
+      "name": "Команды плеера",
+      "value": "```yaml\n- pause  # Приостановить / Возобновить\n- seek   # Перемотать на таймкод\n- rewind # Перемотать\n- volume # Изменить громкость\n- np     # Текущий трек\n- eq     # Эквалайзер\n- menu   # Контекстное меню\n- reset  # Сбросить фильтры\n- stop   # Отключиться и очистить очередь\n```"
+    },
+    {
+      "name": "Команды очереди",
+      "value": "```yaml\n- clear  # Очистить очередь\n- jump   # Переместить позицию очереди\n- remove # Удалить элемент из очереди\n- skip   # Скипнуть треки (по умолчанию 1)\n- move   # Переместить трек\n```"
+    },
+    {
+      "name": "Другие команды",
+      "value": "```yaml\n- join     # Подключиться\n- help     # Это меню\n- setup    # Настроить сервер\n- soundpad # Ссылка на плеер\n- resend   # Отправить плеер заново\n- star     # Поставить звездочку текущему\n- stars    # Избранные треки\n```"
+    }
+  ],
+  "footer": {
+    "text": "powered by noirplayer.su",
+    "icon_url": "https://noirplayer.su/static/image/n.png"
+  },
+  "image": {
+    "url": "https://noirplayer.su/static/image/noir%20banner.png"
+  }
+}
