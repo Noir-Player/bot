@@ -16,7 +16,7 @@ from hypercorn.asyncio import serve
 
 # import sdc_api_py
 from disnake.ext import commands
-from app import setup
+from api import main
 
 from config import *
 
@@ -139,26 +139,31 @@ class NoirBot(commands.AutoShardedInteractionBot):
     # -------------------------------------------------------------------------------------------------------------------------------------
     # App
 
-    def serve_app(self):
+    def serve_api(self):
 
-        lprint("Loading Quart", Color.blue, worker="APP")
+        lprint("Loading FastAPI", Color.blue, worker="APP")
 
-        self._app = setup(bot=self)
+        self._app = main(bot=self)
 
         if not self._debug:
             config = hypercorn.Config()
             config.bind = ["0.0.0.0:5000"]
             config.use_reloader = True
-            config.debug = True
 
             lprint("Run in prodaction", Color.green, worker="APP")
 
             asyncio.run(serve(self._app, config))
 
         else:
+            config = hypercorn.Config()
+            config.bind = ["0.0.0.0:5001"]
+            config.use_reloader = True
+            config.debug = True
+            
             lprint("Run in debug", Color.green, worker="APP")
 
-            self._app.run("0.0.0.0", 5001, True)
+            asyncio.run(serve(self._app, config))
+
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Lavalink connection
