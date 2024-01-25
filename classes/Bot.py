@@ -16,7 +16,7 @@ from hypercorn.asyncio import serve
 
 # import sdc_api_py
 from disnake.ext import commands
-from api import main
+import api
 
 from config import *
 
@@ -143,7 +143,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
 
         lprint("Loading FastAPI", Color.blue, worker="APP")
 
-        self._app = main(bot=self)
+        self._app = api.__init__(bot=self)
 
         if not self._debug:
             config = hypercorn.Config()
