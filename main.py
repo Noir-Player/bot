@@ -42,11 +42,11 @@ print("-----------------------" + Fore.MAGENTA)
 print(f'{Fore.LIGHTCYAN_EX}{logo.renderText("Noir Player")}{Style.RESET_ALL}\n')
 print("-----------------------")
 
-bot = NoirBot()
+bot = NoirBot(debug=True)
 
 try:
     threading.Thread(target=bot.run, name="bot").start()
-    bot.serve_app()
+    bot.serve_api()
 
 except Exception as exp:
     if exp != KeyboardInterrupt:
