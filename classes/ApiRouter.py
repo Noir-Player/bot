@@ -13,6 +13,8 @@ from starlette.responses import JSONResponse, Response
 from starlette.routing import BaseRoute
 from starlette.types import ASGIApp, Lifespan
 
+from clients.database import Database
+
 
 class NOIRouter(APIRouter):
     """Router for Noir Player, include bot instanse"""
@@ -20,11 +22,16 @@ class NOIRouter(APIRouter):
         super().__init__(prefix=prefix, tags=tags, dependencies=dependencies)
 
         self._bot: AutoShardedInteractionBot | None = None
+        self._db = Database()
 
 
     @property
     def bot(self) -> AutoShardedInteractionBot | None:
         return self._bot
+    
+    @property
+    def db(self) -> Database:
+        return self._db
 
     @bot.setter
     def bot(self, value):
