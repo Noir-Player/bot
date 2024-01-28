@@ -7,6 +7,8 @@ import importlib
 from os import listdir
 
 from fastapi import FastAPI
+from utils.printer import *
+
 
 def include_modules(app: FastAPI, bot):
 
@@ -15,8 +17,14 @@ def include_modules(app: FastAPI, bot):
             
             routerfile = importlib.import_module(f'api.routers.{filename[:-3]}')
 
-            router = routerfile.router
+            try:
 
-            router.bot = bot
+                router = routerfile.router
 
-            app.include_router(router)
+                router.bot = bot
+
+                app.include_router(router)
+
+            except:
+                
+                lprint(f"Routerfile {routerfile.__name__} has no router variable", Color.red, "RLOADER")
