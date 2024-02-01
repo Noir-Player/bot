@@ -1,17 +1,11 @@
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Sequence, Type, Union
+from typing import List, Sequence
 from disnake.ext.commands import AutoShardedInteractionBot
 from fastapi import APIRouter
 
-import asyncio
+import asyncio, uuid
 
-from fastapi.datastructures import Default
 from fastapi.params import Depends
-from fastapi.routing import APIRoute
-from fastapi.utils import generate_unique_id
-from starlette.responses import JSONResponse, Response
-from starlette.routing import BaseRoute
-from starlette.types import ASGIApp, Lifespan
 
 from clients.database import Database
 
@@ -23,19 +17,30 @@ class NOIRouter(APIRouter):
 
         self._bot: AutoShardedInteractionBot | None = None
         self._db = Database()
+        self._salt = "wtfwheremysaltidiot"
 
 
     @property
     def bot(self) -> AutoShardedInteractionBot | None:
         return self._bot
     
+    @bot.setter
+    def bot(self, value):
+        self._bot = value
+
+
+    @property
+    def salt(self) -> str:
+        return self._salt
+    
+    @bot.setter
+    def salt(self, value):
+        self._salt = value
+
     @property
     def db(self) -> Database:
         return self._db
 
-    @bot.setter
-    def bot(self, value):
-        self._bot = value
 
     def execute(self, func, timeout = None):
         try:
