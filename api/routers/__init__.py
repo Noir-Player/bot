@@ -13,7 +13,7 @@ from utils.printer import *
 def include_modules(app: FastAPI, bot):
 
     for filename in listdir("./api/routers"):
-        if filename.endswith(".py") and not filename.startswith("__"):
+        if filename.endswith(".py") and not filename.startswith("_"): # only routers without specials
             
             routerfile = importlib.import_module(f'api.routers.{filename[:-3]}')
 
@@ -21,7 +21,7 @@ def include_modules(app: FastAPI, bot):
 
                 router = routerfile.router
 
-                router.bot = bot
+                router.bot, router.salt = bot, app.salt
 
                 app.include_router(router)
 
