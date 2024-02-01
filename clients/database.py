@@ -26,6 +26,7 @@ class Database:
         self._users = UsersDB(self.db["users"])
         self._metrics = MetricsDB(self.db["metrics"])
         self._cache = CacheDB(self.db["cache"])
+        self._sessions = SessionsDB(self.db["sessions"])
 
     @property
     def setup(self):
@@ -56,6 +57,11 @@ class Database:
     def cache(self):
         """Таблица с кэшем"""
         return self._cache
+    
+    @property
+    def sessions(self):
+        """Таблица с сессиями"""
+        return self._sessions
 
     def table(self, name: str) -> Collection:
         return self.db[name]
@@ -506,3 +512,101 @@ class CacheDB:
     def clear(self, id: int):
         """Очистить кэш"""
         return self.table.delete_one({"id": int(id)})
+
+
+class SessionsDB:
+    """DB["sessions"]"""
+
+    def __init__(self, table: Collection):
+        self.table = table
+
+        self.table.create_index([("expireAt", ASCENDING)], expireAfterSeconds=0)
+
+    def col(self) -> Collection:
+        return self.table
+
+    def get(self, token: str):
+        """Получить сессию"""
+        return self.table.find_one({"token": token})
+
+    def set(
+        self,
+        info: dict,
+        token: str,
+        expireAt: datetime.timedelta = None,
+    ) -> dict | None:
+        """Установить / обновить сессию"""
+        info["expireAt"] = datetime.datetime.utcnow() + (expireAt or datetime.timedelta(days=7))
+
+        return self.table.update_one(
+            {"token": token},
+            {"$set": info},
+            upsert=True,
+        ).raw_result
+    
+
+    def set_oauth_token(
+        self,
+        oauth_token: str,
+        token: str,
+    ):
+        """Установить токен для авторизации"""
+
+        return self.table.update_one(
+            {"token": token},
+            {"$set": {"oauth_token": oauth_token}},
+            upsert=True,
+        ).modified_count.__bool__()
+    
+
+    def get_oauth_token(
+        self,
+        token: str,
+    ):
+        """Получить токен авторизации. После авторизации токен удаляется"""
+
+        return (
+            self.table.find_one_and_update({"token": token}, {"$unset": {"oauth_token": 1}}) or {"oauth_token": None}
+            ).get('oauth_token')
+    
+
+    def set_oauth_state(
+        self,
+        oauth_state: str,
+        token: str,
+    ):
+        """Установить токен для авторизации"""
+
+        return self.table.update_one(
+            {"token": token},
+            {"$set": {"oauth_state": oauth_state}},
+            upsert=True,
+        ).modified_count.__bool__()
+    
+
+    def get_oauth_state(
+        self,
+        token: str,
+    ):
+        """Получить токен авторизации. После авторизации токен удаляется"""
+
+        return (
+            self.table.find_one_and_update({"token": token}, {"$unset": {"oauth_state": 1}}) or {"oauth_state": None}
+            ).get('oauth_state')
+
+
+    def push(
+        self,
+        info: dict,
+        token: str
+        ):
+        """Добавить к списку"""
+        return self.table.update_one(
+            {"token": token},
+            {"$addToSet": info},
+            upsert=True,
+        ).modified_count.__bool__()
+
+    def clear(self, token: str):
+        """Удалить сессию"""
+        return self.table.delete_one({"token": token})
