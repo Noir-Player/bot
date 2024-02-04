@@ -55,9 +55,12 @@ class NoirQueue(pomice.Queue):
 
     def gen_nonstop(self):
         try:
-            if self._nonstop and (self.find_position(self._current_item) + 1 >= self.count):
+            if self._nonstop and (
+                    self.find_position(
+                        self._current_item) +
+                    1 >= self.count):
                 self.player.bot.loop.create_task(self.nonstop())
-        except:
+        except BaseException:
             pass
 
     # -------------------------------------------------------------------------------------------------------------------------------------

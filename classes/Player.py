@@ -132,7 +132,6 @@ class NoirPlayer(pomice.Player):
 
         await self.bot.redis.publish(f'player-{self.guild.id}', json.dumps(kwargs))
 
-
         # if not without_set:
         #     await self.redis.set(f"{key}-{self.guild.id}", json.dumps(value))
 
@@ -160,7 +159,11 @@ class NoirPlayer(pomice.Player):
         )
 
         if track.requester:
-            db.metrics.add_last_track(build.track(track.info, track.track_type.value), track.requester.id)
+            db.metrics.add_last_track(
+                build.track(
+                    track.info,
+                    track.track_type.value),
+                track.requester.id)
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Команды для js
@@ -187,10 +190,10 @@ class NoirPlayer(pomice.Player):
             return
         await super().set_pause(pause)
         await self.update_bar_once()
-        await self.pub('pause', self._paused, position = self.position.__int__())
+        await self.pub('pause', self._paused, position=self.position.__int__())
 
     # ==========================
-        
+
     async def set_volume(self, volume: int) -> Coroutine[Any, Any, int]:
         value = await super().set_volume(volume)
         await self.update_bar_once()
@@ -267,7 +270,7 @@ class NoirPlayer(pomice.Player):
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Listener
-        
+
     # async def on_voice_state_update(
     #     self,
     #     member: disnake.Member,

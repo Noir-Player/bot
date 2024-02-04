@@ -45,9 +45,10 @@ class Router(Blueprint):
     def bot(self, value):
         self._bot = value
 
-    def execute(self, func, timeout = None):
+    def execute(self, func, timeout=None):
         try:
-            return asyncio.run_coroutine_threadsafe(func, self.bot.loop).result(timeout)
+            return asyncio.run_coroutine_threadsafe(
+                func, self.bot.loop).result(timeout)
         except asyncio.TimeoutError:
             pass
 
@@ -60,7 +61,7 @@ class Router(Blueprint):
     async def run_independent(self, func, *args, **kwargs):
         if asyncio.coroutines.iscoroutinefunction(func):
             return await self.coroexecute(func(*args, **kwargs))
-        
+
         return await asyncio.to_thread(func, *args, **kwargs)
 
 

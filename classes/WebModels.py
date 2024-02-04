@@ -7,6 +7,7 @@ base_url = Field(max_length=200)
 
 # LOW LEVEL MODELS
 
+
 class _Metric(BaseModel):
     rating: float
     views: int
@@ -32,6 +33,7 @@ class _Ban(BaseModel):
     timestamp: int
 
 # BASE MODELS
+
 
 class Track(BaseModel):
     title: str = Field(min_length=1, max_length=100)
@@ -103,6 +105,7 @@ class Metric(BaseModel):
 
 # REQUEST MODELS
 
+
 class AddTrackRequest(BaseModel):
     query: str = Field(max_length=100)
 
@@ -123,6 +126,7 @@ class AddToLibraryRequest(BaseModel):
 
 class RemoveTrackRequest(BaseModel):
     url: str = Field(max_length=100)
+
 
 class CreateWebhookRequest(BaseModel):
     name: str = base_name

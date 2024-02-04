@@ -85,7 +85,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
         self._build = Build()
 
         # App server
-        #self._app = setup(bot=self)
+        # self._app = setup(bot=self)
 
         # Jsons
         self._errors = json.load(
@@ -159,11 +159,10 @@ class NoirBot(commands.AutoShardedInteractionBot):
             config.bind = ["0.0.0.0:5001"]
             config.use_reloader = True
             config.debug = True
-            
+
             lprint("Run in debug", Color.green, worker="APP")
 
             asyncio.run(serve(self._app, config))
-
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Lavalink connection
@@ -304,7 +303,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
     def db(self) -> Database:
         """Database class"""
         return self._db
-    
+
     @property
     def redis(self) -> Redis:
         """Redis class"""
