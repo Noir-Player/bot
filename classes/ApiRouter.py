@@ -33,7 +33,7 @@ class NOIRouter(APIRouter):
     def salt(self) -> str:
         return self._salt
     
-    @bot.setter
+    @salt.setter
     def salt(self, value):
         self._salt = value
 
