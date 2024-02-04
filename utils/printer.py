@@ -47,5 +47,5 @@ def lprint(
     print(
         color +
         f"[{time.strftime('%a, %d %b %Y %H:%M:%S', time.gmtime())} {worker}] " +
-        msg +
+        str(msg) +
         Style.RESET_ALL)
