@@ -5,6 +5,8 @@ import datetime
 from pymongo import ASCENDING
 from pymongo.collection import Collection
 
+from typing import Any
+
 mongoclient = pymongo.MongoClient("mongodb://localhost:27017/")
 db = mongoclient["Noir"]
 
@@ -407,6 +409,11 @@ class UsersDB:
         """Установить имя"""
         return self.table.update_one(
             {"id": id}, {"$set": {"name": name}}, upsert=True).modified_count.__bool__()
+    
+    def set_icon(self, icon: str, id: int):
+        """Установить иконку"""
+        return self.table.update_one(
+            {"id": id}, {"$set": {"icon": icon}}, upsert=True).modified_count.__bool__()
 
     def set_description(self, description: str, id: int):
         """Установить описание"""
@@ -547,7 +554,7 @@ class SessionsDB:
 
     def set_oauth_token(
         self,
-        oauth_token: str,
+        oauth_token: Any,
         token: str,
     ):
         """Установить токен для авторизации"""
@@ -562,7 +569,7 @@ class SessionsDB:
     def get_oauth_token(
         self,
         token: str,
-    ):
+    ) -> dict | None:
         """Получить токен авторизации. После авторизации токен удаляется"""
 
         return (
@@ -572,9 +579,9 @@ class SessionsDB:
 
     def set_oauth_state(
         self,
-        oauth_state: str,
+        oauth_state: Any,
         token: str,
-    ):
+    ) -> bool:
         """Установить токен для авторизации"""
 
         return self.table.update_one(
@@ -587,7 +594,7 @@ class SessionsDB:
     def get_oauth_state(
         self,
         token: str,
-    ):
+    ) -> dict:
         """Получить токен авторизации. После авторизации токен удаляется"""
 
         return (
