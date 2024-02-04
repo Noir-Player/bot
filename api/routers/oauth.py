@@ -7,8 +7,6 @@ import uuid
 from config import *
 from api.routers.helpers.session_verify import *
 
-from utils.printer import *
-
 # ---------------------------------------------------------------------------------------------------------
 
 from classes.ApiRouter import NOIRouter
@@ -96,8 +94,6 @@ async def login(request: Request):
 
     sessid, key = get_session_keys(request.cookies)
 
-    lprint(f'{sessid} - {key}')
-
     discord = make_session(scope=SCOPES.split(' '))
 
     authorization_url, state = discord.authorization_url(AUTHORIZATION_BASE_URL)
@@ -116,8 +112,6 @@ async def callback(request: Request, sessionid: str = Cookie()):
         return {"msg": "session not passed"}
 
     discord = make_session(state=router.db.sessions.get_oauth_state(sessionid))
-
-    lprint(request.url)
 
     router.db.sessions.set_oauth_token(
         discord.fetch_token(
