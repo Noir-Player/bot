@@ -9,7 +9,7 @@ from config import UUID_STRING
 class NoirAPI(FastAPI):
 
     @property
-    def seckey(self) -> str:
+    def salt(self) -> str:
         return uuid.uuid5(uuid.NAMESPACE_X500, UUID_STRING).__str__()
 
 
@@ -21,7 +21,9 @@ def __init__(bot) -> NoirAPI:
         description = "Noir Player API app. Simple, Graceful and Powerful discord player",
         version = "0.2.0",
         docs_url = None,
-        redoc_url = "/api-reference"
+        redoc_url = "/api-reference",
+        root_path = "/dev",
+        openapi_url = "/openapi.json"
     )
 
     routers.include_modules(api, bot)
