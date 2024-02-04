@@ -58,13 +58,12 @@ async def make_oauth(sessiontoken: str):
     servers, same, other, mutual = discord.get('https://discordapp.com/api/users/@me/guilds').json(
     ), [], [], [guild.id for guild in router.bot.guilds]
 
-    if type(servers) == dict:
+    if type(servers) == dict: # must be array
         return RedirectResponse("/login")
 
 
     for server in servers:
-        if server.get(
-                'permissions') & 8 == 8:  # Если есть разрешения администратора
+        if server.get('permissions') & 8 == 8:  # Если есть разрешения администратора
             server['settings'] = router.db.setup.get_setup(
                 int(session["user"].get("id")))
             try:
@@ -101,7 +100,7 @@ async def login(request: Request):
 
     response = RedirectResponse(authorization_url)
 
-    response.set_cookie(key="sessionid", value=str(key))
+    response.set_cookie(key="sessionid", value=str(key), httponly=True)
 
     return response
 
