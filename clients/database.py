@@ -542,7 +542,7 @@ class SessionsDB:
             {"token": token},
             {"$set": info},
             upsert=True,
-        ).raw_result
+        ).modified_count.__bool__()
     
 
     def set_oauth_token(
