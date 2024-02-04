@@ -1,7 +1,6 @@
 from classes.ApiRouter import NOIRouter
 
-
-router = NOIRouter()
+router = NOIRouter(tags=["Main"])
 
 
 @router.get("/status")
