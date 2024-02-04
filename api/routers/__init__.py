@@ -13,9 +13,11 @@ from utils.printer import *
 def include_modules(app: FastAPI, bot):
 
     for filename in listdir("./api/routers"):
-        if filename.endswith(".py") and not filename.startswith("_"): # only routers without specials
-            
-            routerfile = importlib.import_module(f'api.routers.{filename[:-3]}')
+        if filename.endswith(".py") and not filename.startswith(
+                "_"):  # only routers without specials
+
+            routerfile = importlib.import_module(
+                f'api.routers.{filename[:-3]}')
 
             try:
 
@@ -26,6 +28,8 @@ def include_modules(app: FastAPI, bot):
                 app.include_router(router)
 
             except Exception as e:
-                
-                lprint(f"Routerfile {routerfile.__name__} has no router variable or {e}", Color.red, "RLOADER")
 
+                lprint(
+                    f"Routerfile {routerfile.__name__} has no router variable or {e}",
+                    Color.red,
+                    "RLOADER")
