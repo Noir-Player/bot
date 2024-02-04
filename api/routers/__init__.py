@@ -25,6 +25,7 @@ def include_modules(app: FastAPI, bot):
 
                 app.include_router(router)
 
-            except:
+            except Exception as e:
                 
-                lprint(f"Routerfile {routerfile.__name__} has no router variable", Color.red, "RLOADER")
+                lprint(f"Routerfile {routerfile.__name__} has no router variable or {e}", Color.red, "RLOADER")
+
