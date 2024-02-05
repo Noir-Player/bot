@@ -10,7 +10,7 @@ from api.routers.helpers.session_verify import *
 # ---------------------------------------------------------------------------------------------------------
 
 from classes.ApiRouter import NOIRouter
-from fastapi import Response, Depends, Request, Cookie
+from fastapi import Response, Request, Cookie
 from fastapi.responses import RedirectResponse
 
 router = NOIRouter(tags=["Oauth"])
@@ -96,7 +96,7 @@ async def make_oauth(sessiontoken: str):
     return resp
 
 
-@router.get("/login")
+@router.get("/login", description="Url для входа")
 async def login(request: Request):
 
     sessid, key = get_session_keys(request.cookies)
@@ -115,7 +115,7 @@ async def login(request: Request):
     return response
 
 
-@router.get('/callback')
+@router.get('/callback', description="Редирект после входа")
 async def callback(request: Request, sessionid: str = Cookie()):
     if not sessionid:
         return {"msg": "session not passed"}
@@ -134,7 +134,7 @@ async def callback(request: Request, sessionid: str = Cookie()):
     return await make_oauth(sessionid)
 
 
-@router.get("/logout", dependencies=[Depends(cookie)])
+@router.get("/logout", description="Выйти из аккаунта")
 async def logout(response: Response, sessionid: str = Cookie()):
     if not sessionid:
         return {"msg": "session not passed"}

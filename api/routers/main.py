@@ -3,7 +3,7 @@ from classes.ApiRouter import NOIRouter
 router = NOIRouter(tags=["Main"])
 
 
-@router.get("/status")
+@router.get("/status", description="Статистика приложения")
 async def get_status():
     """Get status of bot (guilds, players, ...)"""
     return {

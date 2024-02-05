@@ -1,15 +1,16 @@
 from classes.ApiRouter import NOIRouter
 from fastapi import Query
 
-router = NOIRouter(prefix="/discovery", tags=["Discovery"])
+router = NOIRouter(prefix="/playlists", tags=["Playlists"])
 
 
 # GET
 
-@router.get('/', description="Получить путеводитель")
-async def get_discovery(
+@router.get('/', description="Публичные плейлисты")
+async def get_playlists(
     count: int = Query(50, ge=1, le=100, description="количество на странице"),
     page: int = Query(1, ge=1, le=100, description="номер страницы"),
+    exclude: str = Query(None, description="исключить значение")
 ):
 
     playlists = []
@@ -20,6 +21,14 @@ async def get_discovery(
         del playlist['_id']
         playlist['forked'] = len(playlist.get('forked', []))
 
+        if exclude:
+            del playlist[exclude]
+
         playlists.append(playlist)
 
-    return {"data": playlists, "meta": {"page": page, "count": count}}
+    return {
+        "data": playlists,
+        "meta": {
+            "page": page,
+            "count": count,
+            "exclude": exclude}}
