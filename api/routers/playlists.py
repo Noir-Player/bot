@@ -1,16 +1,16 @@
 from classes.ApiRouter import NOIRouter
 from fastapi import Query
+from api.shemas import *
 
 router = NOIRouter(prefix="/playlists", tags=["Playlists"])
 
 
 # GET
 
-@router.get('/', description="Публичные плейлисты")
+@router.get('/', description="Публичные плейлисты", response_model=PlaylistsResponse)
 async def get_playlists(
     count: int = Query(50, ge=1, le=100, description="количество на странице"),
-    page: int = Query(1, ge=1, le=100, description="номер страницы"),
-    exclude: str = Query(None, description="исключить значение")
+    page: int = Query(1, ge=1, description="номер страницы"),
 ):
 
     playlists = []
@@ -21,14 +21,11 @@ async def get_playlists(
         del playlist['_id']
         playlist['forked'] = len(playlist.get('forked', []))
 
-        if exclude:
-            del playlist[exclude]
-
         playlists.append(playlist)
 
     return {
         "data": playlists,
         "meta": {
             "page": page,
-            "count": count,
-            "exclude": exclude}}
+            "count": count
+            }}
