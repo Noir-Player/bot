@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 import api.routers as routers
+import api.shemas as shemas
 
 import uuid
 
@@ -19,7 +20,7 @@ def __init__(bot) -> NoirAPI:
         title="Noir Player API",
         description="Noir Player API app. Simple, Graceful and Powerful discord player",
         version="0.2.0",
-        docs_url=None,
+        docs_url="/do-api-reference",
         redoc_url="/api-reference",
         root_path="/dev",
         openapi_url="/openapi.json")
