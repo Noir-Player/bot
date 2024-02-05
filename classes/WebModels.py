@@ -63,7 +63,7 @@ class Playlist(BaseModel):
 
     author: _Author
 
-    forked: Optional[List[int]] = []
+    forked: Optional[Union[List[int], int]] = []
 
     integer: Optional[_Integer] = {}
 
