@@ -1,9 +1,10 @@
 from classes.ApiRouter import NOIRouter
+from api.shemas import *
 
 router = NOIRouter(tags=["Main"])
 
 
-@router.get("/status", description="Статистика приложения")
+@router.get("/status", description="Статистика приложения", response_model=StatusResponse)
 async def get_status():
     """Get status of bot (guilds, players, ...)"""
     return {
