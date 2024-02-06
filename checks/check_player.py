@@ -1,6 +1,5 @@
 from disnake.ext import commands
 from classes.Exceptions import *
-from clients.database import table
 
 # from classes.Player import NoirPlayer
 
