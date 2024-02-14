@@ -70,6 +70,16 @@ class Playlist(BaseModel):
     uuid: Optional[str] = Field('', min_length=20, max_length=40)
 
 
+class Mix(BaseModel):
+    title: Optional[str] = Field('Ваш микс', min_length=2, max_length=40)
+    thumbnail: Optional[str] = Field('', max_length=200)
+    description: Optional[str] = Field('', max_length=1000)
+
+    related_to: Track
+
+    tracks: List[Track]
+
+
 class Setup(BaseModel):
     radio: Optional[bool] = False
     role: Optional[int] = Field(None, le=10000000000000000000000)
