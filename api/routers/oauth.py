@@ -109,7 +109,7 @@ async def login(request: Request):
 
     response = RedirectResponse(authorization_url)
 
-    response.set_cookie(key="sessionid", value=str(key), httponly=True)
+    response.set_cookie(key="sessionid", value=str(key), httponly=True, secure=True)
 
     return response
 
