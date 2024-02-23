@@ -95,7 +95,7 @@ async def make_oauth(sessiontoken: str):
     return resp
 
 
-@router.get("/login", description="Url для входа")
+@router.get("/login", description="Url для входа", status_code=307)
 async def login(request: Request):
 
     sessid, key = get_session_keys(request.cookies)
@@ -114,7 +114,7 @@ async def login(request: Request):
     return response
 
 
-@router.get('/callback', description="Редирект после входа")
+@router.get('/callback', description="Редирект после входа", status_code=307)
 async def callback(request: Request, sessionid: str = Cookie()):
     if not sessionid:
         return {"msg": "session not passed"}
@@ -133,7 +133,7 @@ async def callback(request: Request, sessionid: str = Cookie()):
     return await make_oauth(sessionid)
 
 
-@router.get("/logout", description="Выйти из аккаунта")
+@router.get("/logout", description="Выйти из аккаунта", status_code=307)
 async def logout(response: Response, sessionid: str = Cookie()):
     if not sessionid:
         return {"msg": "session not passed"}

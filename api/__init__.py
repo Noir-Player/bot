@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 import api.routers as routers
-import api.shemas as shemas
 
 import uuid
 

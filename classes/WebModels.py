@@ -70,6 +70,11 @@ class Playlist(BaseModel):
     uuid: Optional[str] = Field('', min_length=20, max_length=40)
 
 
+class Stars (BaseModel):
+    tracks: Optional[List[Track]] = []
+    user_id: int
+
+
 class Mix(BaseModel):
     title: Optional[str] = Field('Ваш микс', min_length=2, max_length=40)
     thumbnail: Optional[str] = Field('', max_length=200)
