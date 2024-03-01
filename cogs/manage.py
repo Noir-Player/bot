@@ -31,6 +31,25 @@ class Manage(commands.Cog):
 
         await ctx.send(f"Аватар сменен: {image.filename}", ephemeral=True, file=await image.to_file())
 
+    
+    @commands.slash_command(guild_ids=[config.getint("dev", "dev_server")])
+    async def set_status(
+        self, 
+        ctx, 
+        name: str = commands.Param("noirplayer.su", description="Имя статуса"), 
+        status: str = commands.Param("idle", description="Тип статуса", choices=["online", "idle", "dnd", "invisible"]),
+        type: str = commands.Param("listening", description="Тип активности", choices=["playing", "streaming", "listening", "watching", "custom"]),
+        ):
+        await self.bot.change_presence(
+            status=disnake.Status[status],
+            activity=disnake.Activity(
+                name=name,
+                type=disnake.ActivityType[type]
+            )
+        )
+
+        await ctx.send(f"Статус сменен: {name} [{type}]", ephemeral=True)
+
 
     @commands.slash_command(guild_ids=[config.getint("dev", "dev_server")])
     async def manage(self, ctx, prompt: str = commands.Param(description="параметр")):
