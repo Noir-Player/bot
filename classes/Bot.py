@@ -65,10 +65,8 @@ class NoirBot(commands.AutoShardedInteractionBot):
             if not self._debug
             else self._config.getint("altlaunch", "shard_count"),
             chunk_guilds_at_startup=False,
-            activity=disnake.Streaming(
-                name="noirplayer.su", url="https://twitch.tv/me", state="Noir Player"
-            ),
-            # status = disnake.Status.dnd,
+            status=disnake.Status.idle,
+            activity=disnake.Activity(name="noirplayer.su", type=disnake.ActivityType.listening),
             intents=intents,
         )
 
