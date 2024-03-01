@@ -21,6 +21,18 @@ class Manage(commands.Cog):
         self.pool = bot.pool
 
     @commands.slash_command(guild_ids=[config.getint("dev", "dev_server")])
+    async def set_avatar(self, ctx, image: disnake.Attachment = commands.Param(description="сменить аватар боту")):
+        if not image.filename.endswith(".gif"):
+            return await ctx.send("Нужно гифку", ephemeral=True)
+
+        await self.bot.user.edit(
+            avatar=(await image.to_file()).fp.read()
+        )
+
+        await ctx.send(f"Аватар сменен: {image.filename}", ephemeral=True, file=await image.to_file())
+
+
+    @commands.slash_command(guild_ids=[config.getint("dev", "dev_server")])
     async def manage(self, ctx, prompt: str = commands.Param(description="параметр")):
         if ctx.author == self.bot.user:
             return
