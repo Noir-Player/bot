@@ -45,6 +45,7 @@ from .utils import ExponentialBackoff
 from .utils import LavalinkVersion
 from .utils import NodeStats
 from .utils import Ping
+from .external import External
 
 if TYPE_CHECKING:
     from .player import Player
@@ -60,7 +61,7 @@ VERSION_REGEX = re.compile(r"(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:[a-zA-Z0-9_-]+)?")
 class Node:
     """The base class for a node.
     This node object represents a Lavalink node.
-    To enable recomendations via Youtube music, set `ytm_client_enable = True`.
+    `external` arrtibute is an instance for searching tracks via python instead lavalink
     """
 
     __slots__ = (
@@ -94,6 +95,7 @@ class Node:
         "_log_handler",
         "_stats",
         "available",
+        "external",
     )
 
     def __init__(
@@ -148,6 +150,8 @@ class Node:
 
         self._route_planner = RoutePlanner(self)
         self._log = self._setup_logging(self._log_level)
+
+        self.external = External()
 
         if not self._bot.user:
             raise NodeCreationError("Bot user is not ready yet.")
