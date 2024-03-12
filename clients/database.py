@@ -387,6 +387,10 @@ class UsersDB:
     def col(self) -> Collection:
         return self.table
 
+    def add_user(self, user: dict):
+        """Добавить юзера"""
+        return self.table.update_one({"id": int(user.get("id"))}, {"$set": user}, upsert=True).modified_count.__bool__()
+
     def get_user(self, id: int, without_id: bool = True):
         """Получить юзера"""
         result = self.table.find_one({"id": id})
