@@ -1,36 +1,119 @@
-import json
+import json, uuid
 
 from clients.redis import redis
 
 class Sessions:
     """Класс для работы с сессиями"""
 
+    def __init__(self, salt: str, prefix: str = "session_") -> None:
+        """
+        Initializes the class with the given salt and an optional prefix. 
 
-    def __init__(self, prefix="session_") -> None:
+        Parameters:
+            salt (str): The salt to be used for initialization.
+            prefix (str, optional): The prefix for the session keys. Defaults to "session_".
+
+        Returns:
+            None
+        """
         self.redis = redis
         self.prefix = prefix
+        self.salt = salt
 
-    async def get(self, id: int) -> dict:
+
+    def _get_key(self, token: str) -> str:
+        return uuid.uuid5(uuid.NAMESPACE_X500, f'{token}{self.salt}').__str__()
+
+
+    async def _id(self, token: str) -> int | None:
+        """
+        An asynchronous function that takes an string token as input and returns an integer ID or None. 
+        Retrieves a user from redis cache based on the token, and returns the user's id if found, otherwise returns None.
+        """
+        user = await redis.get(f"{self.prefix}{self._get_key(token)}")
+
+        if not user:
+            return None
+        
+        return json.loads(user).get("id")
+    
+
+    async def get(self, token: str) -> dict:
+        """
+        Asynchronously retrieves a dictionary using the provided token.
+
+        Args:
+            token (str): The token used to retrieve the dictionary.
+
+        Returns:
+            dict: The dictionary retrieved using the token.
+        """
         return json.loads(
-            await self.redis.get(f"{self.prefix}{id}")
+            await self.redis.get(f"{self.prefix}{self._get_key(token)}")
             )
     
-    async def push(self, id: int, data: dict) -> None:
-        session = await self.get(id)
+
+    async def verify(self, token: str) -> int | None:
+        """
+        Asynchronously verifies the token and returns the corresponding ID, or None if the token is invalid.
+        
+        Args:
+            token (str): The token to be verified.
+        
+        Returns:
+            int | None: The corresponding ID if the token is valid, or None if the token is invalid.
+        """
+        return await self._id(token)
+
+    
+    async def push(self, token: str, data: dict) -> None:
+        """
+        Asynchronously updates a session with the given id using the provided data. 
+
+        Args:
+            id (int): The id of the session to be updated.
+            data (dict): The data to update the session with.
+
+        Returns:
+            None
+        """
+        session = await self.get(token)
         if not session:
             return
         
         session.update(data)
 
-        await redis.set(f"{self.prefix}{id}", json.dumps(session))
+        await redis.set(f"{self.prefix}{self._get_key(token)}", json.dumps(session))
+
     
-    async def pop(self, id: int) -> dict:
+    async def pop(self, token: str) -> dict | None:
+        """
+        Asynchronously pops a value from the Redis cache using the provided token.
+        
+        Args:
+            token (str): The token used to retrieve the value from the cache.
+        
+        Returns:
+            dict | None: The popped value from the cache as a dictionary, or None if the token is not found.
+        """
         return json.loads(
-            await self.redis.getdel(f"{self.prefix}{id}")
+            await self.redis.getdel(f"{self.prefix}{self._get_key(token)}")
             )
 
-    async def set(self, id: int, data: dict, expireAt: int = None) -> None:
-        if not expireAt:
-            return await self.redis.set(f"{self.prefix}{id}", json.dumps(data))
 
-        await self.redis.setex(f"{self.prefix}{id}", expireAt, json.dumps(data))
+    async def set(self, token: str, data: dict, expireAt: int = None) -> None:
+        """
+        Asynchronously sets a value in the cache with the given token and data. Optionally, it can set an expiration time as seconds for the data.
+        
+        Args:
+            token (str): The token used to identify the data.
+            data (dict): The data to be stored in the cache.
+            expireAt (int, optional): The expiration time for the data in seconds. Defaults to None.
+        
+        Returns:
+            None
+        """
+        if not expireAt:
+            return await self.redis.set(f"{self.prefix}{self._get_key(token)}", json.dumps(data))
+
+        await self.redis.setex(f"{self.prefix}{self._get_key(token)}", expireAt, json.dumps(data))
