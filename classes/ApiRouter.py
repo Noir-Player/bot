@@ -4,11 +4,11 @@ from disnake.ext.commands import AutoShardedInteractionBot
 from fastapi import APIRouter
 
 import asyncio
-import uuid
 
 from fastapi.params import Depends
 
 from clients.database import Database
+from clients.session  import Sessions
 
 
 class NOIRouter(APIRouter):
@@ -25,6 +25,8 @@ class NOIRouter(APIRouter):
         self._db = Database()
         self._salt = "wtfwheremysaltidiot"
 
+        self._session: Sessions | None = None # if salt has not been set
+
     @property
     def bot(self) -> AutoShardedInteractionBot | None:
         return self._bot
@@ -40,6 +42,11 @@ class NOIRouter(APIRouter):
     @salt.setter
     def salt(self, value):
         self._salt = value
+        self._session = Sessions(salt=value)
+
+    @property
+    def session(self):
+        return self._session
 
     @property
     def db(self) -> Database:
