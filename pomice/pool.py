@@ -23,6 +23,7 @@ from disnake.ext import commands
 from disnake.utils import MISSING
 from disnake import Member, User, ClientUser
 from ytmusicapi import YTMusic
+from spotipy.oauth2 import SpotifyClientCredentials
 from websockets import client
 from websockets import exceptions
 from websockets import typing as wstype
@@ -78,6 +79,7 @@ class Node:
         "_secure",
         "_fallback",
         "_ytm_client",
+        "_spotify_credentials",
         "_log_level",
         "_websocket_uri",
         "_rest_uri",
@@ -115,6 +117,7 @@ class Node:
         session: Optional[aiohttp.ClientSession] = None,
         fallback: bool = False,
         ytm_client: Optional[YTMusic] = YTMusic(language='ru'),
+        spotify_credentials: Optional[SpotifyClientCredentials] = None,
         log_level: LogLevel = LogLevel.INFO,
         log_handler: Optional[logging.Handler] = None,
     ):
@@ -133,6 +136,7 @@ class Node:
         self._secure: bool = secure
         self._fallback: bool = fallback
         self._ytm_client: Optional[YTMusic] = ytm_client
+        self._spotify_credentials: Optional[SpotifyClientCredentials] = spotify_credentials
         self._log_level: LogLevel = log_level
         self._log_handler = log_handler
 
@@ -151,7 +155,7 @@ class Node:
         self._route_planner = RoutePlanner(self)
         self._log = self._setup_logging(self._log_level)
 
-        self.external = External()
+        self.external = External(spotify_credentials=spotify_credentials)
 
         if not self._bot.user:
             raise NodeCreationError("Bot user is not ready yet.")
@@ -848,6 +852,7 @@ class NodePool:
         fallback: bool = False,
         log_level: LogLevel = LogLevel.INFO,
         log_handler: Optional[logging.Handler] = None,
+        spotify_credentials: Optional[SpotifyClientCredentials] = None,
     ) -> Node:
         """Creates a Node object to be then added into the node pool.
         For Spotify searching capabilites, pass in valid Spotify API credentials.
@@ -873,6 +878,7 @@ class NodePool:
             fallback=fallback,
             log_level=log_level,
             log_handler=log_handler,
+            spotify_credentials=spotify_credentials
         )
 
         await node.connect()
