@@ -3,14 +3,13 @@ import ytmusicapi
 
 
 from typing import Literal, List, Dict, Any
-from spotipy.oauth2 import SpotifyClientCredentials
 
 
 
 class External:
     def __init__(self, **kwargs) -> None:
 
-        self.spotify = spotipy.Spotify(client_credentials_manager=kwargs.get('client_credentials_manager', SpotifyClientCredentials()))
+        self.spotify = spotipy.Spotify(client_credentials_manager=kwargs.get('spotify_credentials'))
         self.ytmusic = ytmusicapi.YTMusic(language=kwargs.get('language', 'ru'))
 
 
