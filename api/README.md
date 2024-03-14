@@ -16,13 +16,13 @@
 "filter": "energy"
 }
 {
-"last_tracks": ...,
+"last_tracks": [...],
 "related": {
 	"track_name": [...],
 	"track_name": [...]
 	}
-"playlists": ...,
-"mixes": ...,
+"playlists": [...],
+"mixes": [...],
 }
 ```
 
@@ -36,25 +36,25 @@
 }
 {
 "tracks": [...],
-"playlists": ...,
-"mixes": ...,
+"playlists": [...],
+"mixes": [...],
 }
 ```
 
 ### Stars `/stars`
 
-#GET /?page?count?filters
+#GET /?page?count
 
 ```json
 Получить треки, плейлисты по поиску
 {
 "page": 1,
 "count": 50,
-"filter": ["blue", "red", "custom tag"]
+//"filter": ["blue", "red", "custom tag"]
 }
 {
 "tracks": [...],
-"meta": {"page": 1, "count": 50, "found": 483, "filter": ["blue", "red", "custom tag"]}
+"meta": {"page": 1, "count": 50, "found": 483}, //"filter": ["blue", "red", "custom tag"]}
 }
 ```
 
@@ -83,43 +83,18 @@ no content
 }
 ```
 
-#PUT /{track_index}?query?search_type
+#PUT /?query?search_type
 
 ```json
-Вставить трек или плейлист по поиску и индексу track_index
+Вставить трек или плейлист по поиску
 {
 "query": "rickroll",
 "type": "spotify",
 }
+
 {
 "tracks": [...],
 "meta": {"index": 20}
-}
-```
-
-#PATH  /{track_index}/tags?tag
-
-```json
-Добавить тег 
-{
-"name": "red",
-"color": 123344
-}
-// Добавление происходит в профиль
-{
-"track": ...
-}
-```
-
-#DELETE   /{track_index}/tags?tag
-
-```json
-Удалить тег 
-{
-"name": "red"
-}
-{
-"track": ...
 }
 ```
 
@@ -134,6 +109,105 @@ no content
 204 no content
 }
 ```
+
+### SubStars `/stars/{name}
+
+#POST /
+
+```json
+Создать коллекцию треков
+{
+"name": "Sparkles",
+"description": "Awesome tracks for vibing",
+"color": "a68aed"
+}
+{
+204 no content
+}
+```
+
+#PATH /{name}
+
+```json
+Изменить коллекцию
+{
+"name": "Sparkles",
+"description": "Awesome tracks for vibing",
+"color": "a68aed"
+}
+{
+204 no content
+}
+```
+
+
+#GET /{name}/?page?count
+
+```json
+Получить треки, плейлисты по поиску
+{
+"page": 1,
+"count": 50,
+//"filter": ["blue", "red", "custom tag"]
+}
+{
+"tracks": [...],
+"meta": {"page": 1, "count": 50, "found": 483}, //"filter": ["blue", "red", "custom tag"]}
+}
+```
+
+#PATH /{name}/move?pos1?pos2
+
+```json
+Переместить треки
+{
+"pos1": 10,
+"pos2": 2
+}
+{
+204 no content
+}
+```
+
+#GET /{name}/{track_index}
+
+```json
+Получить трек по индексу
+{
+no content
+}
+{
+"track": ...
+}
+```
+
+#PUT /{name}/?query?search_type
+
+```json
+Вставить трек или плейлист по поиску
+{
+"query": "rickroll",
+"type": "spotify",
+}
+
+{
+"tracks": [...],
+"meta": {"index": 20}
+}
+```
+
+#DELETE /{name}/{track_index}
+
+```json
+Удалить трек по индексу
+{
+no content
+}
+{
+204 no content
+}
+```
+
 
 ### Playlists `/playlists`
 
