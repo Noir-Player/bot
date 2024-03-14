@@ -37,7 +37,7 @@ def make_session(token=None, state=None, scope=None):
 async def make_oauth(sessiontoken: str):
     # Make oauth
     discord = make_session(
-        token=router.session.get(sessiontoken).get("oauth_token"))
+        token=(await router.session.get(sessiontoken)).get("oauth_token"))
 
     # Set session
     session = {
@@ -45,7 +45,7 @@ async def make_oauth(sessiontoken: str):
         "connections": discord.get('https://discordapp.com/api/users/@me/connections').json(),
     }
 
-    router.session.set(sessiontoken, session)
+    await router.session.set(sessiontoken, session)
 
     # Make response with redirect (if exist)
     resp = RedirectResponse("/discovery")
@@ -90,13 +90,15 @@ async def login(request: Request):
 
     discord = make_session(scope=SCOPES.split(' '))
 
-    key = uuid.uuid4().__str__()
+    key = request.cookies.get("sessionid") or uuid.uuid4().__str__()
 
     authorization_url, state = discord.authorization_url(
         AUTHORIZATION_BASE_URL)
-    router.session.set(
-        request.cookies.get("sessionid") or key,
-        {"oauth_state": state}, 3600)
+    await router.session.set(
+        key,
+        {"oauth_state": state}, 
+        3600
+        )
 
     response = RedirectResponse(authorization_url)
 
@@ -110,9 +112,9 @@ async def callback(request: Request, sessionid: str = Cookie()):
     if not sessionid:
         return {"msg": "session not passed"}
 
-    discord = make_session(state=router.session.get(sessionid).get("oauth_state"))
+    discord = make_session(state=(await router.session.get(sessionid)).get("oauth_state"))
 
-    router.session.set(
+    await router.session.set(
         sessionid,
         {"oauth_token": discord.fetch_token(
             TOKEN_URL,
@@ -129,6 +131,6 @@ async def logout(response: Response, sessionid: str = Cookie()):
     if not sessionid:
         return {"msg": "session not passed"}
 
-    router.session.pop(sessionid)
+    await router.session.pop(sessionid)
     response.delete_cookie("sessionid")
     return RedirectResponse("/")
