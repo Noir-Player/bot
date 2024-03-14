@@ -14,6 +14,8 @@ import hypercorn
 
 from hypercorn.asyncio import serve
 
+from spotipy.oauth2 import SpotifyClientCredentials
+
 # import sdc_api_py
 from disnake.ext import commands
 import api
@@ -181,9 +183,14 @@ class NoirBot(commands.AutoShardedInteractionBot):
                 password=self._config.get("lavapass", "pass"),
                 identifier="Noir",
                 log_level=logging.INFO,
+                spotify_credentials=SpotifyClientCredentials(
+                    client_id=self._config.get("spotify", "client_id"),
+                    client_secret=self._config.get("spotify", "client_secret"),
+                ),
             )
 
         except Exception as e:
+            traceback.print_exc()
             return lprint(f"Node was not created: {e}", Color.red, "ERROR")
 
         lprint("Node created", Color.magenta)
