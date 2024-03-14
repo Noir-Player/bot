@@ -53,17 +53,25 @@ class Sessions:
             )
     
 
-    async def verify(self, token: str) -> int | None:
+    async def verify(self, token: str) -> int:
         """
-        Asynchronously verifies the token and returns the corresponding ID, or None if the token is invalid.
-        
-        Args:
+        Verify the token and return the corresponding ID.
+
+        Parameters:
             token (str): The token to be verified.
-        
+
         Returns:
-            int | None: The corresponding ID if the token is valid, or None if the token is invalid.
+            int: The ID associated with the token.
+
+        Raises:
+            ValueError: If the token is invalid.
         """
-        return await self._id(token)
+        id = await self._id(token)
+
+        if not id:
+            raise ValueError("Invalid token")
+        
+        return id
 
     
     async def push(self, token: str, data: dict) -> None:
