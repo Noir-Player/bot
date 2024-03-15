@@ -30,12 +30,12 @@ class Sessions:
         An asynchronous function that takes an string token as input and returns an integer ID or None. 
         Retrieves a user from redis cache based on the token, and returns the user's id if found, otherwise returns None.
         """
-        user = await redis.get(f"{self.prefix}{self._get_key(token)}")
+        user = await self.redis.get(f"{self.prefix}{self._get_key(token)}")
 
         if not user:
             return None
         
-        return json.loads(user).get("id")
+        return json.loads(user)["user"]["id"]
     
 
     async def get(self, token: str) -> dict:
@@ -91,7 +91,7 @@ class Sessions:
         
         session.update(data)
 
-        await redis.set(f"{self.prefix}{self._get_key(token)}", json.dumps(session))
+        await self.redis.set(f"{self.prefix}{self._get_key(token)}", json.dumps(session))
 
     
     async def delete(self, token: str) -> None:
