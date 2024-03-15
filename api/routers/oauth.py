@@ -2,8 +2,6 @@ from requests_oauthlib import OAuth2Session
 
 import uuid
 
-import json
-
 # ---------------------------------------------------------------------------------------------------------
 
 from config import *
@@ -11,7 +9,7 @@ from config import *
 # ---------------------------------------------------------------------------------------------------------
 
 from classes.ApiRouter import NOIRouter
-from fastapi import Response, Request, Cookie
+from fastapi import Request, Cookie
 from fastapi.responses import RedirectResponse
 
 router = NOIRouter(tags=["Oauth"])
