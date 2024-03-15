@@ -42,7 +42,7 @@ class Track(BaseModel):
 
     url: str = Field(max_length=200)
 
-    id: str = Field(max_length=100)
+    id: str
     length: Union[int, float] = Field(default=0, le=10000000000)
 
     playlist: Optional[str] = Field('', max_length=50)
