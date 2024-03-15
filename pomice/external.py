@@ -90,7 +90,7 @@ class External:
         return result
     
     
-    def get_mixes(self, type: Literal['yt', 'sp'], genre: str) -> List[Dict[str, str]] | Any:
+    def get_mixes(self, type: Literal['yt', 'sp'], genre: str | None = None) -> List[Dict[str, str]] | Any | None:
         """
         Retrieves mixes based on the specified type and genre.
 
@@ -103,10 +103,10 @@ class External:
         """
         
         if type == 'yt':
-            result = self.ytmusic.get_mood_playlists(genre)
+            result = self.ytmusic.get_mood_playlists(genre) if genre else None
 
         else:
-            result = self.spotify.recommendations(seed_genres=[genre])
+            result = self.spotify.recommendations(seed_genres=[genre] or None)
 
         return result
 
