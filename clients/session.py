@@ -94,19 +94,17 @@ class Sessions:
         await redis.set(f"{self.prefix}{self._get_key(token)}", json.dumps(session))
 
     
-    async def pop(self, token: str) -> dict | None:
+    async def delete(self, token: str) -> None:
         """
-        Asynchronously pops a value from the Redis cache using the provided token.
+        Asynchronous function to delete a token from the specified Redis key.
         
         Args:
-            token (str): The token used to retrieve the value from the cache.
-        
+            token (str): The token to be deleted.
+            
         Returns:
-            dict | None: The popped value from the cache as a dictionary, or None if the token is not found.
+            None
         """
-        return json.loads(
-            await self.redis.getdel(f"{self.prefix}{self._get_key(token)}")
-            )
+        await self.redis.delete(f"{self.prefix}{self._get_key(token)}")
 
 
     async def set(self, token: str, data: dict, expireAt: int = None) -> None:
