@@ -153,9 +153,19 @@ class Track:
 
     def __repr__(self) -> str:
         return f"<Pomice.track title={self.title!r} uri=<{self.uri!r}> length={self.length}>"
-
-    async def check_thumb(self):
-        pass
+    
+    def to_dict(self) -> dict:
+        """Returns a dictionary representation of the track."""
+        return {
+            "title": self.title,
+            "author": self.author.__str__(),
+            "thumbnail": self.thumbnail,
+            "url": self.uri,
+            "id": self.track_id,
+            "length": self.length,
+            "playlist": self.playlist.name if self.playlist else None,
+            "type": self.track_type.value
+        }
 
 
 class Playlist:
@@ -174,6 +184,7 @@ class Playlist:
         "_uri",
         "selected_track",
         "track_count",
+        "length",
         
     )
 
@@ -195,8 +206,11 @@ class Playlist:
         self._thumbnail: Optional[str] = thumbnail
         self._uri: Optional[str] = uri
 
+        self.length: float = 0
+
         for track in self.tracks:
             track.playlist = self
+            self.length += track.length
 
         self.selected_track: Optional[Track] = None
         if (index := playlist_info.get("selectedTrack", -1)) != -1:
@@ -219,3 +233,15 @@ class Playlist:
     def thumbnail(self) -> Optional[str]:
         """Returns either an album/playlist thumbnail, or None if its neither of those."""
         return self._thumbnail
+    
+    def to_dict(self) -> dict:
+        """Returns a dictionary representation of the playlist."""
+        return {
+            "name": self.name,
+            "author": self.author,
+            "uri": self.uri,
+            "length": self.length,
+            "thumbnail": self.thumbnail,
+            "playlist_type": self.playlist_type,
+            "tracks": [track.to_dict() for track in self.tracks]
+        }
