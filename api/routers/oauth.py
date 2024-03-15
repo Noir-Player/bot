@@ -2,6 +2,8 @@ from requests_oauthlib import OAuth2Session
 
 import uuid
 
+import json
+
 # ---------------------------------------------------------------------------------------------------------
 
 from config import *
@@ -127,10 +129,20 @@ async def callback(request: Request, sessionid: str = Cookie()):
 
 
 @router.get("/logout", description="Выйти из аккаунта", status_code=307)
-async def logout(response: Response, sessionid: str = Cookie()):
+async def logout(sessionid: str = Cookie()):
     if not sessionid:
         return {"msg": "session not passed"}
 
-    await router.session.pop(sessionid)
+    await router.session.delete(sessionid)
+
+    response = RedirectResponse("/")
     response.delete_cookie("sessionid")
-    return RedirectResponse("/")
+
+    return response
+
+# @router.get("/session", description="Получить свою сессию")
+# async def get_session(response: Response, sessionid: str = Cookie()):
+#     if not sessionid:
+#         return {"msg": "session not passed"}
+
+#     return json.dumps(await router.session.get(sessionid))
