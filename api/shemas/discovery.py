@@ -19,12 +19,15 @@ class DiscoveryResponse(BaseModel):
 class Meta(BaseModel):
     query: str = Field(description="Запрос")
     type: Optional[Literal["spsearch", "ytsearch", "ytmsearch", "scsearch", "dzsearch"]] = None
+    only: Optional[Literal["track", "playlist", "mixe"]] = None
 
 
 class DiscoverySearchResponse(BaseModel):
     tracks: List[Track] = Field([], description="Список найденных треков")
 
-    playlists: Optional[List[Playlist]] = Field([], description="Список найденных плейлистов")
+    playlists: Optional[list] = Field([], description="Список найденных плейлистов")
+
+    user_playlists: Optional[List[Playlist]] = Field([], description="Список плейлистов, созданных пользователями")
 
     mixes: Optional[List[Mix]] = Field([], description="Список миксов, найденных по первому треку")
 
