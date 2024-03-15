@@ -1,6 +1,7 @@
 import pymongo
 import uuid
 import datetime
+import re
 
 from pymongo import ASCENDING
 from pymongo.collection import Collection
@@ -171,6 +172,15 @@ class PlaylistsDB:
 
     def col(self) -> Collection:
         return self.table
+    
+    def find(self, query: dict, without_id: bool = True) -> list[dict]:
+        """Найти плейлисты"""
+        result, playlists = self.table.find({"title": {"$regex": re.compile(query)}}), []
+        for playlist in result:
+            if without_id:
+                del playlist['_id']
+            playlists.append(playlist)
+        return playlists
 
     def get_playlist(self, uuid: str, without_id: bool = True) -> dict | None:
         """Найти плейлист"""
