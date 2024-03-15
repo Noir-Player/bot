@@ -17,8 +17,8 @@ class DiscoveryResponse(BaseModel):
 
 
 class Meta(BaseModel):
-    query: Optional[str] = ""
-    type: Optional[Literal["spsearch", "ytsearch", "ytmsearch", "scsearch", "dzsearch"]] = "spsearch"
+    query: str = Field(description="Запрос")
+    type: Optional[Literal["spsearch", "ytsearch", "ytmsearch", "scsearch", "dzsearch"]] = None
 
 
 class DiscoverySearchResponse(BaseModel):
