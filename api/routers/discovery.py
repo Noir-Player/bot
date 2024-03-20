@@ -10,32 +10,26 @@ router = NOIRouter(prefix="/discovery", tags=["Discovery"])
 
 # GET
 
-@router.get('/', description="Получить путеводитель", response_model=DiscoveryResponse)
+
+@router.get("/", description="Получить путеводитель", response_model=DiscoveryResponse)
 async def get_discovery(
     sessionid: str = Cookie(),
-    count: int = Query(50, ge=1, le=100, description="количество на странице"),
-    page: int = Query(1, ge=1, description="номер страницы"),
 ):
 
-    playlists = []
-
-    for playlist in router.db.playlists.col().find(
-            {"public": True}).skip(count * (page - 1)).limit(count):
-
-        del playlist['_id']
-        playlist['forked'] = len(playlist.get('forked', []))
-
-        playlists.append(playlist)
-
-    return {"data": playlists, "meta": {"page": page, "count": count}}
+    pass
 
 
-
-@router.get('/search', description="Поиск треков, плейлистов", response_model=DiscoverySearchResponse)
+@router.get(
+    "/search",
+    description="Поиск треков, плейлистов",
+    response_model=DiscoverySearchResponse,
+)
 async def search(
     sessionid: str = Cookie(),
-    query: str = Query('', description="Запрос / ссылка"),
-    type: Literal["spsearch", "ytsearch", "ytmsearch", "scsearch", "dzsearch"] = Query("ytmsearch", description="Тип поиска")
+    query: str = Query("", description="Запрос / ссылка"),
+    type: Literal["spsearch", "ytsearch", "ytmsearch", "scsearch", "dzsearch"] = Query(
+        "ytmsearch", description="Тип поиска"
+    ),
 ):
     await router.session.verify(sessionid)
 
@@ -45,11 +39,15 @@ async def search(
 
     user_playlists = router.db.playlists.find(query)
 
-    search_result = router.execute(node.get_tracks(query, search_type=pomice.SearchType(type)))
+    search_result = router.execute(
+        node.get_tracks(query, search_type=pomice.SearchType(type))
+    )
 
     if not search_result:
-        return Response(content="Tracks, playlists and mixes not found", status_code=404)
-    
+        return Response(
+            content="Tracks, playlists and mixes not found", status_code=404
+        )
+
     if hasattr(search_result, "tracks"):
         playlists = [search_result.to_dict()]
         only = "playlist"
@@ -60,7 +58,6 @@ async def search(
         if len(search_result) == 1:
             only = "track"
 
-
     mixes = node.external.get_mixes("sp" if type == "spsearch" else "yt")
 
     return {
@@ -68,9 +65,5 @@ async def search(
         "playlists": playlists,
         "user_playlists": user_playlists,
         "mixes": mixes,
-        "meta": {
-            "query": query,
-            "type": type,
-            "only": only
-        }
+        "meta": {"query": query, "type": type, "only": only},
     }
