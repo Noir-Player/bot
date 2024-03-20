@@ -4,12 +4,14 @@ from api.shemas import *
 router = NOIRouter(tags=["Main"])
 
 
-@router.get("/status", description="Статистика приложения", response_model=StatusResponse)
+@router.get(
+    "/status", description="Статистика приложения", response_model=StatusResponse
+)
 async def get_status():
     """Get status of bot (guilds, players, ...)"""
     return {
         "guilds": len(router.bot.guilds),
         "players": router.bot.node.player_count,
         "uptime": router.bot.node.stats.uptime,
-        "ping": round(router.bot.latency, 3)
+        "ping": round(router.bot.latency, 3),
     }
