@@ -11,6 +11,8 @@ from disnake.ext import commands
 from pomice import Node
 from utils.embeds import genembed
 
+from disnake.utils import _assetbytes_to_base64_data
+
 config = configparser.ConfigParser()
 config.read("noir.properties")
 
@@ -22,12 +24,19 @@ class Manage(commands.Cog):
 
     @commands.slash_command(guild_ids=[config.getint("dev", "dev_server")])
     async def set_avatar(self, ctx, image: disnake.Attachment = commands.Param(description="сменить аватар боту")):
-        if not image.filename.endswith(".gif"):
-            return await ctx.send("Нужно гифку", ephemeral=True)
-
         await self.bot.user.edit(
             avatar=(await image.to_file()).fp.read()
         )
+
+        await ctx.send(f"Аватар сменен: {image.filename}", ephemeral=True, file=await image.to_file())
+
+    
+    @commands.slash_command(guild_ids=[config.getint("dev", "dev_server")])
+    async def set_banner(self, ctx, image: disnake.Attachment = commands.Param(description="сменить баннер боту")):
+        payload = {}
+        payload["banner"] = await _assetbytes_to_base64_data(image)
+
+        data = await self.bot.user._state.http.edit_profile(payload)
 
         await ctx.send(f"Аватар сменен: {image.filename}", ephemeral=True, file=await image.to_file())
 
