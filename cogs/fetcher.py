@@ -26,8 +26,7 @@ class Fetcher(commands.Cog):
         self.fetch_voice_task = self.bot.loop.create_task(self.fetch_voice())
         self.fetch_track_task = self.bot.loop.create_task(self.fetch_track())
         self.fetch_guilds_task = self.bot.loop.create_task(self.fetch_guilds())
-        self.fetch_webhook_task = self.bot.loop.create_task(
-            self.fetch_webhook())
+        self.fetch_webhook_task = self.bot.loop.create_task(self.fetch_webhook())
         self.connect_task = self.bot.loop.create_task(self.connect())
 
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -77,14 +76,10 @@ class Fetcher(commands.Cog):
         #     or member.id != self.bot.user.id
         # ):
         #     return
-        
+
         await self.bot.redis.publish(
-            f'player-{member.guild.id}',
-            json.dumps(
-                {
-                    "members": [user.id for user in player.channel.members]
-                }
-            )
+            f"player-{member.guild.id}",
+            json.dumps({"members": [user.id for user in player.channel.members]}),
         )
 
     # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -96,8 +91,7 @@ class Fetcher(commands.Cog):
 
             for player in list(self.bot.pool.get_node().players.values()):
                 if player.is_connected:
-                    if user.id in [
-                            member.id for member in player.channel.members]:
+                    if user.id in [member.id for member in player.channel.members]:
                         return player.guild.id
                 else:
                     try:
@@ -224,8 +218,7 @@ class Fetcher(commands.Cog):
                 same, other = [], []
 
                 for guild in list(data.get("guilds")):
-                    if int(guild.get("id")) in [
-                            guild.id for guild in self.bot.guilds]:
+                    if int(guild.get("id")) in [guild.id for guild in self.bot.guilds]:
                         same.append(guild)
                     else:
                         other.append(guild)
