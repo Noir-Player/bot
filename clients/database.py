@@ -1,19 +1,14 @@
-import pymongo
-import uuid
 import datetime
 import re
+import uuid
+from typing import Any
 
+import pymongo
 from pymongo import ASCENDING
 from pymongo.collection import Collection
 
-from typing import Any
-
 mongoclient = pymongo.MongoClient("mongodb://localhost:27017/")
 db = mongoclient["Noir"]
-
-
-def table(name: str) -> Collection:
-    return db[name]
 
 
 class Database:
@@ -74,16 +69,17 @@ class SetupDB:
         """Получить запись"""
         result = self.table.find_one({"id": guild_id})
         if without_id and result:
-            del result['_id']
+            del result["_id"]
         return result
 
     def col(self) -> Collection:
         return self.table
-    
+
     def force_set(self, guild_id, obj: dict, upsert=True):
         """Собрать настройки из словаря"""
         return self.table.update_one(
-                {"id": guild_id}, {"$set": obj}, upsert=upsert).modified_count.__bool__()
+            {"id": guild_id}, {"$set": obj}, upsert=upsert
+        ).modified_count.__bool__()
 
     def set(self, guild_id, key: str, value=None, upsert=True):
         """Изменяет ключ или удаляет его"""
@@ -93,29 +89,41 @@ class SetupDB:
             ).modified_count.__bool__()
         else:
             return self.table.update_one(
-                {"id": guild_id}, {"$unset": {key: 1}}, upsert=upsert).modified_count.__bool__()
+                {"id": guild_id}, {"$unset": {key: 1}}, upsert=upsert
+            ).modified_count.__bool__()
 
     def role(self, guild_id, role: int = None):
         """Настроить / удалить роль"""
         if role:
-            self.table.update_one({"id": guild_id}, {"$set": {"role": role}}).modified_count.__bool__()
+            self.table.update_one(
+                {"id": guild_id}, {"$set": {"role": role}}
+            ).modified_count.__bool__()
         else:
-            self.table.update_one({"id": guild_id}, {"$unset": {"role": 1}}).modified_count.__bool__()
+            self.table.update_one(
+                {"id": guild_id}, {"$unset": {"role": 1}}
+            ).modified_count.__bool__()
 
     def color(self, guild_id, color: str = None):
         """Настроить / удалить цвет эмбеда"""
         if color:
-            self.table.update_one({"id": guild_id}, {"$set": {"color": color}}).modified_count.__bool__()
+            self.table.update_one(
+                {"id": guild_id}, {"$set": {"color": color}}
+            ).modified_count.__bool__()
         else:
-            self.table.update_one({"id": guild_id}, {"$unset": {"color": 1}}).modified_count.__bool__()
+            self.table.update_one(
+                {"id": guild_id}, {"$unset": {"color": 1}}
+            ).modified_count.__bool__()
 
     def channel(self, guild_id, channel: int = None):
         """Настроить / удалить канал с плеером"""
         if channel:
             self.table.update_one(
-                {"id": guild_id}, {"$set": {"channel": channel}}).modified_count.__bool__()
+                {"id": guild_id}, {"$set": {"channel": channel}}
+            ).modified_count.__bool__()
         else:
-            self.table.update_one({"id": guild_id}, {"$unset": {"channel": 1}}).modified_count.__bool__()
+            self.table.update_one(
+                {"id": guild_id}, {"$unset": {"channel": 1}}
+            ).modified_count.__bool__()
 
     def volume_step(self, guild_id, volume_step: int = None):
         """Настроить / удалить шаг громкости"""
@@ -125,7 +133,8 @@ class SetupDB:
             ).modified_count.__bool__()
         else:
             self.table.update_one(
-                {"id": guild_id}, {"$unset": {"volume_step": 1}}).modified_count.__bool__()
+                {"id": guild_id}, {"$unset": {"volume_step": 1}}
+            ).modified_count.__bool__()
 
     def disable_eq(self, guild_id, disable_eq: bool = None):
         """Переключить эквалайзер"""
@@ -135,7 +144,8 @@ class SetupDB:
             ).modified_count.__bool__()
         else:
             self.table.update_one(
-                {"id": guild_id}, {"$unset": {"disable_eq": 1}}).modified_count.__bool__()
+                {"id": guild_id}, {"$unset": {"disable_eq": 1}}
+            ).modified_count.__bool__()
 
     def webhook(
         self,
@@ -154,10 +164,13 @@ class SetupDB:
                         "webhook.name": webhook_name,
                         "webhook.icon": webhook_icon,
                     }
-                }, upsert=True
+                },
+                upsert=True,
             ).modified_count.__bool__()
         else:
-            return self.table.update_one({"id": guild_id}, {"$unset": {"webhook": 1}}).modified_count.__bool__()
+            return self.table.update_one(
+                {"id": guild_id}, {"$unset": {"webhook": 1}}
+            ).modified_count.__bool__()
 
     def clear_guild(self, guild_id):
         """Удалить настройки"""
@@ -172,13 +185,16 @@ class PlaylistsDB:
 
     def col(self) -> Collection:
         return self.table
-    
+
     def find(self, query: dict, without_id: bool = True) -> list[dict]:
         """Найти плейлисты"""
-        result, playlists = self.table.find({"title": {"$regex": re.compile(query)}}), []
+        result, playlists = (
+            self.table.find({"title": {"$regex": re.compile(query)}}),
+            [],
+        )
         for playlist in result:
             if without_id:
-                del playlist['_id']
+                del playlist["_id"]
             playlists.append(playlist)
         return playlists
 
@@ -186,37 +202,38 @@ class PlaylistsDB:
         """Найти плейлист"""
         result = self.table.find_one({"uuid": uuid})
         if without_id and result:
-            del result['_id']
+            del result["_id"]
         return result
 
-    def get_user_playlists(
-            self,
-            id: int,
-            include_forked: bool = True) -> dict | None:
+    def get_user_playlists(self, id: int, include_forked: bool = True) -> dict | None:
         """Получить плейлисты пользователя. `include_forked` определяет, включать ли плейлисты других пользователей."""
         return [
             playlist
             for playlist in table("playlists").find(
-                {"$or": [{"author.id": id}, {"forked": {"$elemMatch": {"$eq": id}}}]} if include_forked else {"author.id": id}
+                {"$or": [{"author.id": id}, {"forked": {"$elemMatch": {"$eq": id}}}]}
+                if include_forked
+                else {"author.id": id}
             )
         ]
 
     def add_to_library(self, uuid: str, id: int):
         """Добавить плейлист в библиотеку"""
-        return self.table.update_one({"uuid": uuid}, {"$addToSet": {"forked": id}}).modified_count.__bool__()
+        return self.table.update_one(
+            {"uuid": uuid}, {"$addToSet": {"forked": id}}
+        ).modified_count.__bool__()
 
     def delete_playlist(self, uuid: str, id: int):
         """Удалить плейлист (из библиотеки или перманентно)"""
         playlist: dict = self.table.find_one({"uuid": uuid})
         if not playlist:
             return
-        if playlist.get("author").get(
-                "id") == id and playlist.get("uuid") == uuid:
+        if playlist.get("author").get("id") == id and playlist.get("uuid") == uuid:
             return self.table.delete_one({"uuid": uuid}).deleted_count.__bool__()
 
         elif id in playlist.get("forked") and playlist.get("uuid") == uuid:
             return self.table.update_one(
-                {"uuid": uuid}, {"$pull": {"forked": id}}).modified_count.__bool__()
+                {"uuid": uuid}, {"$pull": {"forked": id}}
+            ).modified_count.__bool__()
 
     def create_playlist(
         self,
@@ -227,7 +244,7 @@ class PlaylistsDB:
         description: str,
         public: bool,
         tracks: list = [],
-        **kwargs
+        **kwargs,
     ) -> str | None:
         """Создать плейлист"""
         _uuid = str(uuid.uuid4())
@@ -245,7 +262,7 @@ class PlaylistsDB:
                     "description": description,
                     "public": public,
                     "author": {"id": id, "name": name},
-                    "tracks": tracks
+                    "tracks": tracks,
                 }
             )
             return _uuid
@@ -258,20 +275,20 @@ class PlaylistsDB:
         thumbnail: str = None,
         description: str = None,
         public: bool = False,
-        **kwargs
+        **kwargs,
     ):
         """Изменить плейлист по uuid"""
         playlist: dict = self.table.find_one({"uuid": uuid, "author.id": id})
         if not playlist:
             return
-        
+
         return self.table.update_one(
             {"uuid": playlist.get("uuid")},
             {
                 "$set": {
-                    "title": title or playlist.get('title'),
-                    "thumbnail": thumbnail or playlist.get('thumbnail'),
-                    "description": description or playlist.get('description'),
+                    "title": title or playlist.get("title"),
+                    "thumbnail": thumbnail or playlist.get("thumbnail"),
+                    "description": description or playlist.get("description"),
                     "public": public,
                 }
             },
@@ -316,10 +333,8 @@ class PlaylistsDB:
         playlist: dict = self.table.find_one({"uuid": uuid, "author.id": id})
         if not playlist:
             return
-        track = next(
-            track for track in playlist["tracks"] if track.get("url") == url)
-        self.table.update_one({"uuid": uuid},
-                              {"$pull": {f"tracks": {"url": url}}})
+        track = next(track for track in playlist["tracks"] if track.get("url") == url)
+        self.table.update_one({"uuid": uuid}, {"$pull": {f"tracks": {"url": url}}})
         return self.table.update_one(
             {"uuid": uuid}, {"$push": {"tracks": {"$each": [track], "$position": pos}}}
         ).modified_count.__bool__()
@@ -356,14 +371,23 @@ class StarsDB:
         """Запись со звездочками"""
         result = self.table.find_one({"user_id": id})
         if without_id and result:
-            del result['_id']
+            del result["_id"]
         return result
 
     def add_to_stars(self, id: int, track_or_list: dict | list):
         """Добавить в звездочки"""
         stars = self.table.find_one({"user_id": id})
-        if stars and len(stars.get("tracks", [])) + (1 if type(track_or_list) == dict else len(track_or_list)) <= 1000:
-            track = track_or_list if type(track_or_list) == dict else {"$each": track_or_list}
+        if (
+            stars
+            and len(stars.get("tracks", []))
+            + (1 if type(track_or_list) == dict else len(track_or_list))
+            <= 1000
+        ):
+            track = (
+                track_or_list
+                if type(track_or_list) == dict
+                else {"$each": track_or_list}
+            )
             return self.table.update_one(
                 {"user_id": id}, {"$addToSet": {"tracks": track}}, upsert=True
             ).modified_count.__bool__()
@@ -379,10 +403,8 @@ class StarsDB:
         stars: dict = self.table.find_one({"user_id": id})
         if not stars or not stars.get("tracks"):
             return
-        track = next(
-            track for track in stars["tracks"] if track.get("url") == url)
-        self.table.update_one({"user_id": id},
-                              {"$pull": {f"tracks": {"url": url}}})
+        track = next(track for track in stars["tracks"] if track.get("url") == url)
+        self.table.update_one({"user_id": id}, {"$pull": {f"tracks": {"url": url}}})
         return self.table.update_one(
             {"user_id": id}, {"$push": {"tracks": {"$each": [track], "$position": pos}}}
         ).modified_count.__bool__()
@@ -399,44 +421,53 @@ class UsersDB:
 
     def add_user(self, user: dict):
         """Добавить юзера"""
-        return self.table.update_one({"id": int(user.get("id"))}, {"$set": user}, upsert=True).modified_count.__bool__()
+        return self.table.update_one(
+            {"id": int(user.get("id"))}, {"$set": user}, upsert=True
+        ).modified_count.__bool__()
 
     def get_user(self, id: int, without_id: bool = True):
         """Получить юзера"""
         result = self.table.find_one({"id": id})
         if without_id and result:
-            del result['_id']
+            del result["_id"]
         return result
-    
+
     def edit_user(self, id: int, name: str, description: str, theme: str):
         """Изменить юзера"""
         return self.table.update_one(
-            {"id": id}, {"$set": {"name": name, "description": description, "theme": theme}}).modified_count.__bool__()
+            {"id": id},
+            {"$set": {"name": name, "description": description, "theme": theme}},
+        ).modified_count.__bool__()
 
     def set_name(self, name: str, id: int):
         """Установить имя"""
         return self.table.update_one(
-            {"id": id}, {"$set": {"name": name}}, upsert=True).modified_count.__bool__()
-    
+            {"id": id}, {"$set": {"name": name}}, upsert=True
+        ).modified_count.__bool__()
+
     def set_icon(self, icon: str, id: int):
         """Установить иконку"""
         return self.table.update_one(
-            {"id": id}, {"$set": {"icon": icon}}, upsert=True).modified_count.__bool__()
+            {"id": id}, {"$set": {"icon": icon}}, upsert=True
+        ).modified_count.__bool__()
 
     def set_description(self, description: str, id: int):
         """Установить описание"""
         return self.table.update_one(
-            {"id": id}, {"$set": {"description": description}}, upsert=True).modified_count.__bool__()
+            {"id": id}, {"$set": {"description": description}}, upsert=True
+        ).modified_count.__bool__()
 
     def set_role(self, role: str, id: int):
         """Добавить роль"""
         return self.table.update_one(
-            {"id": id}, {"$set": {"role": role}}, upsert=True).modified_count.__bool__()
+            {"id": id}, {"$set": {"role": role}}, upsert=True
+        ).modified_count.__bool__()
 
     def set_permissions(self, permissions: int, id: int):
         """Настроить уровень разрешений"""
         return self.table.update_one(
-            {"id": id}, {"$set": {"permissions": permissions}}, upsert=True).modified_count.__bool__()
+            {"id": id}, {"$set": {"permissions": permissions}}, upsert=True
+        ).modified_count.__bool__()
 
     def set_playlist_limit(self, playlist_limit: int, id: int):
         """Установить лимит плейлистов"""
@@ -447,12 +478,15 @@ class UsersDB:
     def set_theme(self, theme: int, id: int):
         """Установить тему сайта"""
         return self.table.update_one(
-            {"id": id}, {"$set": {"theme": theme}}, upsert=True).modified_count.__bool__()
+            {"id": id}, {"$set": {"theme": theme}}, upsert=True
+        ).modified_count.__bool__()
 
     def ban(self, reason: str, timestamp: int, id: int):
         """Заблокировать"""
         return self.table.update_one(
-            {"id": id}, {"$set": {"ban.reason": reason, "ban.timestamp": timestamp}}, upsert=True
+            {"id": id},
+            {"$set": {"ban.reason": reason, "ban.timestamp": timestamp}},
+            upsert=True,
         ).modified_count.__bool__()
 
 
@@ -469,7 +503,7 @@ class MetricsDB:
         """Получить метрику"""
         result = self.table.find_one({"id": id})
         if without_id and result:
-            del result['_id']
+            del result["_id"]
         return result
 
     def add_last_track(self, track: dict, id: int):
@@ -487,8 +521,7 @@ class CacheDB:
     def __init__(self, table: Collection):
         self.table = table
 
-        self.table.create_index(
-            [("expireAt", ASCENDING)], expireAfterSeconds=0)
+        self.table.create_index([("expireAt", ASCENDING)], expireAfterSeconds=0)
 
     def col(self) -> Collection:
         return self.table
@@ -504,7 +537,9 @@ class CacheDB:
         expireAt: datetime.timedelta = None,
     ):
         """Установить / обновить кэш"""
-        info["expireAt"] = datetime.datetime.utcnow() + (expireAt or datetime.timedelta(days=7))
+        info["expireAt"] = datetime.datetime.utcnow() + (
+            expireAt or datetime.timedelta(days=7)
+        )
 
         return self.table.update_one(
             {"id": int(id)},
@@ -512,11 +547,7 @@ class CacheDB:
             upsert=True,
         ).modified_count.__bool__()
 
-    def push(
-        self,
-        info: dict,
-        id: int
-        ):
+    def push(self, info: dict, id: int):
         """Добавить к списку"""
         return self.table.update_one(
             {"id": int(id)},

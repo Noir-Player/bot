@@ -1,0 +1,10 @@
+disnake
+pymongo
+requests
+requests-oauthlib
+colorama
+ytmusicapi
+redis
+hypercorn
+pyfiglet
+spotipy
