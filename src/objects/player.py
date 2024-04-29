@@ -4,49 +4,44 @@ from typing import Any, Coroutine
 import disnake
 from disnake.ext import tasks
 
-import pomice
 from classes.Player_view import state
 from classes.Queue import NoirQueue
 from clients.database import Database
 from cogs.components.buttons import Soundpad
-from utils.build import Build
+
+from ..services import persiktunes
+from ..services.helpers.build import Build
 
 build = Build()
 db = Database()
 
 
-class NoirPlayer(pomice.Player):
-    """Кастомный плеер `pomice.Player`. Хранит в себе информацию об очереди, саундбаре и функции для их изменения."""
+class NoirPlayer(persiktunes.Player):
+    """Кастомный плеер `persiktunes.Player`. Хранит в себе информацию об очереди, саундбаре и функции для их изменения."""
 
-    def __init__(
-        self,
-        client: disnake.Client,
-        channel: disnake.VoiceChannel,
-        *,
-        node: pomice.Node | None = None,
-    ) -> None:
-        super().__init__(client, channel, node=node)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
-        """Первоначальная настройка очереди"""
+        # Первоначальная настройка очереди
         self._queue = NoirQueue(1000)
         self._queue.set_player(self)
 
-        """Настройки по умолчанию"""
-        self.soundbar = None
-        self.dj = None
-        self.radio = False
+        # Настройки по умолчанию
+        self._controller = None
+        self._dj = None
+        self._flux = False
         self._disable_eq = False
         self._volume_step = 25
 
-        """Вебхук"""
+        # Вебхук
         self._webhook: disnake.Webhook | None = None
         self._username: str = ...
         self._icon: str = ...
 
-        """Кастом плеер"""
+        # Кастом плеер
         self._color = disnake.Colour.blurple()
 
-        """Брокер сокетов"""
+        # Брокер сокетов
         # self._broker = Broker(self.bot.redis, self)
 
         # NOTE: перенесено в очередь classes.Queue
@@ -59,48 +54,48 @@ class NoirPlayer(pomice.Player):
     # Таск для пада
 
     @tasks.loop()
-    async def update_bar(self):
+    async def update_controller(self):
         """Таск для обновления бара через интервал времени."""
 
-        if not self.is_connected or not self.soundbar:
+        if not self.is_connected or not self.controller:
             return
 
-        await self.update_bar_once()
+        await self.update_controller_once()
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Функции
 
-    async def update_bar_once(self, force=False, ctx=None) -> bool:
-        """Обновляет бар один раз. Если `force = True`, удаляет и вызывает `edit_bar()`, также вам нужно передать `ctx`, чтобы бар корректно отправился."""
+    async def update_controller_once(self, force=False, ctx=None) -> bool:
+        """Обновляет бар один раз. Если `force = True`, удаляет и вызывает `edit_controller()`, также вам нужно передать `ctx`, чтобы бар корректно отправился."""
         try:
             if force:
                 try:
-                    await self.soundbar.delete()
+                    await self.controller.delete()
                 except BaseException:
                     pass
 
-                return await self.edit_bar(ctx)
+                return await self.edit_controller(ctx)
 
-            await self.soundbar.edit(embed=await state(self))
-        except Exception as exp:
+            await self.controller.edit(embed=await state(self))
+        except Exception:
             return False
 
-    async def edit_bar(self, ctx=None, embed=None, without_view=False):
+    async def edit_controller(self, ctx=None, embed=None, without_view=False):
         """Обновляет бар. Если нет, то посылает новый исходя из `def __init__()` или `ctx`"""
         if not embed:
             embed = await state(self)
 
         try:
-            await self.soundbar.edit(
+            await self.controller.edit(
                 embed=embed, view=None if without_view else Soundpad(player=self)
             )
         except BaseException:
             try:
-                await self.soundbar.delete()
+                await self.controller.delete()
             except BaseException:
                 pass
             try:
-                self.soundbar = await self._webhook.send(
+                self.controller = await self._webhook.send(
                     embed=embed,
                     username=self._username,
                     avatar_url=self._icon,
@@ -109,7 +104,7 @@ class NoirPlayer(pomice.Player):
                 )
             except BaseException:
                 try:
-                    self.soundbar = await ctx.channel.send(
+                    self.controller = await ctx.channel.send(
                         embed=embed,
                         view=None if without_view else Soundpad(player=self),
                     )
@@ -168,14 +163,14 @@ class NoirPlayer(pomice.Player):
 
     async def skip(self) -> None:
         if self.current:
-            if self.queue.loop_mode != pomice.LoopMode.TRACK:
+            if self.queue.loop_mode.value != "track":
                 track = self.queue.next()
                 if track:
                     await self.play(track)
 
     async def prev(self) -> None:
         if self.current:
-            if self.queue.loop_mode != pomice.LoopMode.TRACK:
+            if self.queue.loop_mode.value != "track":
                 track = self.queue.prev()
                 if track:
                     await self.play(track)
@@ -187,14 +182,14 @@ class NoirPlayer(pomice.Player):
         if not self.current:
             return
         await super().set_pause(pause)
-        await self.update_bar_once()
+        await self.update_controller_once()
         await self.pub("pause", self._paused, position=self.position.__int__())
 
     # ==========================
 
     async def set_volume(self, volume: int) -> Coroutine[Any, Any, int]:
         value = await super().set_volume(volume)
-        await self.update_bar_once()
+        await self.update_controller_once()
         await self.pub("volume", value)
 
     async def volume_up(self) -> Coroutine[Any, Any, None]:
@@ -213,15 +208,15 @@ class NoirPlayer(pomice.Player):
 
     async def seek(self, position: float) -> Coroutine[Any, Any, float]:
         value = await super().seek(position)
-        await self.update_bar_once()
+        await self.update_controller_once()
         await self.pub("seek", value)
 
     async def destroy(self) -> Coroutine[Any, Any, None]:
-        if self.update_bar.is_running():  # Stop if running
-            self.update_bar.stop()
+        if self.update_controller.is_running():  # Stop if running
+            self.update_controller.stop()
 
         try:
-            await self.bar.delete()  # Delete text-bar
+            await self.controller.delete()  # Delete text-controller
         except BaseException:
             pass
 
@@ -237,11 +232,11 @@ class NoirPlayer(pomice.Player):
     # Обновление плеера
 
     async def refresh_init(self, force=False):
-        """Получает информацию с бд и переписывает `self`. В конце вызывается `update_bar_once(force=force)`"""
+        """Получает информацию с бд и переписывает `self`. В конце вызывается `update_controller_once(force=force)`"""
         params = self.bot.db.setup.get_setup(self.guild.id)
 
         if not params:
-            return await self.update_bar_once(force=force)
+            return await self.update_controller_once(force=force)
 
         try:
             self._webhook = await self.bot.fetch_webhook(params["webhook"]["id"])
@@ -264,7 +259,7 @@ class NoirPlayer(pomice.Player):
         except BaseException:
             pass
 
-        await self.update_bar_once(force=force)
+        await self.update_controller_once(force=force)
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Listener
@@ -309,9 +304,9 @@ class NoirPlayer(pomice.Player):
     #     return self._broker
 
     @property
-    def bar(self) -> disnake.WebhookMessage | disnake.Message:
+    def controller(self) -> disnake.WebhookMessage | disnake.Message:
         """Сообщение с саундбаром"""
-        return self.soundbar
+        return self.controller
 
     @property
     def color(self) -> int:

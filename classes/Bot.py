@@ -20,11 +20,11 @@ from spotipy.oauth2 import SpotifyClientCredentials
 from disnake.ext import commands
 import api
 
-from config import *
+from src.config import *
 
 import pomice
 from clients.database import Database
-from utils.build import Build
+from services.build.build import Build
 from utils.embeds import type_embed
 from utils.ex_load import *
 from utils.printer import *
