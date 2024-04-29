@@ -1,43 +1,40 @@
+import asyncio
 import configparser
 import json
 import logging
-import asyncio
-
-from redis.asyncio import Redis
-
 import traceback
 from typing import Any
 
 import disnake
-import quart
 import hypercorn
-
-from hypercorn.asyncio import serve
-
-from spotipy.oauth2 import SpotifyClientCredentials
+import quart
 
 # import sdc_api_py
 from disnake.ext import commands
-import api
+from hypercorn.asyncio import serve
+from redis.asyncio import Redis
+from spotipy.oauth2 import SpotifyClientCredentials
 
+import _logging
+import services.api as api
+import services.persiktunes as persiktunes
+from clients.database import Database
+from services.helpers.build import Build
+from services.helpers.embeds import type_embed
+from services.helpers.ex_load import cogsLoad, cogsReload
 from src.config import *
 
-import pomice
-from clients.database import Database
-from services.build.build import Build
-from utils.embeds import type_embed
-from utils.ex_load import *
-from utils.printer import *
+# import api
+
+
+# from services.build.build import Build
+# from utils.embeds import type_embed
 
 
 class NoirBot(commands.AutoShardedInteractionBot):
     """Кастомный класс Noir с включенными в него table, node и т.д."""
 
-    def __init__(
-            self,
-            *,
-            config: str = "noir.properties",
-            debug: bool = False) -> None:
+    def __init__(self, *, config: str = "noir.properties", debug: bool = False) -> None:
         # Debug or not
         self._debug = debug
 
@@ -63,17 +60,21 @@ class NoirBot(commands.AutoShardedInteractionBot):
         super().__init__(
             # sync_commands=True,
             command_sync_flags=sync,
-            shard_count=self._config.getint("launch", "shard_count")
-            if not self._debug
-            else self._config.getint("altlaunch", "shard_count"),
+            shard_count=(
+                self._config.getint("launch", "shard_count")
+                if not self._debug
+                else self._config.getint("altlaunch", "shard_count")
+            ),
             chunk_guilds_at_startup=False,
             status=disnake.Status.idle,
-            activity=disnake.Activity(name="noirplayer.su", type=disnake.ActivityType.listening),
+            activity=disnake.Activity(
+                name="noirplayer.su", type=disnake.ActivityType.listening
+            ),
             intents=intents,
         )
 
         # Pool
-        self._pool = pomice.NodePool()
+        self._pool = persiktunes.NodePool()
 
         # MongoDB
         self._db = Database()
@@ -85,28 +86,15 @@ class NoirBot(commands.AutoShardedInteractionBot):
         self._build = Build()
 
         # App server
-        # self._app = setup(bot=self)
+        self._app = setup(bot=self)
 
         # Jsons
-        self._errors = json.load(
-            open(
-                "json-obj/errors.json",
-                "r",
-                encoding="utf-8"))
-        self._hello = json.load(
-            open(
-                "embeds/hello.json",
-                "r",
-                encoding="utf-8"))
-        self._help = json.load(open("embeds/help.json", "r", encoding="utf-8"))
+        # self._errors = json.load(open("data/errors.json", "r", encoding="utf-8"))
+        # self._hello = json.load(open("data/embeds/hello.json", "r", encoding="utf-8"))
+        # self._help = json.load(open("data/embeds/help.json", "r", encoding="utf-8"))
 
         # Set logging
-        logging.basicConfig(
-            level=logging.INFO,
-            filename="latest.log",
-            filemode="w",
-            format="%(asctime)s %(levelname)s %(message)s",
-        )
+        self._log = _logging.get_logger("bot")
 
         # Setup
         self.setup()
@@ -118,30 +106,26 @@ class NoirBot(commands.AutoShardedInteractionBot):
     # Setup
 
     def setup(self):
-        lprint("Loading cogs", Color.blue)
+        self._log.info("Loading cogs")
 
         cogsLoad(self)
 
         if self._config.getboolean("launch", "sdc_api_enabled"):
-            lprint("Sending data to SD.C", Color.magenta)
+            self._log.info("Sending data to SD.C")
             try:
-                data = sdc_api_py.Bots(
-                    self, self._config.get(
-                        "tokens", "sdc_token"))
+                data = sdc_api_py.Bots(self, self._config.get("tokens", "sdc_token"))
                 data.create_loop()
             except BaseException:
                 pass
             else:
-                lprint("Loop created", Color.cyan)
-
-        lprint("Done", Color.green)
+                self._log.debug("Loop created")
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # App
 
     def serve_api(self):
 
-        lprint("Loading FastAPI", Color.blue, worker="APP")
+        self._log.info("Loading FastAPI")
 
         self._app = api.__init__(bot=self)
 
@@ -150,7 +134,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
             config.bind = ["0.0.0.0:5000"]
             config.use_reloader = True
 
-            lprint("Run in prodaction", Color.green, worker="APP")
+            self._log.info("Run in prodaction")
 
             asyncio.run(serve(self._app, config))
 
@@ -160,7 +144,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
             config.use_reloader = True
             config.debug = True
 
-            lprint("Run in debug", Color.green, worker="APP")
+            self._log.info("Run in debug")
 
             asyncio.run(serve(self._app, config))
 
@@ -169,11 +153,11 @@ class NoirBot(commands.AutoShardedInteractionBot):
 
     async def connect_nodes(self):
         """Connect to our Lavalink nodes."""
-        lprint("Waiting for ready...", Color.magenta)
+        self._log.debug("Waiting for ready...")
 
         await self.wait_until_ready()
 
-        lprint("Starting nodes", Color.magenta)
+        self._log.info("Starting nodes")
 
         try:
             self._node = await self._pool.create_node(
@@ -191,46 +175,40 @@ class NoirBot(commands.AutoShardedInteractionBot):
 
         except Exception as e:
             traceback.print_exc()
-            return lprint(f"Node was not created: {e}", Color.red, "ERROR")
+            return self._log.error(f"Node was not created: {e}")
 
-        lprint("Node created", Color.magenta)
+        self._log.info("Node created")
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Events
 
     async def on_ready(self):
-        lprint(f"Starting as {self.user} (ID: {self.user.id})", Color.magenta)
+        self._log.info(f"Starting as {self.user} (ID: {self.user.id})")
 
-        lprint("Player is ready")
-
-        logging.info("Player is ready")
+        self._log.info("Player is ready")
 
         if not self.pool.node_count:
             return
 
-        lprint("Checking for dead players...", Color.cyan, "CLEANER")
+        self._log.debug("Checking for dead players...")
 
         for player in list(self.node.players.values()):
             if player.is_dead or not player.is_connected:
                 try:
                     await player.destroy()
                 except BaseException:
-                    lprint(
-                        f"Player {player} is not cleaned",
-                        Color.cyan,
-                        "CLEANER")
+                    self._log.debug(f"Player {player} is not cleaned")
 
-        lprint("Cleanup done", Color.cyan, "CLEANER")
+        self._log.debug("Cleanup done")
 
     async def on_shard_connect(self, id):
-        lprint(f"Player connected | {id}")
-        logging.info(f"Player connected | {id}")
+        self._log.debug(f"Player connected | {id}")
 
     async def on_slash_command_error(self, inter: disnake.Interaction, error):
         if error is commands.CommandError or error is commands.CommandInvokeError:
             e = self._errors.get(
-                error.__cause__.__class__.__name__,
-                "Неизвестная ошибка. Простите...")
+                error.__cause__.__class__.__name__, "Неизвестная ошибка. Простите..."
+            )
         else:
             e = self._errors.get(
                 error.__class__.__name__, "Неизвестная ошибка. Простите..."
@@ -249,16 +227,10 @@ class NoirBot(commands.AutoShardedInteractionBot):
             ],
         )
 
-        logging.error(f"error in cmd:")
-        logging.error(traceback.format_exc())
+        self._log.error(f"Slash command error: {error}")
 
     async def on_error(self, event_method: str, *args: Any, **kwargs: Any) -> None:
-        lprint(f"Exception in event_method {event_method}", Color.red, "ERROR")
-        traceback.print_exc()
-        lprint(f"End of traceback", Color.red, "ERROR")
-
-        logging.error(f"error:")
-        logging.error(traceback.format_exc())
+        self._log.error(f"Exception in event_method {event_method}")
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Run & Stop
@@ -295,12 +267,12 @@ class NoirBot(commands.AutoShardedInteractionBot):
     # Properties
 
     @property
-    def pool(self) -> pomice.NodePool:
+    def pool(self) -> persiktunes.NodePool:
         """pomice.NodePool"""
         return self._pool
 
     @property
-    def node(self) -> pomice.Node:
+    def node(self) -> persiktunes.Node:
         """pomice.Node"""
         return self._pool.get_node()
 
@@ -323,18 +295,3 @@ class NoirBot(commands.AutoShardedInteractionBot):
     def build(self) -> Build:
         """Build class"""
         return self._build
-
-    @property
-    def errors(self) -> dict:
-        """Errors dict"""
-        return self._errors
-
-    @property
-    def help(self) -> dict:
-        """Help embed dict"""
-        return self._help
-
-    @property
-    def hello(self) -> dict:
-        """Hello embed dict"""
-        return self._hello

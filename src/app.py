@@ -1,24 +1,9 @@
 """
 The main file-loader for the Noir
-
-supports:
-- async input in terminal
-- change status
-- reload cogs without reload
-- logging
-- detection events:
-  - resume
-  - disconnect
-  - connect
-  - wrong token
-  - stopped
-
-Created by Persifox
 """
 
 import asyncio
 import threading
-import traceback
 
 import disnake
 import pomice
@@ -26,17 +11,13 @@ from colorama import Fore, Style
 from pyfiglet import Figlet
 
 from classes.Bot import NoirBot
-from services.helpers.printer import *
 
 print("loading...")
 
 
-# import sdc_api_py
-
-
 logo = Figlet(font="5lineoblique", width=250)
 
-lprint("libs & properties imported")
+print("libs & properties imported")
 print("-----------------------")
 print(f"Powered on {disnake.__name__} | version {disnake.__version__}")
 print(f"Music by   {pomice.__name__}  | version {pomice.__version__}")
@@ -52,14 +33,13 @@ try:
 
 except Exception as exp:
     if exp != KeyboardInterrupt:
-        lprint(f"Connection failed: {exp}", Color.red)
-        traceback.print_exc()
+        bot._log.critical(f"Connection failed: {exp}")
 
     else:
-        lprint(f"^C was triggered", Color.yellow)
+        bot._log.info(f"^C was triggered")
 
 finally:
-    lprint(f"Shutting down...", Color.blue)
+    bot._log.info(f"Shutting down...")
     asyncio.run_coroutine_threadsafe(bot.stop(), bot.loop)
-    lprint(f"See you later!", Color.magenta)
+    bot._log.info(f"See you later!")
     exit()
