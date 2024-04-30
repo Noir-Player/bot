@@ -4,13 +4,13 @@ from typing import Any, Coroutine
 import disnake
 from disnake.ext import tasks
 
-from classes.Player_view import state
-from classes.Queue import NoirQueue
-from clients.database import Database
-from cogs.components.buttons import Soundpad
+from components.buttons import Soundpad
+from components.ui.player import state
+from helpers.dump import Dump as Build
+from objects.queue import NoirQueue
+from services.database.core import Database
 
 from ..services import persiktunes
-from ..services.helpers.build import Build
 
 build = Build()
 db = Database()
