@@ -15,7 +15,7 @@ from validators.player import check_player_btn_decorator
 
 build = Build()
 
-errors = json.load(open("json-obj/errors.json", "r", encoding="utf-8"))
+errors = json.load(open("data/resources/errors.json", "r", encoding="utf-8"))
 
 filters = {
     "ChannelMix": pomice.ChannelMix(tag="mix"),
