@@ -8,9 +8,8 @@ from components.buttons import Soundpad
 from components.ui.player import state
 from helpers.dump import Dump as Build
 from objects.queue import NoirQueue
+from services import persiktunes
 from services.database.core import Database
-
-from ..services import persiktunes
 
 build = Build()
 db = Database()
@@ -23,8 +22,7 @@ class NoirPlayer(persiktunes.Player):
         super().__init__(*args, **kwargs)
 
         # Первоначальная настройка очереди
-        self._queue = NoirQueue(1000)
-        self._queue.set_player(self)
+        self._queue = NoirQueue(self, 1000)
 
         # Настройки по умолчанию
         self._controller = None
