@@ -1,5 +1,6 @@
 from disnake.ext import commands
-from classes.Exceptions import *
+
+from objects.exceptions import *
 
 # from classes.Player import NoirPlayer
 
@@ -38,8 +39,7 @@ def check_player_decorator(with_connection=False):
                 raise commands.BotMissingPermissions(["connect to voice"])
 
             if with_connection:  # если указано подключиться
-                params = inter.bot.db.setup.get_setup(
-                    inter.guild.id)  # поиск прав в бд
+                params = inter.bot.db.setup.get_setup(inter.guild.id)  # поиск прав в бд
 
                 if params:  # если есть требования к правам
                     if (
@@ -50,10 +50,9 @@ def check_player_decorator(with_connection=False):
                         )
                         and not inter.permissions.administrator
                     ):
-                        raise commands.MissingPermissions(
-                            ["setup or manage player"])
+                        raise commands.MissingPermissions(["setup or manage player"])
 
-                from classes.Player import (
+                from objects.player import (
                     NoirPlayer,
                 )  # предотвращает циркулярный импорт
 
@@ -78,8 +77,7 @@ def check_player_decorator(with_connection=False):
                     not player.dj_role in [role.id for role in inter.author.roles]
                     and not inter.permissions.administrator
                 ):
-                    raise commands.MissingPermissions(
-                        ["setup or manage player"])
+                    raise commands.MissingPermissions(["setup or manage player"])
 
             return True
 
@@ -95,9 +93,11 @@ def check_player_btn_decorator(with_message=False):
         async def wrapper(*args, **kwargs):
             inter = args[2]
 
-            await inter.response.defer(
-                ephemeral=True, with_message=True
-            ) if with_message else await inter.response.defer(ephemeral=True)
+            (
+                await inter.response.defer(ephemeral=True, with_message=True)
+                if with_message
+                else await inter.response.defer(ephemeral=True)
+            )
 
             node = inter.bot.node
 
@@ -117,8 +117,7 @@ def check_player_btn_decorator(with_message=False):
 
             else:  # Нуар уже в войсе
                 if inter.guild.voice_client.channel.id != inter.author.voice.channel.id:
-                    raise NoInVoiceWithMe(
-                        "Вам нужно быть в войсе вместе со мной")
+                    raise NoInVoiceWithMe("Вам нужно быть в войсе вместе со мной")
 
                 player = node.get_player(inter.guild_id)  # получаем плеер
 
@@ -127,8 +126,7 @@ def check_player_btn_decorator(with_message=False):
                         not player.dj_role in [role.id for role in inter.author.roles]
                         and not inter.permissions.administrator
                     ):
-                        raise commands.MissingPermissions(
-                            ["setup or manage player"])
+                        raise commands.MissingPermissions(["setup or manage player"])
 
                 return await func(*args, **kwargs)
 
