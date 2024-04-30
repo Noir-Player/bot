@@ -1,5 +1,6 @@
 from quart import render_template
-from classes.Router import Router
+
+from ..router import Router
 
 main = Router("main", __name__, static_folder="static")
 

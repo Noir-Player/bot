@@ -1,44 +1,46 @@
-from quart import render_template, session, redirect, request, websocket
-from clients.database import Database
-from classes.Router import Router
-
 import json
 
-setups = Router(
-    "setups",
-    __name__,
-    static_folder="static",
-    template_folder="templates")
+from quart import redirect, render_template, request, session, websocket
+
+from services.database.core import Database
+
+from ..router import Router
+
+setups = Router("setups", __name__, static_folder="static", template_folder="templates")
 
 db = Database()
 
 
-@setups.route('/me/servers', methods=['GET', 'POST'])
+@setups.route("/me/servers", methods=["GET", "POST"])
 async def main():
-    if not session.get('me') or not db.cache.get(int(session['me'].get('id'))):
-        return redirect('/oauth')
+    if not session.get("me") or not db.cache.get(int(session["me"].get("id"))):
+        return redirect("/oauth")
 
-    servers: dict = db.cache.get(session['me'].get('id')).get('guilds')
+    servers: dict = db.cache.get(session["me"].get("id")).get("guilds")
 
     # '403.html'), 403
-    return await render_template('main/servers.html', servers=servers, settings=None)
+    return await render_template("main/servers.html", servers=servers, settings=None)
+
 
 # ---------------------------------------------------------------------------------------------------------
 
 
-@setups.route('/me/servers/<int:server>')
+@setups.route("/me/servers/<int:server>")
 async def server(server):
-    if not session.get('me') or not db.cache.get(int(session['me'].get('id'))):
-        return redirect('/oauth')
+    if not session.get("me") or not db.cache.get(int(session["me"].get("id"))):
+        return redirect("/oauth")
 
-    servers: dict = db.cache.get(session['me'].get('id')).get('guilds')
+    servers: dict = db.cache.get(session["me"].get("id")).get("guilds")
 
-    local = [i for i in servers.get('same') if int(i.get('id')) == server]
+    local = [i for i in servers.get("same") if int(i.get("id")) == server]
 
     if not local:
-        return await render_template('errors/404.html'), 404
+        return await render_template("errors/404.html"), 404
 
-    return await render_template('main/server.html', server=local[0], settings=db.setup.get_setup(server))
+    return await render_template(
+        "main/server.html", server=local[0], settings=db.setup.get_setup(server)
+    )
+
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -54,7 +56,7 @@ async def server(server):
 
 #     if not form:
 #         return redirect('/me/servers')
-    
+
 #     db.setup.force_set(server, {
 #             "webhook.name": form.get("hook_name"),
 #             "webhook.icon": form.get("hook_icon"),
@@ -114,7 +116,6 @@ async def server(server):
 
 #     except BaseException:
 #         pass
-
 
 
 def setup(bot):

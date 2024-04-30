@@ -2,9 +2,10 @@ import pprint
 
 from quart import render_template, session
 
-from classes.Router import Router
-from clients.database import table
-from src.config import ADMIN_IDS
+from config import ADMIN_IDS
+from services.database.core import Database
+
+from ..router import Router
 
 manage = Router("admin", __name__, static_folder="static", template_folder="templates")
 
@@ -16,7 +17,7 @@ async def admin_users(collection):
 
     values = []
 
-    col = table(collection).find({})
+    col = Database().table(collection).find({})
 
     for value in col:
         pprinted_data = pprint.pformat(value)

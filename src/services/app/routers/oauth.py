@@ -3,9 +3,10 @@ import traceback
 from quart import make_response, redirect, request, session
 from requests_oauthlib import OAuth2Session
 
-from classes.Router import Router
-from clients.database import Database
-from src.config import *
+from config import *
+from services.database.core import Database
+
+from ..router import Router
 
 # ---------------------------------------------------------------------------------------------------------
 

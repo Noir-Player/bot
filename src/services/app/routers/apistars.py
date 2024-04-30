@@ -1,5 +1,4 @@
 import json
-import traceback
 
 import pomice
 from quart import request, session

@@ -1,9 +1,7 @@
-import asyncio
 import json
 import traceback
 
-import disnake
-from quart import make_response, redirect, request, session
+from quart import request, session
 
 from services.database.core import Database
 from services.database.models import *

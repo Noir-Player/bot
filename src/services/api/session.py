@@ -3,7 +3,7 @@ import uuid
 
 from redis.asyncio import Redis
 
-from src.config import *
+from config import *
 
 
 class Sessions:
