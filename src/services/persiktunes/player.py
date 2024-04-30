@@ -288,6 +288,8 @@ class Player(VoiceProtocol):
     async def connect(
         self,
         *,
+        timeout: float,
+        reconnect: bool,
         self_deaf: bool = True,
         self_mute: bool = False,
     ) -> None:
@@ -404,13 +406,6 @@ class Player(VoiceProtocol):
                 "Seek position must be between 0 and the track length",
             )
 
-        # await self._node.send(
-        #     method="PATCH",
-        #     path=self._player_endpoint_uri,
-        #     guild_id=self._guild.id,
-        #     data={"position": int(position)},
-        # )
-
         await self.rest.update_player(
             guild_id=self._guild.id,
             data={"position": int(position)},
@@ -421,12 +416,6 @@ class Player(VoiceProtocol):
 
     async def set_pause(self, pause: Optional[bool] = None) -> bool:
         """Sets the pause state of the currently playing track."""
-        # await self._node.send(
-        #     method="PATCH",
-        #     path=self._player_endpoint_uri,
-        #     guild_id=self._guild.id,
-        #     data={"paused": pause or not self._paused},
-        # )
         await self.rest.update_player(
             guild_id=self._guild.id,
             data={"paused": pause or not self._paused},
@@ -439,12 +428,6 @@ class Player(VoiceProtocol):
 
     async def set_volume(self, volume: int) -> int:
         """Sets the volume of the player as an integer. Lavalink accepts values from 0 to 500."""
-        # await self._node.send(
-        #     method="PATCH",
-        #     path=self._player_endpoint_uri,
-        #     guild_id=self._guild.id,
-        #     data={"volume": int(volume)},
-        # )
 
         await self.rest.update_player(guild_id=self._guild.id, data={"volume": volume})
 
@@ -481,17 +464,6 @@ class Player(VoiceProtocol):
         await self.seek(self.position)  # TODO: Find a better way to do this
 
         self._log.debug(f"Filter has been applied to player with tag {_filter.tag}")
-        # await self._node.send(
-        #     method="PATCH",
-        #     path=self._player_endpoint_uri,
-        #     guild_id=self._guild.id,
-        #     data={"filters": payload},
-        # )
-
-        # self._log.debug(f"Filter has been applied to player with tag {_filter.tag}")
-        # if fast_apply:
-        #     self._log.debug(f"Fast apply passed, now applying filter instantly.")
-        #     await self.seek(self.position)
 
         return self._filters
 
