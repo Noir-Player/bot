@@ -1,4 +1,5 @@
 from quart import render_template
+from router import App
 from routers.apiplaylists import apiplaylists
 from routers.apiservers import apiservers
 from routers.apistars import apistars
@@ -11,7 +12,6 @@ from routers.playlists import playlists
 from routers.setups import setups
 from routers.wsplayers import players
 
-from classes.Router import App
 from src.config import OAUTH2_CLIENT_SECRET
 
 
