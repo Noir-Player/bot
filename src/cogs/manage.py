@@ -186,7 +186,7 @@ best node:
             self.bot._log.debug(f"player on {player.guild.name} deleted")
 
             try:
-                await player.bar.delete()
+                await player.controller.delete()
             except BaseException:
                 pass
 
