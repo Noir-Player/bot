@@ -10,7 +10,7 @@ import pomice
 from colorama import Fore, Style
 from pyfiglet import Figlet
 
-from classes.Bot import NoirBot
+from objects.bot import NoirBot
 
 print("loading...")
 
@@ -29,7 +29,7 @@ bot = NoirBot(debug=True)
 
 try:
     threading.Thread(target=bot.run, name="bot").start()
-    bot.serve_api()
+    bot.serve_app()
 
 except Exception as exp:
     if exp != KeyboardInterrupt:

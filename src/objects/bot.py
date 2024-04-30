@@ -144,6 +144,32 @@ class NoirBot(commands.AutoShardedInteractionBot):
             asyncio.run(serve(self._app, config))
 
     # -------------------------------------------------------------------------------------------------------------------------------------
+    # App
+
+    def serve_app(self):
+
+        self._log.info("Loading Quart")
+
+        if not self._debug:
+            config = hypercorn.Config()
+            config.bind = ["0.0.0.0:5000"]
+            config.use_reloader = True
+
+            self._log.info("Run in prodaction")
+
+            asyncio.run(serve(self.app, config))
+
+        else:
+            config = hypercorn.Config()
+            config.bind = ["0.0.0.0:5001"]
+            config.use_reloader = True
+            config.debug = True
+
+            self._log.info("Run in debug")
+
+            asyncio.run(serve(self.app, config))
+
+    # -------------------------------------------------------------------------------------------------------------------------------------
     # Lavalink connection
 
     async def connect_nodes(self):
