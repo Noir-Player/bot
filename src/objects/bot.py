@@ -16,12 +16,12 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import _logging
 import services.api as api
 import services.persiktunes as persiktunes
+from config import *
 from helpers.dump import Dump as Build
 from helpers.embeds import type_embed
 from helpers.ex_load import cogsLoad, cogsReload
 from services.app import setup
 from services.database.core import Database
-from src.config import *
 
 # import api
 
@@ -187,7 +187,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
                 port=self._config.getint("lavapass", "port"),
                 password=self._config.get("lavapass", "pass"),
                 identifier="Noir",
-                log_level=logging.INFO,
+                log_level=logging.DEBUG,
                 spotify_credentials=SpotifyClientCredentials(
                     client_id=self._config.get("spotify", "client_id"),
                     client_secret=self._config.get("spotify", "client_secret"),
@@ -251,7 +251,9 @@ class NoirBot(commands.AutoShardedInteractionBot):
         self._log.error(f"Slash command error: {error}")
 
     async def on_error(self, event_method: str, *args: Any, **kwargs: Any) -> None:
-        self._log.error(f"Exception in event_method {event_method}")
+        self._log.error(
+            f"Exception in event_method {event_method}\n{traceback.format_exc()}"
+        )
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Run & Stop

@@ -58,7 +58,7 @@ class NoirQueue(Queue):
     async def set_loop_mode(self, mode: LoopMode | None) -> None:
         if self._queue:
             self._loop_mode = mode
-            await self.player.update_bar_once()
+            await self.player.update_controller_once()
             await self.update_state("loop", str(self.loop_mode.value))
 
     async def remove(self, item_or_index: Track | int) -> None:
