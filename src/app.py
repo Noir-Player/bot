@@ -2,6 +2,8 @@
 The main file-loader for the Noir
 """
 
+print("loading...")
+
 import asyncio
 import threading
 
@@ -11,9 +13,6 @@ from colorama import Fore, Style
 from pyfiglet import Figlet
 
 from objects.bot import NoirBot
-
-print("loading...")
-
 
 logo = Figlet(font="5lineoblique", width=250)
 
