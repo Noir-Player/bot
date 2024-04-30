@@ -1,9 +1,10 @@
 import disnake
 from disnake.interactions.modal import ModalInteraction
-from clients.database import Database, table
 
-from utils.embeds import genembed
+from helpers.embeds import genembed
+from services.database.core import Database
 
+db = Database().setup
 
 options = []
 
@@ -27,10 +28,9 @@ embed_descriptions = {
 for option in desc:
     options.append(
         disnake.SelectOption(
-            label=option[0],
-            description=option[1],
-            emoji=option[2],
-            value=option[3]))
+            label=option[0], description=option[1], emoji=option[2], value=option[3]
+        )
+    )
 
 colorpicker = []
 
@@ -89,9 +89,7 @@ class AuthorSetup(disnake.ui.View):
     @disnake.ui.role_select(placeholder="добавить роль", row=0, max_values=1)
     async def approved_roles(self, select, inter: disnake.Interaction):
         # table("guilds").update_one({"id": inter.guild_id}, {"$set": {"role" : inter.data.values[0]}}, upsert=True)
-        inter.bot.db.setup.set(
-            inter.guild_id, "role", int(
-                inter.data.values[0]))
+        inter.bot.db.setup.set(inter.guild_id, "role", int(inter.data.values[0]))
 
         player = self.node.get_player(inter.guild_id)
 
@@ -107,11 +105,7 @@ class AuthorSetup(disnake.ui.View):
         style=disnake.ButtonStyle.blurple,
     )
     async def leave(self, button, inter):
-        settings = (
-            table("guilds").find_one({"id": inter.guild.id})
-            if table("guilds").find_one({"id": inter.guild.id})
-            else {}
-        )
+        settings = db.get_setup(inter.guild.id) or {}
 
         await inter.response.edit_message(
             embed=disnake.Embed(
@@ -131,8 +125,7 @@ class AuthorSetup(disnake.ui.View):
             view=MainSetup(self.node),
         )
 
-    @disnake.ui.button(label="сбросить", row=1,
-                       style=disnake.ButtonStyle.blurple)
+    @disnake.ui.button(label="сбросить", row=1, style=disnake.ButtonStyle.blurple)
     async def approve_everyone(self, button, inter: disnake.Interaction):
         # table("guilds").update_one({"id": inter.guild_id}, {"$unset": {"role": 1}}, upsert=True)
         inter.bot.db.setup.set(inter.guild_id, "role")
@@ -158,11 +151,7 @@ class RadioSetup(disnake.ui.View):
         style=disnake.ButtonStyle.blurple,
     )
     async def leave(self, button, inter):
-        settings = (
-            table("guilds").find_one({"id": inter.guild.id})
-            if table("guilds").find_one({"id": inter.guild.id})
-            else {}
-        )
+        settings = db.get_setup(inter.guild.id) or {}
 
         await inter.response.edit_message(
             embed=disnake.Embed(
@@ -213,8 +202,7 @@ class SliderSetup(disnake.ui.View):
 
         self.node = node
 
-    @disnake.ui.string_select(placeholder="Цвет плеера",
-                              row=0, options=colorpicker)
+    @disnake.ui.string_select(placeholder="Цвет плеера", row=0, options=colorpicker)
     async def approve_channel(self, select, inter: disnake.Interaction):
         # table("guilds").update_one({"id": inter.guild_id}, {"$set": {"color": inter.data.values[0]}}, upsert=True)
         inter.bot.db.setup.set(inter.guild_id, "color", inter.data.values[0])
@@ -233,11 +221,7 @@ class SliderSetup(disnake.ui.View):
         style=disnake.ButtonStyle.blurple,
     )
     async def leave(self, button, inter):
-        settings = (
-            table("guilds").find_one({"id": inter.guild.id})
-            if table("guilds").find_one({"id": inter.guild.id})
-            else {}
-        )
+        settings = db.get_setup(inter.guild.id) or {}
 
         await inter.response.edit_message(
             embed=disnake.Embed(
@@ -286,10 +270,8 @@ class WebhookSetup(disnake.ui.Modal):
         ]
 
         super().__init__(
-            title=title,
-            components=components,
-            custom_id=custom_id,
-            timeout=timeout)
+            title=title, components=components, custom_id=custom_id, timeout=timeout
+        )
 
     async def callback(self, inter: ModalInteraction):
         await inter.response.defer(ephemeral=True)
@@ -306,8 +288,10 @@ class WebhookSetup(disnake.ui.Modal):
 
             # table("guilds").update_one({"id": inter.guild_id}, {"$set": {"webhook": id}}, upsert=True)
             inter.bot.db.setup.set(
-                inter.guild_id, "webhook", {
-                    "id": webhook.id, "name": webhook.name, "icon": webhook.avatar.url}, )
+                inter.guild_id,
+                "webhook",
+                {"id": webhook.id, "name": webhook.name, "icon": webhook.avatar.url},
+            )
         else:
             try:
                 webhook = await inter.bot.fetch_webhook(values[1])
@@ -316,8 +300,10 @@ class WebhookSetup(disnake.ui.Modal):
 
             # table("guilds").update_one({"id": inter.guild_id}, {"$set": {"webhook": webhook.id}}, upsert=True)
             inter.bot.db.setup.set(
-                inter.guild_id, "webhook", {
-                    "id": webhook.id, "name": webhook.name, "icon": webhook.avatar.url}, )
+                inter.guild_id,
+                "webhook",
+                {"id": webhook.id, "name": webhook.name, "icon": webhook.avatar.url},
+            )
 
         player = self.node.get_player(inter.guild_id)
 

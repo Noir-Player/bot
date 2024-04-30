@@ -1,13 +1,12 @@
-import disnake
-import pomice
 import json
 
-from cogs.components.ui.views import *
+import disnake
+import pomice
 
-from utils.embeds import *
-from classes.Exceptions import *
-from checks.check_player import check_player_btn_decorator
-
+from components.ui.views import *
+from helpers.embeds import *
+from objects.exceptions import *
+from validators.player import check_player_btn_decorator
 
 errors = json.load(open("json-obj/errors.json", "r", encoding="utf-8"))
 
@@ -33,8 +32,9 @@ class Soundpad(disnake.ui.View):
     #     logging.error(f'error in soundpad:')
     #     logging.error(traceback.format_exc())
 
-    @disnake.ui.button(emoji="<:prev:1110211620052942911>",
-                       row=0, style=disnake.ButtonStyle.blurple)
+    @disnake.ui.button(
+        emoji="<:prev:1110211620052942911>", row=0, style=disnake.ButtonStyle.blurple
+    )
     @check_player_btn_decorator()
     async def prev(self, button, interaction):
         # await check_voice(self.player, interaction)
@@ -44,8 +44,7 @@ class Soundpad(disnake.ui.View):
                 if track:
                     await self.player.play(track)
             else:
-                raise TrackIsLooping(
-                    "Нельзя пропускать звук, когда он зациклен")
+                raise TrackIsLooping("Нельзя пропускать звук, когда он зациклен")
 
     @disnake.ui.button(
         emoji="<:skipendcircle:1107270817932378162>",
@@ -85,8 +84,9 @@ class Soundpad(disnake.ui.View):
             view = QueueView(self.player)
             await view.refresh_pages(interaction)
 
-    @disnake.ui.button(emoji="<:repeat1:1107250320301629460>",
-                       row=1, style=disnake.ButtonStyle.blurple)
+    @disnake.ui.button(
+        emoji="<:repeat1:1107250320301629460>", row=1, style=disnake.ButtonStyle.blurple
+    )
     @check_player_btn_decorator()
     async def loop(self, button, interaction):
         # await check_voice(self.player, interaction)
@@ -118,8 +118,9 @@ class Soundpad(disnake.ui.View):
         # await check_voice(self.player, interaction)
         await self.player.volume_up()
 
-    @disnake.ui.button(emoji="<:threedots:1117080320261500940>",
-                       row=1, style=disnake.ButtonStyle.gray)
+    @disnake.ui.button(
+        emoji="<:threedots:1117080320261500940>", row=1, style=disnake.ButtonStyle.gray
+    )
     @check_player_btn_decorator()
     async def action(self, button, interaction):
         # await check_voice(self.player, interaction)
