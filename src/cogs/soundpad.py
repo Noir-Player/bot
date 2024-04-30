@@ -23,7 +23,7 @@ class SounpadCog(commands.Cog):
             return await ctx.send(
                 embed=type_embed(
                     "info",
-                    f"Сейчас плеер находится [здесь]({player.bar.jump_url})\nВы можете не видеть его, если не имеете прав.",
+                    f"Сейчас плеер находится [здесь]({player.controller.jump_url})\nВы можете не видеть его, если не имеете прав.",
                 ),
                 ephemeral=True,
             )
@@ -46,7 +46,7 @@ class SounpadCog(commands.Cog):
         player = self.bot.node.get_player(ctx.guild_id)
 
         if player:
-            await player.update_bar_once(True, ctx)
+            await player.update_controller_once(True, ctx)
         else:
             return await ctx.send(
                 embed=type_embed(
