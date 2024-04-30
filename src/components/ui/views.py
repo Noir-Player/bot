@@ -1,19 +1,17 @@
-import disnake
 import json
 import time
+
+import disnake
 import pomice
 import requests
-
-
-from services.helpers.embeds import *
-from disnake.ext.commands import Paginator
 from disnake import SelectOption
 from disnake.ext import commands
-from classes.Exceptions import *
+from disnake.ext.commands import Paginator
+
+from helpers.dump import Dump as Build
+from helpers.embeds import *
+from objects.exceptions import *
 from validators.player import check_player_btn_decorator
-
-from services.helpers.build import Build
-
 
 build = Build()
 
@@ -118,8 +116,9 @@ class ActionsView(disnake.ui.View):
         if not self.player.current.is_stream:
             track = self.player.current
             interaction.bot.db.stars.add_to_stars(
-                interaction.author.id, build.track(
-                    track.info, track.track_type.value, track.thumbnail), )
+                interaction.author.id,
+                build.track(track.info, track.track_type.value, track.thumbnail),
+            )
 
             await interaction.send(
                 embed=genembed(
@@ -212,8 +211,7 @@ class FiltersView(disnake.ui.View):
         if self.player.disable_eq:  # Если эквалайзер выключен
             self.eq._underlying.disabled = True
 
-    @disnake.ui.select(placeholder="фильтры",
-                       options=options, row=0, max_values=7)
+    @disnake.ui.select(placeholder="фильтры", options=options, row=0, max_values=7)
     async def eq(self, select: disnake.ui.StringSelect, inter):
         await self.player.reset_filters(fast_apply=True)
 
@@ -262,9 +260,11 @@ class QueueView(disnake.ui.View):
         if self.player.queue.is_empty:
             return await interaction.edit_original_message(
                 embed=genembed(
-                    title=f'Очередь пуста | Сейчас играет "{self.player.current.title}"'
-                    if self.player.current
-                    else "Очередь пуста | Ничего не играет",
+                    title=(
+                        f'Очередь пуста | Сейчас играет "{self.player.current.title}"'
+                        if self.player.current
+                        else "Очередь пуста | Ничего не играет"
+                    ),
                     description="",
                 )
             )
@@ -281,28 +281,40 @@ class QueueView(disnake.ui.View):
                 ind = ""
 
             self.pag.add_line(
-                f"{i + 1} -{ind} " +
-                val.title +
-                f" [{val.requester.display_name if val.requester else 'неизвестно'}]")
+                f"{i + 1} -{ind} "
+                + val.title
+                + f" [{val.requester.display_name if val.requester else 'неизвестно'}]"
+            )
 
             i += 1
             n += 1
 
         total = (
-            ((sum(
-                i.length for i in self.player.queue.get_queue()[
-                    self.player.queue.find_position(
-                        self.player.current):]) -
-              self.player.position) /
-             1000) if not self.player.queue.is_empty else 0)
+            (
+                (
+                    sum(
+                        i.length
+                        for i in self.player.queue.get_queue()[
+                            self.player.queue.find_position(self.player.current) :
+                        ]
+                    )
+                    - self.player.position
+                )
+                / 1000
+            )
+            if not self.player.queue.is_empty
+            else 0
+        )
 
         total = int(time.time() + total)
 
         await interaction.edit_original_message(
             embed=genembed(
-                title=f'Очередь | Сейчас играет "{self.player.current.title}"'
-                if self.player.current
-                else "Очередь | Ничего не играет",
+                title=(
+                    f'Очередь | Сейчас играет "{self.player.current.title}"'
+                    if self.player.current
+                    else "Очередь | Ничего не играет"
+                ),
                 description=self.pag.pages[self.index],
                 footer=f"page {self.index + 1}/{len(self.pag.pages)}",
             )
@@ -315,8 +327,9 @@ class QueueView(disnake.ui.View):
             view=self,
         )
 
-    @disnake.ui.button(emoji="<:prev:1110211620052942911>",
-                       row=0, style=disnake.ButtonStyle.blurple)
+    @disnake.ui.button(
+        emoji="<:prev:1110211620052942911>", row=0, style=disnake.ButtonStyle.blurple
+    )
     async def prev(self, button, interaction):
         await interaction.response.defer()
         if self.index > 0:
@@ -334,8 +347,9 @@ class QueueView(disnake.ui.View):
             self.index += 1
             return await self.refresh_pages(interaction)
 
-    @disnake.ui.button(emoji="<:shuffle:1107250313221640223>",
-                       row=0, style=disnake.ButtonStyle.blurple)
+    @disnake.ui.button(
+        emoji="<:shuffle:1107250313221640223>", row=0, style=disnake.ButtonStyle.blurple
+    )
     async def shuffle(self, button, interaction):
         await interaction.response.defer()
         await self.player.queue.shuffle()
@@ -368,7 +382,7 @@ class QueueView(disnake.ui.View):
             for track in self.player.queue.get_queue()
         ]
 
-        from cogs.components.ui.modals import PlaylistInfoModal
+        from components.ui.modals import PlaylistInfoModal
 
         await interaction.response.send_modal(
             PlaylistInfoModal(
@@ -408,8 +422,9 @@ class TracksView(disnake.ui.View):
 
         await interaction.edit_original_message(embed=embed, view=self)
 
-    @disnake.ui.button(emoji="<:prev:1110211620052942911>",
-                       row=0, style=disnake.ButtonStyle.blurple)
+    @disnake.ui.button(
+        emoji="<:prev:1110211620052942911>", row=0, style=disnake.ButtonStyle.blurple
+    )
     async def prev(self, button, interaction):
         await interaction.response.defer()
         if self.index > 0:
@@ -485,8 +500,9 @@ class StarsView(disnake.ui.View):
 
         await interaction.edit_original_message(embed=embed, view=self)
 
-    @disnake.ui.button(emoji="<:prev:1110211620052942911>",
-                       row=0, style=disnake.ButtonStyle.blurple)
+    @disnake.ui.button(
+        emoji="<:prev:1110211620052942911>", row=0, style=disnake.ButtonStyle.blurple
+    )
     async def prev(self, button, interaction):
         await interaction.response.defer()
         if self.index > 0:
@@ -532,8 +548,9 @@ class StarsView(disnake.ui.View):
         interaction.bot.db.stars.remove_from_stars(
             self.songs[self.index].get("url"), interaction.author.id
         )
-        self.songs = interaction.bot.db.stars.get_stars(
-            interaction.author.id).get("tracks")
+        self.songs = interaction.bot.db.stars.get_stars(interaction.author.id).get(
+            "tracks"
+        )
 
         if self.index + 1 >= len(self.songs):
             self.index -= 1
@@ -565,7 +582,9 @@ class PlaylistView(disnake.ui.View):
             or requests.head(info.get("thumbnail")).status_code != requests.codes.ok
         ):  # Если это не ссылка или ссылка невалидная
             # Заменяем обложку, если ее нет
-            info["thumbnail"] = "https://cataas.com/cat/says/Обложка%20не%20найдена?type=square&width=500"
+            info["thumbnail"] = (
+                "https://cataas.com/cat/says/Обложка%20не%20найдена?type=square&width=500"
+            )
 
         if not edit:  # Если недоступно изменение плейлиста
             self.remove_item(self.add_to_playlist)
@@ -590,16 +609,13 @@ class PlaylistView(disnake.ui.View):
             self.songs = interaction.bot.db.playlists.get_playlist(self.uuid)
             embed = genembed(
                 title=self.info.get("title"),
-                description=self.info.get(
-                    "description",
-                    "") +
-                "\n\nСвайпните на <:skipforward:1107250322801442877>, чтобы посмотреть треки",
+                description=self.info.get("description", "")
+                + "\n\nСвайпните на <:skipforward:1107250322801442877>, чтобы посмотреть треки",
                 image=self.info.get("thumbnail"),
                 author_name=None,
                 footer=f"{'публичный плейлист' if self.info.get('public') else 'приватный плейлист'} | {', '.join(self.info.get('tags', []) if self.info.get('tags') else [])}",
             )
-            embed.add_field(
-                "Автор", f"`{self.info.get('author', {}).get('name')}`")
+            embed.add_field("Автор", f"`{self.info.get('author', {}).get('name')}`")
             embed.add_field(
                 "Треки",
                 f"{f'`{len(self.songs)}`' if self.songs else 'Добавьте с помощью <:pluscircle:1118459100150378550>'}",
@@ -622,12 +638,12 @@ class PlaylistView(disnake.ui.View):
             embed.set_image("https://noirplayer.su/static/image/nocover.png")
             await interaction.edit_original_message(embed=embed, view=self)
 
-    @disnake.ui.button(emoji="<:prev:1110211620052942911>",
-                       row=0, style=disnake.ButtonStyle.blurple)
+    @disnake.ui.button(
+        emoji="<:prev:1110211620052942911>", row=0, style=disnake.ButtonStyle.blurple
+    )
     async def prev(self, button, interaction):
         await interaction.response.defer()
-        self.songs = interaction.bot.db.playlists.get_playlist(
-            self.uuid).get("tracks")
+        self.songs = interaction.bot.db.playlists.get_playlist(self.uuid).get("tracks")
         if self.index > 0:
             self.index -= 1
             return await self.refresh_pages(interaction)
@@ -639,14 +655,14 @@ class PlaylistView(disnake.ui.View):
     )
     async def next(self, button, interaction):
         await interaction.response.defer()
-        self.songs = interaction.bot.db.playlists.get_playlist(
-            self.uuid).get("tracks")
+        self.songs = interaction.bot.db.playlists.get_playlist(self.uuid).get("tracks")
         if (self.index) < (len(self.songs) if self.songs else 0):
             self.index += 1
             return await self.refresh_pages(interaction)
 
-    @disnake.ui.button(emoji="<:trash3:1117078782096982037>",
-                       row=0, style=disnake.ButtonStyle.blurple)
+    @disnake.ui.button(
+        emoji="<:trash3:1117078782096982037>", row=0, style=disnake.ButtonStyle.blurple
+    )
     async def delete_from_playlist(self, button, interaction):
         await interaction.response.defer()
 
@@ -667,7 +683,7 @@ class PlaylistView(disnake.ui.View):
         style=disnake.ButtonStyle.blurple,
     )
     async def add_to_playlist(self, button, interaction):
-        from cogs.components.ui.modals import AddToPlaylist
+        from components.ui.modals import AddToPlaylist
 
         await interaction.response.send_modal(AddToPlaylist(self.node, self, self.uuid))
         await interaction.delete_original_message()

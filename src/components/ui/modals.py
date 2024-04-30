@@ -1,14 +1,12 @@
+import uuid as generate_id
+
 import disnake
-import pomice
 from disnake.interactions.modal import ModalInteraction
 
-from services.helpers.embeds import genembed, type_embed
-
-
-from clients.database import Database
-from services.helpers.build import Build
-
-import uuid as generate_id
+import services.persiktunes as persik
+from helpers.dump import Dump as Build
+from helpers.embeds import genembed, type_embed
+from services.database.core import Database
 
 build = Build()
 db = Database()
@@ -37,10 +35,8 @@ class AddMultiple(disnake.ui.Modal):
         ]
 
         super().__init__(
-            title=title,
-            components=components,
-            custom_id=custom_id,
-            timeout=timeout)
+            title=title, components=components, custom_id=custom_id, timeout=timeout
+        )
 
     async def callback(self, inter):
         await inter.response.defer(ephemeral=True)
@@ -50,13 +46,13 @@ class AddMultiple(disnake.ui.Modal):
         for val in values.split("; "):
             try:
                 query = await self.player.get_tracks(
-                    query=val, ctx=inter, search_type=pomice.SearchType.ytmsearch
+                    query=val, ctx=inter, search_type=persik.SearchType.ytmsearch
                 )
             except BaseException:
                 query = None
 
             if query:
-                if isinstance(query, pomice.Playlist):
+                if isinstance(query, persik.Playlist):
                     await self.player.queue.put_list(query.tracks)
 
                     if not self.player.current and not self.player.queue.is_empty:
@@ -103,10 +99,8 @@ class AddToPlaylist(disnake.ui.Modal):
         ]
 
         super().__init__(
-            title=title,
-            components=components,
-            custom_id=custom_id,
-            timeout=timeout)
+            title=title, components=components, custom_id=custom_id, timeout=timeout
+        )
 
     async def callback(self, inter):
         await inter.response.defer(ephemeral=True)
@@ -116,25 +110,25 @@ class AddToPlaylist(disnake.ui.Modal):
         for val in values.split("; "):
             try:
                 query = await self.node.get_tracks(
-                    query=val, ctx=inter, search_type=pomice.SearchType.spsearch
+                    query=val, ctx=inter, search_type=persik.SearchType.spsearch
                 )
             except BaseException:
                 query = None
 
             if query:
-                if isinstance(query, pomice.Playlist):
+                if isinstance(query, persik.Playlist):
                     for track in query.tracks:
                         result.append(
                             build.track(
-                                track.info,
-                                track.track_type.value,
-                                track.thumbnail))
+                                track.info, track.track_type.value, track.thumbnail
+                            )
+                        )
                 else:
                     result.append(
                         build.track(
-                            query[0].info,
-                            query[0].track_type.value,
-                            query[0].thumbnail))
+                            query[0].info, query[0].track_type.value, query[0].thumbnail
+                        )
+                    )
             else:
                 await inter.edit_original_message(
                     embed=genembed(
@@ -143,9 +137,7 @@ class AddToPlaylist(disnake.ui.Modal):
                     )
                 )
 
-            db.playlists.add_to_playlist(
-                self.uuid, inter.author.id, {
-                    "$each": result})
+            db.playlists.add_to_playlist(self.uuid, inter.author.id, {"$each": result})
 
             await self.playlistview.refresh_pages(inter)
 
@@ -167,8 +159,7 @@ class PlaylistInfoModal(disnake.ui.Modal):
         self.forked = forked
         self.tracks = tracks
 
-        values = db.playlists.table.find_one(
-            {"uuid": self.uuid}) if uuid else {}
+        values = db.playlists.table.find_one({"uuid": self.uuid}) if uuid else {}
 
         components = [
             disnake.ui.TextInput(
@@ -209,10 +200,8 @@ class PlaylistInfoModal(disnake.ui.Modal):
         #     components.remove(components.remove(components[2]))
 
         super().__init__(
-            title=title,
-            components=components,
-            custom_id=custom_id,
-            timeout=timeout)
+            title=title, components=components, custom_id=custom_id, timeout=timeout
+        )
 
     async def callback(self, interaction: ModalInteraction):
         await interaction.response.defer(ephemeral=True)
@@ -227,9 +216,11 @@ class PlaylistInfoModal(disnake.ui.Modal):
                 "public": bool(values.get("public")),
                 "tracks": self.tracks,
                 "author": {
-                    "name": interaction.author.name
-                    if not int(interaction.author.discriminator)
-                    else f"{interaction.author.name}#{interaction.author.discriminator}",
+                    "name": (
+                        interaction.author.name
+                        if not int(interaction.author.discriminator)
+                        else f"{interaction.author.name}#{interaction.author.discriminator}"
+                    ),
                     "id": interaction.author.id,
                 },
             }
@@ -244,11 +235,11 @@ class PlaylistInfoModal(disnake.ui.Modal):
             self.uuid = str(generate_id.uuid4())
 
         if not values.get("$set").get("title") or not db.playlists.table.find_one(
-                {"title": values.get("$set", {}).get("title")}):
-            db.playlists.table.update_one(
-                {"uuid": self.uuid}, values, upsert=True)
+            {"title": values.get("$set", {}).get("title")}
+        ):
+            db.playlists.table.update_one({"uuid": self.uuid}, values, upsert=True)
 
-            from cogs.components.ui.views import PlaylistView
+            from components.ui.views import PlaylistView
 
             view = PlaylistView(
                 db.playlists.table.find_one({"uuid": self.uuid}), self.node
