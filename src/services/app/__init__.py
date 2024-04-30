@@ -1,18 +1,18 @@
 from quart import render_template
-from router import App
-from routers.apiplaylists import apiplaylists
-from routers.apiservers import apiservers
-from routers.apistars import apistars
-from routers.apiusers import apiusers
-from routers.main import main
-from routers.manage import manage
-from routers.me import me
-from routers.oauth import oauth
-from routers.playlists import playlists
-from routers.setups import setups
-from routers.wsplayers import players
 
-from src.config import OAUTH2_CLIENT_SECRET
+from config import OAUTH2_CLIENT_SECRET
+from services.app.router import App
+from services.app.routers.apiplaylists import apiplaylists
+from services.app.routers.apiservers import apiservers
+from services.app.routers.apistars import apistars
+from services.app.routers.apiusers import apiusers
+from services.app.routers.main import main
+from services.app.routers.manage import manage
+from services.app.routers.me import me
+from services.app.routers.oauth import oauth
+from services.app.routers.playlists import playlists
+from services.app.routers.setups import setups
+from services.app.routers.wsplayers import players
 
 
 def setup(bot) -> App:

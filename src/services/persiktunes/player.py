@@ -12,8 +12,7 @@ from typing import Any, Dict, Optional
 from disnake import Client, Guild, VoiceChannel, VoiceProtocol
 
 from . import events
-from .events import PersikEvent, TrackEndEvent, TrackStartEvent
-from .exceptions import TrackInvalidPosition, TrackLoadError
+from .exceptions import TrackInvalidPosition
 from .filters import Filter, Filters, Timescale
 
 # from .objects import Playlist, Track
@@ -245,9 +244,9 @@ class Player(VoiceProtocol):
 
     async def _dispatch_event(self, data: dict) -> None:
         event_type: str = data["type"]
-        event: PersikEvent = getattr(events, event_type)(data, self)
+        event: events.PersikEvent = getattr(events, event_type)(data, self)
 
-        if isinstance(event, TrackEndEvent) and event.reason not in (
+        if isinstance(event, events.TrackEndEvent) and event.reason not in (
             "REPLACED",
             "replaced",
         ):
@@ -255,7 +254,7 @@ class Player(VoiceProtocol):
 
         event.dispatch(self._bot)
 
-        if isinstance(event, TrackStartEvent):
+        if isinstance(event, events.TrackStartEvent):
             self._ending_track = self._current
 
         self._log.debug(f"Dispatched event {data['type']} to player.")

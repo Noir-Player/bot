@@ -1,9 +1,9 @@
 import uuid
 
-import api.routers as routers
 from fastapi import FastAPI
 
-from src.config import UUID_STRING
+import services.api.routers as routers
+from config import UUID_STRING
 
 
 class NoirAPI(FastAPI):

@@ -5,20 +5,20 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Union
 import aiohttp
 from disnake import Interaction, Member, User
 from disnake.ext import commands
-from enums import *
-from exceptions import NodeNotAvailable, NodeRestException
-from models.restapi import *
-from models.ws import *
-from persiktunes import __version__
-from pool import Node
-from utils import LavalinkVersion
+
+from .. import __version__
+from ..enums import *
+from ..exceptions import NodeNotAvailable, NodeRestException
+from ..models.restapi import *
+from ..models.ws import *
+from ..utils import LavalinkVersion
 
 
 class LavalinkRest:
     def __init__(
         self,
         *,
-        node: Node,
+        node: Any,
         host: str,
         port: int,
         password: str,

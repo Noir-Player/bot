@@ -3,18 +3,17 @@ import json
 import logging
 import random
 import time
-from typing import Callable, Optional, Type
+from typing import Any, Callable, Optional
 
 import aiohttp
 from disnake.ext import commands
-from enums import LogLevel
-from exceptions import NodeConnectionFailure
-from models.ws import *
-from pool import Node
-from utils import ExponentialBackoff, LavalinkVersion
 from websockets import client, exceptions
 
-from persiktunes import __version__
+from .. import __version__
+from ..enums import LogLevel
+from ..exceptions import NodeConnectionFailure
+from ..models.ws import *
+from ..utils import ExponentialBackoff, LavalinkVersion
 
 
 class LavalinkWebsocket:
@@ -26,7 +25,7 @@ class LavalinkWebsocket:
     def __init__(
         self,
         *,
-        node: Type[Node],
+        node: Any,
         host: str,
         port: int,
         password: str,
@@ -69,7 +68,7 @@ class LavalinkWebsocket:
             None
         """
 
-        self._node: Type[Node] = node
+        self._node: Any = node
 
         self._bot: commands.Bot = node.bot
 
