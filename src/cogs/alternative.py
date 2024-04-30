@@ -3,11 +3,10 @@ from datetime import datetime
 from disnake.ext import commands
 
 from components.ui.player import state
+from components.ui.views import ActionsView, FiltersView, QueueView
 from objects.bot import NoirBot
 from objects.exceptions import InvalidIndex
-
-from ..components.ui.views import ActionsView, FiltersView, QueueView
-from ..validators.player import check_player_decorator
+from validators.player import check_player_decorator
 
 
 class AlternativeCog(commands.Cog):
@@ -97,7 +96,7 @@ class AlternativeCog(commands.Cog):
         mseconnds = self._calculate_seconds(timecode)
         if mseconnds:
             await player.seek(mseconnds * 1000)
-            await player.update_bar_once()
+            await player.update_controller_once()
         await ctx.delete_original_message()
 
     @check_player_decorator()
@@ -107,7 +106,7 @@ class AlternativeCog(commands.Cog):
     ):
         player = self.bot.node.get_player(ctx.guild_id)
         await player.seek(player.position + float(seconds * 1000))
-        await player.update_bar_once()
+        await player.update_controller_once()
         await ctx.delete_original_message()
 
     @check_player_decorator()
