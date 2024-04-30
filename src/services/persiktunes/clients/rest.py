@@ -17,18 +17,14 @@ from ..utils import LavalinkVersion
 class LavalinkRest:
     def __init__(
         self,
-        *,
         node: Any,
         host: str,
         port: int,
         password: str,
         user_id: int,
         secure: bool = False,
-        loop: Optional[asyncio.AbstractEventLoop] = None,
         session: Optional[aiohttp.ClientSession] = None,
-        fallback: bool = False,
         log_level: LogLevel = LogLevel.INFO,
-        log_handler: Optional[logging.Handler] = None,
         setup_logging: Optional[Callable] = None,
     ):
         if not isinstance(port, int):
@@ -37,19 +33,15 @@ class LavalinkRest:
         self._host: str = host
         self._port: int = port
         self._password: str = password
-        self._fallback: bool = fallback
         self._log_level: LogLevel = log_level
-        self._log_handler = log_handler
 
         self._secure = secure
 
         self.node = node
 
         self._session: aiohttp.ClientSession = session  # type: ignore
-        self._loop: asyncio.AbstractEventLoop = loop or asyncio.get_event_loop()
 
         self._session_id: Optional[str] = None
-        self._available: bool = False
         self._version: LavalinkVersion = LavalinkVersion(0, 0, 0)
 
         self._log = (
@@ -65,8 +57,8 @@ class LavalinkRest:
         self.user_id = user_id
 
         self._headers = {
-            "Authorization": self._password,
-            "User-Id": self.user_id,
+            "Authorization": f"{self._password}",
+            "User-Id": f"{self.user_id}",
             "Client-Name": f"PersikTunes/{__version__}",
         }
 
