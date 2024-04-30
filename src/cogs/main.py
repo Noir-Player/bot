@@ -15,12 +15,12 @@ from validators.player import check_player_decorator
 """Список станций по json"""
 
 RadioNames = list(
-    dict(json.load(open("json-obj/radio.json", "r", encoding="utf-8")))[
+    dict(json.load(open("data/resources/radio.json", "r", encoding="utf-8")))[
         "Зайцев.FM"
     ].keys()
 )
 RadioUrls = list(
-    dict(json.load(open("json-obj/radio.json", "r", encoding="utf-8")))[
+    dict(json.load(open("data/resources/radio.json", "r", encoding="utf-8")))[
         "Зайцев.FM"
     ].values()
 )
@@ -36,23 +36,23 @@ class Music(commands.Cog):
 
     @commands.Cog.listener()
     async def on_pomice_track_start(self, player: NoirPlayer, track: pomice.Track):
-        await player.edit_bar(track.ctx)
+        await player.edit_controller(track.ctx)
 
-        if player.update_bar.is_running():
-            player.update_bar.restart()
+        if player.update_controller.is_running():
+            player.update_controller.restart()
         else:
-            player.update_bar.start()
+            player.update_controller.start()
 
         if not track.is_stream:
             try:
-                player.update_bar.change_interval(
+                player.update_controller.change_interval(
                     minutes=(track.length / 1000 / 60 / 20)
                 )
             except BaseException:
                 pass
         else:
             try:
-                player.update_bar.stop()
+                player.update_controller.stop()
             except BaseException:
                 pass
 
@@ -64,7 +64,7 @@ class Music(commands.Cog):
     async def on_pomice_track_end(
         self, player: NoirPlayer, track: pomice.Track, reason
     ):
-        player.update_bar.stop()  # останавливаем обновление плеера
+        player.update_controller.stop()  # останавливаем обновление плеера
 
         if not player.queue.is_empty and reason in [
             "FINISHED",
@@ -81,7 +81,7 @@ class Music(commands.Cog):
 
         await player.queue.clear()
 
-        return await player.edit_bar(
+        return await player.edit_controller(
             track.ctx,
             embed=type_embed(
                 type="info",
