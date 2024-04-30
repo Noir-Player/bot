@@ -2,9 +2,9 @@ from datetime import datetime
 
 from disnake.ext import commands
 
-from classes.Bot import NoirBot
-from classes.Exceptions import InvalidIndex
-from classes.Player_view import state
+from components.ui.player import state
+from objects.bot import NoirBot
+from objects.exceptions import InvalidIndex
 
 from ..components.ui.views import ActionsView, FiltersView, QueueView
 from ..validators.player import check_player_decorator

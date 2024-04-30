@@ -1,14 +1,14 @@
-from disnake.ext import commands
-from classes.Bot import NoirBot
-from classes.Player import NoirPlayer
-import disnake
 import json
-import pomice
-import threading as th
 import logging
+import threading as th
 import traceback
 
-from utils.printer import *
+import disnake
+import pomice
+from disnake.ext import commands
+
+from objects.bot import NoirBot
+from objects.player import NoirPlayer
 
 
 class Fetcher(commands.Cog):
@@ -51,11 +51,7 @@ class Fetcher(commands.Cog):
             try:
                 return await player.destroy()
             except Exception as e:
-                lprint(f"Exception", Color.red, "ERROR")
-                traceback.print_exc()
-                lprint(f"End of traceback", Color.red, "ERROR")
-                logging.error(f"error fetcher:")
-                logging.error(traceback.format_exc())
+                self.bot._log.error(traceback.format_exc())
                 return
 
         if (
@@ -102,11 +98,7 @@ class Fetcher(commands.Cog):
             return None
 
         except Exception as e:
-            lprint(f"Exception", Color.red, "ERROR")
-            traceback.print_exc()
-            lprint(f"End of traceback", Color.red, "ERROR")
-            logging.error(f"error fetcher:")
-            logging.error(traceback.format_exc())
+            self.bot._log.error(traceback.format_exc())
             raise e
 
     async def server(self, user) -> int | None:
@@ -126,11 +118,7 @@ class Fetcher(commands.Cog):
             return None
 
         except Exception as e:
-            lprint(f"Exception", Color.red, "ERROR")
-            traceback.print_exc()
-            lprint(f"End of traceback", Color.red, "ERROR")
-            logging.error(f"error fetcher:")
-            logging.error(traceback.format_exc())
+            self.bot._log.error(traceback.format_exc())
             raise e
 
     async def voice(self, user):
@@ -149,11 +137,7 @@ class Fetcher(commands.Cog):
 
             return None
         except Exception as e:
-            lprint(f"Exception", Color.red, "ERROR")
-            traceback.print_exc()
-            lprint(f"End of traceback", Color.red, "ERROR")
-            logging.error(f"error fetcher:")
-            logging.error(traceback.format_exc())
+            self.bot._log.error(traceback.format_exc())
             raise e
 
     # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -193,11 +177,7 @@ class Fetcher(commands.Cog):
                     )
 
             except Exception as e:
-                lprint(f"Exception", Color.red, "ERROR")
-                traceback.print_exc()
-                lprint(f"End of traceback", Color.red, "ERROR")
-                logging.error(f"error fetcher:")
-                logging.error(traceback.format_exc())
+                self.bot._log.error(traceback.format_exc())
                 raise e
 
     # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

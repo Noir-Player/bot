@@ -1,14 +1,12 @@
-import disnake
 import asyncio
 
-from classes.Exceptions import *
+import disnake
 from disnake.ext import commands
-from utils.embeds import *
 
-from classes.Bot import NoirBot
-
-from cogs.components.ui.modals import *
-from cogs.components.ui.views import PlaylistView
+from components.ui.modals import *
+from components.ui.views import PlaylistView
+from objects.bot import NoirBot
+from objects.exceptions import *
 
 
 class Playlists(commands.Cog):
@@ -35,8 +33,8 @@ class Playlists(commands.Cog):
         await ctx.response.defer(ephemeral=True)
         result = self.bot.db.playlists.table.find_one({"uuid": playlist})
         view = PlaylistView(
-            result, self.bot.node, edit=(
-                result["author"]["id"] == ctx.author.id))
+            result, self.bot.node, edit=(result["author"]["id"] == ctx.author.id)
+        )
         await view.refresh_pages(ctx)
 
     @view.autocomplete("playlist")
@@ -129,13 +127,7 @@ class Playlists(commands.Cog):
         except BaseException:
             pass
         else:
-            self.bot.db.playlists.delete_playlist(
-                playlist.get("uuid"), ctx.author.id)
-            # if playlist['author']['id'] == ctx.author.id:
-            #     table("playlists").delete_one({"uuid": playlist})
-
-            # elif ctx.author.id in playlist.get('forked'):
-            #     table("playlists").update_one({"uuid": playlist['uuid']}, {"$pull": {"forked": ctx.author.id}})
+            self.bot.db.playlists.delete_playlist(playlist.get("uuid"), ctx.author.id)
 
         await ctx.delete_original_response()
 
@@ -191,8 +183,7 @@ class Playlists(commands.Cog):
         except BaseException:
             pass
         else:
-            self.bot.db.playlists.clear_playlist(
-                playlist.get("uuid"), ctx.author.id)
+            self.bot.db.playlists.clear_playlist(playlist.get("uuid"), ctx.author.id)
 
         await ctx.delete_original_response()
 

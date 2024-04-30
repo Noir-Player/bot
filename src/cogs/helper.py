@@ -1,8 +1,8 @@
-from disnake.ext import commands
-from utils.embeds import genembed
-from classes.Bot import NoirBot
-
 import disnake
+from disnake.ext import commands
+
+from helpers.embeds import genembed
+from objects.bot import NoirBot
 
 
 class Help(commands.Cog):
@@ -15,9 +15,7 @@ class Help(commands.Cog):
     async def on_guild_join(self, guild: disnake.Guild):
         f = self.bot.hello
 
-        embed = disnake.Embed(
-            description=f.get("description"),
-            color=f.get("color"))
+        embed = disnake.Embed(description=f.get("description"), color=f.get("color"))
 
         embed.set_author(
             name=f.get("author").get("name"),
@@ -26,8 +24,8 @@ class Help(commands.Cog):
         )
 
         embed.set_footer(
-            text=f.get("footer").get("text"),
-            icon_url=f.get("footer").get("icon_url"))
+            text=f.get("footer").get("text"), icon_url=f.get("footer").get("icon_url")
+        )
 
         embed.set_image(f.get("image").get("url"))
 
@@ -92,15 +90,12 @@ class Help(commands.Cog):
 
         for field in f.get("fields"):
             embed.add_field(
-                field.get("name"),
-                field.get("value"),
-                inline=field.get(
-                    "inline",
-                    False))
+                field.get("name"), field.get("value"), inline=field.get("inline", False)
+            )
 
         embed.set_footer(
-            text=f.get("footer").get("text"),
-            icon_url=f.get("footer").get("icon_url"))
+            text=f.get("footer").get("text"), icon_url=f.get("footer").get("icon_url")
+        )
 
         embed.set_image(f.get("image").get("url"))
 

@@ -1,17 +1,16 @@
 import json
+
 import disnake
 import pomice
 from disnake.ext import commands
-from classes.Bot import NoirBot
 
-from classes.Exceptions import *
-from classes.Player import NoirPlayer
-from checks.check_player import check_player_decorator
-from cogs.components.ui.modals import AddMultiple
-from cogs.components.ui.views import StarsView
-from utils.embeds import *
-from utils.printer import *
-
+from components.ui.modals import AddMultiple
+from components.ui.views import StarsView
+from helpers.embeds import *
+from objects.bot import NoirBot
+from objects.exceptions import *
+from objects.player import NoirPlayer
+from validators.player import check_player_decorator
 
 """Список станций по json"""
 
@@ -228,8 +227,9 @@ class Music(commands.Cog):
                     if len(f"{track.author} - {track.title}") <= 100:
                         list.append(
                             disnake.OptionChoice(
-                                name=f"{track.author} - {track.title}",
-                                value=track.uri))
+                                name=f"{track.author} - {track.title}", value=track.uri
+                            )
+                        )
 
         return list
 
@@ -296,10 +296,12 @@ class Music(commands.Cog):
 
         if playlist.get("tracks"):
             items = []
-            
+
             for track in playlist.get("tracks"):
                 try:
-                    query = (await player.get_tracks(query=track.get("url"), ctx=ctx))[0]
+                    query = (await player.get_tracks(query=track.get("url"), ctx=ctx))[
+                        0
+                    ]
 
                     if (
                         not player.current
@@ -309,12 +311,11 @@ class Music(commands.Cog):
 
                     else:
                         items.append(query)
-                        
+
                 except:
                     continue
 
             await player.queue.put_list(items)
-               
 
         else:
             return await ctx.edit_original_message(
@@ -325,8 +326,7 @@ class Music(commands.Cog):
 
     @playlist.autocomplete("playlist")
     async def autoplaylist(self, inter, user_input):
-        results, list = self.bot.db.playlists.get_user_playlists(
-            inter.author.id), []
+        results, list = self.bot.db.playlists.get_user_playlists(inter.author.id), []
 
         for playlist in results:
             list.append(

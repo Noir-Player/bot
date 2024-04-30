@@ -1,17 +1,15 @@
+import configparser
 import datetime
-import disnake
 import os
 import sys
-import configparser
 
-from classes.Bot import NoirBot
-
-from utils.printer import *
+import disnake
 from disnake.ext import commands
-from pomice import Node
-from utils.embeds import genembed
-
 from disnake.utils import _assetbytes_to_base64_data
+
+from helpers.embeds import genembed
+from objects.bot import NoirBot
+from services.persiktunes import Node
 
 config = configparser.ConfigParser()
 config.read("noir.properties")
@@ -23,42 +21,58 @@ class Manage(commands.Cog):
         self.pool = bot.pool
 
     @commands.slash_command(guild_ids=[config.getint("dev", "dev_server")])
-    async def set_avatar(self, ctx, image: disnake.Attachment = commands.Param(description="сменить аватар боту")):
-        await self.bot.user.edit(
-            avatar=(await image.to_file()).fp.read()
+    async def set_avatar(
+        self,
+        ctx,
+        image: disnake.Attachment = commands.Param(description="сменить аватар боту"),
+    ):
+        await self.bot.user.edit(avatar=(await image.to_file()).fp.read())
+
+        await ctx.send(
+            f"Аватар сменен: {image.filename}",
+            ephemeral=True,
+            file=await image.to_file(),
         )
 
-        await ctx.send(f"Аватар сменен: {image.filename}", ephemeral=True, file=await image.to_file())
-
-    
     @commands.slash_command(guild_ids=[config.getint("dev", "dev_server")])
-    async def set_banner(self, ctx, image: disnake.Attachment = commands.Param(description="сменить баннер боту")):
+    async def set_banner(
+        self,
+        ctx,
+        image: disnake.Attachment = commands.Param(description="сменить баннер боту"),
+    ):
         payload = {}
         payload["banner"] = await _assetbytes_to_base64_data(image)
 
         data = await self.bot.user._state.http.edit_profile(payload)
 
-        await ctx.send(f"Аватар сменен: {image.filename}", ephemeral=True, file=await image.to_file())
+        await ctx.send(
+            f"Аватар сменен: {image.filename}",
+            ephemeral=True,
+            file=await image.to_file(),
+        )
 
-    
     @commands.slash_command(guild_ids=[config.getint("dev", "dev_server")])
     async def set_status(
-        self, 
-        ctx, 
-        name: str = commands.Param("noirplayer.su", description="Имя статуса"), 
-        status: str = commands.Param("idle", description="Тип статуса", choices=["online", "idle", "dnd", "invisible"]),
-        type: str = commands.Param("listening", description="Тип активности", choices=["playing", "streaming", "listening", "watching", "custom"]),
-        ):
+        self,
+        ctx,
+        name: str = commands.Param("noirplayer.su", description="Имя статуса"),
+        status: str = commands.Param(
+            "idle",
+            description="Тип статуса",
+            choices=["online", "idle", "dnd", "invisible"],
+        ),
+        type: str = commands.Param(
+            "listening",
+            description="Тип активности",
+            choices=["playing", "streaming", "listening", "watching", "custom"],
+        ),
+    ):
         await self.bot.change_presence(
             status=disnake.Status[status],
-            activity=disnake.Activity(
-                name=name,
-                type=disnake.ActivityType[type]
-            )
+            activity=disnake.Activity(name=name, type=disnake.ActivityType[type]),
         )
 
         await ctx.send(f"Статус сменен: {name} [{type}]", ephemeral=True)
-
 
     @commands.slash_command(guild_ids=[config.getint("dev", "dev_server")])
     async def manage(self, ctx, prompt: str = commands.Param(description="параметр")):
@@ -140,9 +154,8 @@ best node:
 
             for page in pag.pages:
                 list.append(
-                    genembed(
-                        f"guilds list {pag.pages.index(page)}",
-                        description=page))
+                    genembed(f"guilds list {pag.pages.index(page)}", description=page)
+                )
 
             for embed in list:
                 await ctx.send(embed=embed, ephemeral=True)
@@ -170,7 +183,7 @@ best node:
         )
 
         for player in list(self.bot.node.players.values()):
-            lprint(f"player on {player.guild.name} deleted", Color.blue)
+            self.bot._log.debug(f"player on {player.guild.name} deleted")
 
             try:
                 await player.bar.delete()

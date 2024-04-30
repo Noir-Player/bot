@@ -1,9 +1,8 @@
 from disnake.ext import commands
-from classes.Bot import NoirBot
 
-from utils.embeds import type_embed
-
-from checks.check_player import check_player_decorator
+from helpers.embeds import type_embed
+from objects.bot import NoirBot
+from validators.player import check_player_decorator
 
 
 class SounpadCog(commands.Cog):

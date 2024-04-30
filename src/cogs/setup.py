@@ -1,9 +1,8 @@
 import disnake
-
 from disnake.ext import commands
-from classes.Bot import NoirBot
 
-from cogs.components.setup import MainSetup
+from components.setup import MainSetup
+from objects.bot import NoirBot
 
 
 class SetupCog(commands.Cog):

@@ -1,12 +1,9 @@
+import disnake
 from disnake.ext import commands
 from disnake.interactions.modal import ModalInteraction
 from disnake.ui import Modal
 
-from classes.Bot import NoirBot
-
-from utils.printer import *
-
-import disnake
+from objects.bot import NoirBot
 
 
 class EvalModal(Modal):
@@ -40,7 +37,7 @@ class EvalModal(Modal):
             except Exception as e:
                 out = f"Error: {e}"
 
-            lprint(out, Color.blue, "EVAL")
+            self.bot._log.debug(out)
             output += f"[{i}] {out}\n"
 
             i += 1
@@ -53,13 +50,12 @@ class Eval(commands.Cog):  # Not enabled
         self.bot = bot
         self.pool = bot.pool
 
-    @commands.slash_command(name="eval_multiple",
-                            guild_ids=[939582886305230849])
+    @commands.slash_command(name="eval_multiple", guild_ids=[939582886305230849])
     async def eval_multiple(self, ctx):
         if ctx.author.id == self.bot.owner_id:
             await ctx.response.send_modal(EvalModal(self.bot, self.pool))
         else:
-            await ctx.send("Хуй тебе")
+            await ctx.send("Вы не можете использовать эту команду.")
 
 
 def setup(bot: commands.Bot):
