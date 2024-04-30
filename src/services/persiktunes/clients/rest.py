@@ -9,10 +9,9 @@ from enums import *
 from exceptions import NodeNotAvailable, NodeRestException
 from models.restapi import *
 from models.ws import *
+from persiktunes import __version__
 from pool import Node
 from utils import LavalinkVersion
-
-from persiktunes import __version__
 
 
 class LavalinkRest:
@@ -158,6 +157,23 @@ class LavalinkRest:
             validated.data.description = description
 
         return validated
+
+    async def recommendations(
+        self,
+        tracks: List[Track],
+        *,
+        ctx: Optional[Union[commands.Context, Interaction]] = None,
+        requester: Optional[Union[Member, User]] = None,
+        description: Optional[str] = None,
+    ) -> LavalinkTrackLoadingResponse:
+
+        return await self.search(
+            f'seed_tracks={",".join([track.identifier for track in tracks])}',
+            stype=SearchType.spsearch,
+            ctx=ctx,
+            requester=requester,
+            description=description,
+        )
 
     async def decode_track(self, encoded: str) -> LavalinkTrackDecodeResponse:
         response = await self.send("GET", f"decodetrack?encodedTrack={encoded}")

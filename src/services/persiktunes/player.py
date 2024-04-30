@@ -80,7 +80,7 @@ class Player(VoiceProtocol):
         self.rest = self._node.rest
 
         self.search = self.rest.search
-        self.get_recommendations = self.rest.get_recommendations
+        self.recommendations = self.rest.recommendations
         self.decode_track = self.rest.decode_track
         self.decode_tracks = self.rest.decode_tracks
 
@@ -282,16 +282,6 @@ class Player(VoiceProtocol):
         )
 
         self._log.debug(f"Swapped all players to new node {new_node._identifier}.")
-
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # Sugar methods
-
-    async def search(
-        self,
-        *args,
-        **kwargs,
-    ) -> Any:
-        return await self.rest.search(*args, **kwargs)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Public methods
