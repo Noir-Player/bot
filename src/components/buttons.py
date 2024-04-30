@@ -8,7 +8,7 @@ from helpers.embeds import *
 from objects.exceptions import *
 from validators.player import check_player_btn_decorator
 
-errors = json.load(open("json-obj/errors.json", "r", encoding="utf-8"))
+errors = json.load(open("data/resources/errors.json", "r", encoding="utf-8"))
 
 
 class Soundpad(disnake.ui.View):
