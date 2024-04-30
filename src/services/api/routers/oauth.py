@@ -4,8 +4,8 @@ from fastapi import Cookie, Request
 from fastapi.responses import RedirectResponse
 from requests_oauthlib import OAuth2Session
 
-from classes.ApiRouter import NOIRouter
-from src.config import *
+from config import *
+from services.api.router import NOIRouter
 
 # ---------------------------------------------------------------------------------------------------------
 

@@ -1,5 +1,6 @@
-from classes.ApiRouter import NOIRouter
 from api.shemas import *
+
+from services.api.router import NOIRouter
 
 router = NOIRouter(tags=["Main"])
 

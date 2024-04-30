@@ -1,9 +1,8 @@
-from classes.ApiRouter import NOIRouter
-from fastapi import Query, Cookie, Response
-
-from api.shemas import *
-
 import pomice
+from api.shemas import *
+from fastapi import Cookie, Query, Response
+
+from services.api.router import NOIRouter
 
 router = NOIRouter(prefix="/discovery", tags=["Discovery"])
 
