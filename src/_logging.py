@@ -10,7 +10,7 @@ class CustomFormatter(logging.Formatter):
 
     FORMATS = {
         logging.DEBUG: Fore.CYAN + format + Style.RESET_ALL,
-        logging.INFO: format,
+        logging.INFO: Fore.BLUE + format + Style.RESET_ALL,
         logging.WARNING: Fore.YELLOW + format + Style.RESET_ALL,
         logging.ERROR: Fore.RED + format + Style.RESET_ALL,
         logging.CRITICAL: Fore.LIGHTRED_EX + format + Style.RESET_ALL,
