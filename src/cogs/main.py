@@ -1,9 +1,9 @@
 import json
 
 import disnake
-import pomice
 from disnake.ext import commands
 
+import services.persiktunes as persik
 from components.ui.modals import AddMultiple
 from components.ui.views import StarsView
 from helpers.embeds import *
@@ -35,18 +35,20 @@ class Music(commands.Cog):
     # ИВЕНТЫ ЛАВАЛИНКА
 
     @commands.Cog.listener()
-    async def on_pomice_track_start(self, player: NoirPlayer, track: pomice.Track):
+    async def on_persik_track_start(self, player: NoirPlayer, track: persik.Track):
         await player.edit_controller(track.ctx)
+
+        self.bot._log.debug(f"{track} started.")
 
         if player.update_controller.is_running():
             player.update_controller.restart()
         else:
             player.update_controller.start()
 
-        if not track.is_stream:
+        if not track.info.isStream:
             try:
                 player.update_controller.change_interval(
-                    minutes=(track.length / 1000 / 60 / 20)
+                    minutes=(track.info.length / 1000 / 60 / 20)
                 )
             except BaseException:
                 pass
@@ -61,22 +63,22 @@ class Music(commands.Cog):
     """Прослушивание окончания трека"""
 
     @commands.Cog.listener()
-    async def on_pomice_track_end(
-        self, player: NoirPlayer, track: pomice.Track, reason
+    async def on_persik_track_end(
+        self, player: NoirPlayer, track: persik.Track, reason
     ):
         player.update_controller.stop()  # останавливаем обновление плеера
 
+        self.bot._log.debug(f"{track} ended. Reason: {reason}")
+
         if not player.queue.is_empty and reason in [
-            "FINISHED",
             "finished",
-            "STOPPED",
             "stopped",
         ]:  # если трек завершился самостоятельно или использовано skip
             sound = player.queue.get()  # получаем трек
             if sound:  # если очередь не пуста
                 return await player.play(sound)
 
-        elif reason in ["REPLACED", "replaced"]:  # если трек был заменен
+        elif reason == "replaced":  # если трек был заменен
             return
 
         await player.queue.clear()
@@ -93,35 +95,6 @@ class Music(commands.Cog):
     # -------------------------------------------------------------------------------------------------------------------------------------
     # VOICE_STATE_UPDATE ИВЕНТ NOTE: перенесен в fetcher.py
 
-    # @commands.Cog.listener()
-    # async def on_voice_state_update(self, member: disnake.Member, before: disnake.VoiceState, after: disnake.VoiceState):
-    #     if not hasattr(self, 'node'): # если нода еще не инициализировалась
-    #         return
-
-    #     player: NoirPlayer = self.bot.node.get_player(member.guild.id)
-
-    #     if not player:
-    #         return
-
-    # if not member.guild.voice_client or ((len(player.channel.members) < 2)
-    # and not player.is_radio) or (member == self.bot.user and not
-    # after.channel):
-
-    #         try:
-    #             player.update_bar.stop()
-    #         except:
-    #             pass
-
-    #         try:
-    #             await player.bar.delete()
-    #         except:
-    #             pass
-
-    #         try:
-    #             await player.destroy()
-    #         except:
-    #             pass
-
     # -------------------------------------------------------------------------------------------------------------------------------------
     # КОМАНДЫ
     # Группа play
@@ -133,70 +106,60 @@ class Music(commands.Cog):
         pass
 
     @check_player_decorator(with_connection=True)
-    @add.sub_command(description="Проигрывание трека вне очереди")
+    @add.sub_command(description="🟣 | играть (вне очереди)")
     async def now(
-        self, ctx, search: str = commands.Param(description="ссылка / название")
-    ):  # , replace: bool = commands.Param(description="заменить текущий трек")):
+        self, ctx, search: str = commands.Param(description="пишите для поиска... 🔍")
+    ):
         player: NoirPlayer = self.bot.node.get_player(ctx.guild_id)
 
-        query = await player.get_tracks(
-            query=search, ctx=ctx, search_type=pomice.SearchType.ytmsearch
-        )
+        query = await player.search(search, ctx=ctx, requester=ctx.author)
 
-        if not query:
+        if query.loadType == "playlist":
+            await player.queue.put_list(query.data.tracks)
+            await player.play(player.queue.get())
+
+        elif query.loadType == "search":
+            await player.queue.put(query.data)
+            await player.play(query[0])
+
+        elif query.loadType == "track":
+            await player.play(query)
+
+        else:
             return await ctx.edit_original_response(
                 embed=type_embed(type="error", description=f"Не удалось найти")
             )
-
-        if isinstance(query, pomice.Playlist):
-            await player.queue.put_list(query.tracks)
-            await player.play(player.queue.get())
-            # for track in query.tracks:
-            #     await player.queue.put(track)
-            #     if not index:
-            #         await player.play(player.queue.jump(track))
-
-            #         index += 1
-
-        else:
-            await player.play(query[0])
 
         await ctx.delete_original_message()
 
     @check_player_decorator(with_connection=True)
-    @add.sub_command(description="Поиск sound")
+    @add.sub_command(description="🟣 | играть")
     async def search(
         self,
         ctx,
-        search: str = commands.Param(description="слова из текста или название"),
+        search: str = commands.Param(description="пишите для поиска... 🔍"),
     ):  # , replace: bool = commands.Param(description="заменить текущий трек")):
-        await ctx.edit_original_response(
-            f"Добавляю в очередь <a:load:1147820235634790411>\nПоиск со spotify может занять некоторое время."
-        )
 
         player: NoirPlayer = self.bot.node.get_player(ctx.guild_id)
 
-        query = await player.get_tracks(
-            query=search, ctx=ctx, search_type=pomice.SearchType.ytmsearch
-        )
+        query = await player.search(search, ctx=ctx, requester=ctx.author)
 
-        if not query:
+        if query.loadType == "playlist":
+            await player.queue.put_list(query.data.tracks)
+
+        elif query.loadType == "search":
+            await player.queue.put(query.data[0])
+
+        elif query.loadType == "track":
+            await player.queue.put(query.data)
+
+        else:
             return await ctx.edit_original_response(
                 embed=type_embed(type="error", description=f"Не удалось найти")
             )
 
-        if isinstance(query, pomice.Playlist):
-            await player.queue.put_list(query.tracks)
-            if not player.current:
-                await player.play(player.queue.get())
-            # for track in query.tracks:
-            #     await player.queue.put(track)
-            #     if not player.current:
-            #         await player.play(player.queue.get())
-        else:
-            await player.queue.put(query[0])
-
         if not player.current:
+            self.bot._log.debug(player.queue)
             await player.play(player.queue.get())
 
         await ctx.delete_original_message()
@@ -204,49 +167,57 @@ class Music(commands.Cog):
     @search.autocomplete("search")
     async def autosearch(self, inter, user_input):
         if not user_input:
-            return
+            return []
 
-        try:
-            search = await self.bot.node.get_tracks(
-                query=user_input, ctx=inter, search_type=pomice.SearchType.ytmsearch
+        search = await self.bot.node.rest.search(
+            query=user_input,
+            ctx=inter,
+            stype=persik.SearchType.ytmsearch,
+            requester=inter.author,
+        )
+
+        result = []
+
+        if search.loadType == "playlist":
+            result.append(
+                disnake.OptionChoice(
+                    name=f"🎶 | {search.data.info.name}"[:100],
+                    value=user_input,
+                )
             )
-        except BaseException:
-            return
 
-        list = []
-
-        if search:
-            if isinstance(search, pomice.Playlist):
-                list.append(
+        elif search.loadType == "search":
+            for track in search.data:
+                result.append(
                     disnake.OptionChoice(
-                        name=f"PLAYLIST | {search.name}", value=search.uri
+                        name=f"🎵 | {track.info.title} ({track.info.author})"[:100],
+                        value=track.info.uri,
                     )
                 )
-            else:
-                for track in search:
-                    if len(f"{track.author} - {track.title}") <= 100:
-                        list.append(
-                            disnake.OptionChoice(
-                                name=f"{track.author} - {track.title}", value=track.uri
-                            )
-                        )
 
-        return list
+        elif search.loadType == "track":
+            result.append(
+                disnake.OptionChoice(
+                    name=f"🎵 | {search.data.info.title} ({search.data.info.author})"[
+                        :100
+                    ],
+                    value=search.data.info.uri,
+                )
+            )
+
+        return result
 
     """Поиск радиостанции по json"""
 
     @check_player_decorator(with_connection=True)
-    @add.sub_command(description="Радиостанции радио ЗайцевFM")
+    @add.sub_command(description="🟣 | радио ZaycevFM")
     async def zaycevfm(
-        self, ctx, station: str = commands.Param(description="радиостанция")
+        self, ctx, station: str = commands.Param(description="пишите для поиска... 🔍")
     ):
-        await ctx.edit_original_response(
-            f"Добавляю в очередь <a:load:1147820235634790411>"
-        )
 
         player: NoirPlayer = self.bot.node.get_player(ctx.guild_id)
 
-        query = await player.get_tracks(query=station, ctx=ctx)
+        query = await player.search(query=station, ctx=ctx)
 
         await player.queue.put(query[0])
 
@@ -270,20 +241,17 @@ class Music(commands.Cog):
         return list
 
     @check_player_decorator(with_connection=True)
-    @add.sub_command(description="Добавить несколько сразу")
+    @add.sub_command(description="🟣 | играть (несколько)")
     async def multiple(self, ctx):
         player: NoirPlayer = self.bot.node.get_player(ctx.guild_id)
 
         await ctx.response.send_modal(AddMultiple(player))
 
     @check_player_decorator(with_connection=True)
-    @add.sub_command(description="Добавить плейлист в очередь")
+    @add.sub_command(description="🟣 | играть (плейлист)")
     async def playlist(
-        self, ctx, playlist: str = commands.Param(description="имя плейлиста")
+        self, ctx, playlist: str = commands.Param(description="пишите для поиска... 🔍")
     ):
-        await ctx.edit_original_response(
-            f"Добавляю в очередь <a:load:1147820235634790411>"
-        )
 
         player: NoirPlayer = self.bot.node.get_player(ctx.guild_id)
 
@@ -299,9 +267,11 @@ class Music(commands.Cog):
 
             for track in playlist.get("tracks"):
                 try:
-                    query = (await player.get_tracks(query=track.get("url"), ctx=ctx))[
-                        0
-                    ]
+                    query = (
+                        await player.search(
+                            query=track.get("url"), ctx=ctx, requester=ctx.author
+                        )
+                    )[0]
 
                     if (
                         not player.current
@@ -340,11 +310,9 @@ class Music(commands.Cog):
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Избранные
 
-    @commands.slash_command(
-        description="Посмотреть свои звездочки", dm_permission=False
-    )
+    @commands.slash_command(description="🟣 | избранное", dm_permission=False)
     async def stars(self, ctx):
-        await ctx.response.defer(ephemeral=True)
+
         stars = self.bot.db.stars.get_stars(ctx.author.id)
 
         if stars and stars.get("tracks"):
@@ -367,7 +335,7 @@ class Music(commands.Cog):
             )
 
     @check_player_decorator(with_connection=True)
-    @add.sub_command(name="stars", description="Добавить звездочки в очередь")
+    @add.sub_command(name="stars", description="🟣 | играть (ваше избранное)")
     async def play_stars(self, ctx):
         stars = self.bot.db.stars.get_stars(ctx.author.id)
 
@@ -400,7 +368,7 @@ class Music(commands.Cog):
 
     @check_player_decorator()
     @commands.slash_command(
-        description="Поставить треку звездочку", dm_permission=False
+        description="🟣 | звездануть текущий трек", dm_permission=False
     )
     async def star(self, ctx):
         player = self.bot.node.get_player(ctx.guild_id)
@@ -408,14 +376,9 @@ class Music(commands.Cog):
         if not player.current:
             raise NoCurrent("нет текущего трека")
 
-        if not player.current.is_stream:
+        if not player.current.info.isStream:
             track = player.current
-            self.bot.db.stars.add_to_stars(
-                ctx.author.id,
-                self.bot.build.track(
-                    track.info, track.track_type.value, track.thumbnail
-                ),
-            )
+            self.bot.db.stars.add_to_stars(ctx.author.id, track.model_dump())
 
             await ctx.send(
                 embed=genembed(
@@ -431,7 +394,9 @@ class Music(commands.Cog):
     # Подключение онли (для веба)
 
     @check_player_decorator(with_connection=True)
-    @commands.slash_command(description="Подключиться", dm_permission=False)
+    @commands.slash_command(
+        description="🟣 | подключить Noir к войсу", dm_permission=False
+    )
     async def join(self, ctx):
         self.bot.node.get_player(ctx.guild_id)
 
@@ -441,9 +406,7 @@ class Music(commands.Cog):
     # Если плеер стакнулся
 
     @check_player_decorator(with_connection=True)
-    @commands.slash_command(
-        description="Удалить плеер при неисправности", dm_permission=False
-    )
+    @commands.slash_command(description="🔴 | неисправен плеер?", dm_permission=False)
     async def fix(self, ctx):
         player = self.bot.node.get_player(ctx.guild.id)
 
