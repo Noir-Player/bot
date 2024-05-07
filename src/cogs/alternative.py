@@ -30,32 +30,29 @@ class AlternativeCog(commands.Cog):
             return None
 
     # -------------------------------------------------------------------------------------------------------------------------------------
-    # Альтернативные команды
-
-    # -------------------------------------------------------------------------------------------------------------------------------------
     # Статичные команды
 
     @check_player_decorator()
-    @commands.slash_command(description="Текущий sound", dm_permission=False)
+    @commands.slash_command(description="🟣 | текущий трек", dm_permission=False)
     async def np(self, ctx):
         player = self.bot.node.get_player(ctx.guild_id)
         await ctx.send(embed=await state(player), ephemeral=True)
 
     @check_player_decorator()
-    @commands.slash_command(description="Очередь", dm_permission=False)
+    @commands.slash_command(description="🟣 | очередь", dm_permission=False)
     async def queue(self, ctx):
         player = self.bot.node.get_player(ctx.guild_id)
         view = QueueView(player)
         await view.refresh_pages(ctx)
 
     @check_player_decorator()
-    @commands.slash_command(description="Контекстное меню", dm_permission=False)
+    @commands.slash_command(description="🟣 | дополнительно", dm_permission=False)
     async def menu(self, ctx):
         player = self.bot.node.get_player(ctx.guild_id)
         await ctx.send(ephemeral=True, view=ActionsView(player))
 
     @check_player_decorator()
-    @commands.slash_command(description="Очистить очередь", dm_permission=False)
+    @commands.slash_command(description="🟣 | очистить очередь", dm_permission=False)
     async def clear(self, ctx):
         player = self.bot.node.get_player(ctx.guild_id)
         await player.queue.clear()
@@ -65,7 +62,7 @@ class AlternativeCog(commands.Cog):
     # Плеер
 
     @check_player_decorator()
-    @commands.slash_command(description="Громкость", dm_permission=False)
+    @commands.slash_command(description="🟣 | корректировка звука", dm_permission=False)
     async def volume(
         self,
         ctx,
@@ -76,7 +73,7 @@ class AlternativeCog(commands.Cog):
         await ctx.delete_original_message()
 
     @check_player_decorator()
-    @commands.slash_command(description="Остановить/восстановить", dm_permission=False)
+    @commands.slash_command(description="🟣 | пауза", dm_permission=False)
     async def pause(self, ctx):
         player = self.bot.node.get_player(ctx.guild_id)
         if player.is_playing or player.is_paused:
@@ -84,12 +81,12 @@ class AlternativeCog(commands.Cog):
         await ctx.delete_original_message()
 
     @check_player_decorator()
-    @commands.slash_command(description="Перемотать на тайм-код", dm_permission=False)
+    @commands.slash_command(description="🟣 | перемотать", dm_permission=False)
     async def seek(
         self,
         ctx,
         timecode: str = commands.Param(
-            description="код в виде ss:mm или ss:mm:hh", min_length=5, max_length=8
+            description="таймкод 00:00 или 00:00:00", min_length=5, max_length=8
         ),
     ):
         player = self.bot.node.get_player(ctx.guild_id)
@@ -100,7 +97,9 @@ class AlternativeCog(commands.Cog):
         await ctx.delete_original_message()
 
     @check_player_decorator()
-    @commands.slash_command(description="Перемотать на n секунд", dm_permission=False)
+    @commands.slash_command(
+        description="🟣 | перемотать (в секундах)", dm_permission=False
+    )
     async def rewind(
         self, ctx, seconds: int = commands.Param(description="количество секунд")
     ):
@@ -110,7 +109,7 @@ class AlternativeCog(commands.Cog):
         await ctx.delete_original_message()
 
     @check_player_decorator()
-    @commands.slash_command(description="Остановить очередь", dm_permission=False)
+    @commands.slash_command(description="🟣 | отключить плеер", dm_permission=False)
     async def stop(self, ctx):
         self.bot.node.get_player(ctx.guild_id)
         try:
@@ -124,9 +123,9 @@ class AlternativeCog(commands.Cog):
     # Очередь
 
     @check_player_decorator()
-    @commands.slash_command(description="Удалить звук из очереди", dm_permission=False)
+    @commands.slash_command(description="🟣 | удалить из очереди", dm_permission=False)
     async def remove(
-        self, ctx, sound: int = commands.Param(description="позиция звука из очереди")
+        self, ctx, sound: int = commands.Param(description="номер в очереди")
     ):
         player = self.bot.node.get_player(ctx.guild_id)
 
@@ -141,7 +140,7 @@ class AlternativeCog(commands.Cog):
         await ctx.delete_original_message()
 
     @check_player_decorator()
-    @commands.slash_command(description="Перемешать очередь", dm_permission=False)
+    @commands.slash_command(description="🟣 | перемешать", dm_permission=False)
     async def shuffle(self, ctx):
         player = self.bot.node.get_player(ctx.guild_id)
         await player.queue.shuffle()
@@ -152,7 +151,7 @@ class AlternativeCog(commands.Cog):
         pass
 
     @check_player_decorator()
-    @skip.sub_command(description="Пропустить sound")
+    @skip.sub_command(description="🟣 | пропустить")
     async def to(
         self,
         ctx,
@@ -165,7 +164,7 @@ class AlternativeCog(commands.Cog):
         await ctx.delete_original_message()
 
     @check_player_decorator()
-    @commands.slash_command(description="Переместить sound", dm_permission=False)
+    @commands.slash_command(description="🟣 | переместить трек", dm_permission=False)
     async def move(
         self,
         ctx,
@@ -182,7 +181,9 @@ class AlternativeCog(commands.Cog):
         await ctx.delete_original_message()
 
     @check_player_decorator()
-    @commands.slash_command(description="Переместить позицию", dm_permission=False)
+    @commands.slash_command(
+        description="🟣 | пропустить (к позиции)", dm_permission=False
+    )
     async def jump(
         self,
         ctx,
@@ -198,14 +199,18 @@ class AlternativeCog(commands.Cog):
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Эквалайзер
 
+    @commands.slash_command(dm_permission=False)
+    async def effects(self, ctx):
+        pass
+
     @check_player_decorator()
-    @commands.slash_command(description="Открыть эквалайзер", dm_permission=False)
-    async def eq(self, ctx):
+    @effects.sub_command(description="🟣 | эквалайзер")
+    async def open(self, ctx):
         player = self.bot.node.get_player(ctx.guild_id)
         await ctx.send(view=FiltersView(player=player))
 
     @check_player_decorator()
-    @commands.slash_command(description="Сбросить фильтры", dm_permission=False)
+    @effects.sub_command(description="🟣 | сбросить фильтры")
     async def reset(self, ctx):
         player = self.bot.node.get_player(ctx.guild_id)
         await player.reset_filters()
