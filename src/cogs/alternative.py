@@ -208,7 +208,7 @@ class AlternativeCog(commands.Cog):
     @commands.slash_command(description="Сбросить фильтры", dm_permission=False)
     async def reset(self, ctx):
         player = self.bot.node.get_player(ctx.guild_id)
-        await player.reset_filters(fast_apply=True)
+        await player.reset_filters()
         await ctx.delete_original_message()
 
 
