@@ -1,3 +1,5 @@
+import json
+
 import disnake
 from disnake.ext import commands
 
@@ -9,11 +11,19 @@ class Help(commands.Cog):
     def __init__(self, bot: NoirBot):
         self.bot = bot
 
+        self._hello_embed = dict(
+            json.load(open("data/embeds/hello.json", "r", encoding="utf-8"))
+        )
+
+        self._help_embed = dict(
+            json.load(open("data/embeds/help.json", "r", encoding="utf-8"))
+        )
+
     # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: disnake.Guild):
-        f = self.bot.hello
+        f = self._hello_embed
 
         embed = disnake.Embed(description=f.get("description"), color=f.get("color"))
 
@@ -67,11 +77,11 @@ class Help(commands.Cog):
 
     # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    @commands.slash_command(description="Понадобилась помощь?")
+    @commands.slash_command(description="🟣 | нужна помощь?")
     async def help(self, ctx):
         settings = self.bot.db.setup.get_setup(ctx.guild.id) or {}
 
-        f = self.bot.help
+        f = self._help_embed
 
         embed = disnake.Embed(
             title=f.get("title"),
