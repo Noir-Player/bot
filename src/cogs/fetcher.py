@@ -265,7 +265,7 @@ class Fetcher(commands.Cog):
                         i += 1
                 else:
                     track = query[0]
-                    if track.is_stream:
+                    if track.info.isStream:
                         return
 
                     await self.redis.publish(
