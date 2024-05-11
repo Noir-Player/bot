@@ -66,13 +66,13 @@ class MainSetup(disnake.ui.View):
         embed = self.node.bot.embedding.get(
             title=embed_descriptions[val][0],
             description=embed_descriptions[val][1],
-            image="https://noirplayer.su/static/image/noir%20banner.png",
+            image="https://noirplayer.su/cdn/noir%20banner%20primary.png",
         )
 
         # embed = genembed(
         #     title=embed_descriptions[val][0],
         #     description=embed_descriptions[val][1],
-        #     image="https://noirplayer.su/static/image/noir%20banner.png",
+        #     image="https://noirplayer.su/cdn/noir%20banner%20primary.png",
         # )
 
         if val == "author":
@@ -126,7 +126,7 @@ class AuthorSetup(disnake.ui.View):
                     "infinity",
                 ),
                 color=16711679,
-            ).set_image("https://noirplayer.su/static/image/noir%20banner.png"),
+            ).set_image("https://noirplayer.su/cdn/noir%20banner%20primary.png"),
             view=MainSetup(self.node),
         )
 
@@ -172,7 +172,7 @@ class RadioSetup(disnake.ui.View):
                     "infinity",
                 ),
                 color=16711679,
-            ).set_image("https://noirplayer.su/static/image/noir%20banner.png"),
+            ).set_image("https://noirplayer.su/cdn/noir%20banner%20primary.png"),
             view=MainSetup(self.node),
         )
 
@@ -242,7 +242,7 @@ class SliderSetup(disnake.ui.View):
                     "infinity",
                 ),
                 color=16711679,
-            ).set_image("https://noirplayer.su/static/image/noir%20banner.png"),
+            ).set_image("https://noirplayer.su/cdn/noir%20banner%20primary.png"),
             view=MainSetup(self.node),
         )
 

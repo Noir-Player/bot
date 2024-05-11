@@ -39,7 +39,7 @@ class SetupCog(commands.Cog):
                     "infinity",
                 ),
                 color=16711679,
-            ).set_image("https://noirplayer.su/static/image/noir%20banner.png"),
+            ).set_image("https://noirplayer.su/cdn/noir%20banner%20primary.png"),
             view=MainSetup(self.bot.node),
             ephemeral=True,
         )
