@@ -1,5 +1,5 @@
 import json
-from typing import Any, Coroutine
+from typing import Any, Coroutine, Optional
 
 import disnake
 from disnake.ext import tasks
@@ -55,7 +55,7 @@ class NoirPlayer(persiktunes.Player):
     async def update_controller(self):
         """Таск для обновления бара через интервал времени."""
 
-        if not self.is_connected or not self.controller:
+        if not self.is_connected or not self._controller:
             return
 
         await self.update_controller_once()
@@ -68,13 +68,13 @@ class NoirPlayer(persiktunes.Player):
         try:
             if force:
                 try:
-                    await self.controller.delete()
+                    await self._controller.delete()
                 except BaseException:
                     pass
 
                 return await self.edit_controller(ctx)
 
-            await self.controller.edit(embed=await state(self))
+            await self._controller.edit(embed=await state(self))
         except Exception:
             return False
 
@@ -84,16 +84,16 @@ class NoirPlayer(persiktunes.Player):
             embed = await state(self)
 
         try:
-            await self.controller.edit(
+            await self._controller.edit(
                 embed=embed, view=None if without_view else Soundpad(player=self)
             )
         except BaseException:
             try:
-                await self.controller.delete()
+                await self._controller.delete()
             except BaseException:
                 pass
             try:
-                self.controller = await self._webhook.send(
+                self._controller = await self._webhook.send(
                     embed=embed,
                     username=self._username,
                     avatar_url=self._icon,
@@ -102,7 +102,7 @@ class NoirPlayer(persiktunes.Player):
                 )
             except BaseException:
                 try:
-                    self.controller = await ctx.channel.send(
+                    self._controller = await ctx.channel.send(
                         embed=embed,
                         view=None if without_view else Soundpad(player=self),
                     )
@@ -140,21 +140,18 @@ class NoirPlayer(persiktunes.Player):
         track,
         *,
         start: int = 0,
-        end: int = 0,
-        ignore_if_playing: bool = False,
+        end: Optional[int] = None,
+        replace: bool = False,
+        volume: int = None,
     ) -> None:
         await super().play(
-            track, start=start, end=end, ignore_if_playing=ignore_if_playing
+            track, start=start, end=end, noReplace=not replace, volume=volume
         )
 
-        await self.pub(
-            "play", build.track(track.info, track.track_type.value, track.thumbnail)
-        )
+        await self.pub("play", track.model_dump_json())
 
         if track.requester:
-            db.metrics.add_last_track(
-                build.track(track.info, track.track_type.value), track.requester.id
-            )
+            db.metrics.add_last_track(track.model_dump_json(), track.requester.id)
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Команды для js
@@ -304,7 +301,7 @@ class NoirPlayer(persiktunes.Player):
     @property
     def controller(self) -> disnake.WebhookMessage | disnake.Message:
         """Сообщение с саундбаром"""
-        return self.controller
+        return self._controller
 
     @property
     def color(self) -> int:
