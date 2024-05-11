@@ -10,9 +10,8 @@ from abc import ABC
 from typing import Any, Optional, Tuple
 
 from disnake import Client, Guild
-from disnake.ext import commands
 
-from .objects import Track
+from .models import Track
 from .player import Player
 from .pool import NodePool
 
