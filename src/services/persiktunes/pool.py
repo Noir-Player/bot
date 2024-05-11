@@ -160,9 +160,9 @@ class Node:
         return self._websocket.is_connected
 
     @property
-    def stats(self) -> NodeStats:
+    def stats(self) -> Any:
         """Property which returns the node stats."""
-        return self._websocket._stats
+        return self._stats
 
     @property
     def players(self) -> Dict[int, Player]:
@@ -297,6 +297,9 @@ class Node:
 
                 await self._handle_version_check(version=version)
 
+                self.rest._version = self._version
+                self._websocket._version = self._version
+
                 self._log.debug(
                     f"Version check from Node {self._identifier} successful. Returned version {version}",
                 )
@@ -304,7 +307,7 @@ class Node:
             self._websocket._websocket = await client.connect(
                 f"{self._websocket._websocket_uri}/v{self._version.major}/websocket",
                 extra_headers=self._websocket._headers,
-                ping_interval=self._websocket._heartbeat,
+                ping_interval=self._heartbeat,
             )
 
             if reconnect:
@@ -784,6 +787,7 @@ class NodePool:
         log_level: LogLevel = LogLevel.INFO,
         log_handler: Optional[logging.Handler] = None,
         spotify_credentials: Optional[SpotifyClientCredentials] = None,
+        setup_logging: Optional[Callable] = None,
     ) -> Node:
         """Creates a Node object to be then added into the node pool.
         For Spotify searching capabilites, pass in valid Spotify API credentials.
@@ -810,6 +814,7 @@ class NodePool:
             log_level=log_level,
             log_handler=log_handler,
             spotify_credentials=spotify_credentials,
+            setup_logging=setup_logging,
         )
 
         await node.connect()
