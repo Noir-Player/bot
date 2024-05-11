@@ -4,7 +4,6 @@ import disnake
 import pomice
 
 from components.ui.views import *
-from helpers.embeds import *
 from objects.exceptions import *
 from validators.player import check_player_btn_decorator
 
