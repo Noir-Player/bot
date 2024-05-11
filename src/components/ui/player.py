@@ -36,7 +36,7 @@ async def state(player: Player):
     #         description=f"{player.current.title}",
     #     )
 
-    #     embed.set_image("https://noirplayer.su/static/image/noir%20banner.png")
+    #     embed.set_image("https://noirplayer.su/cdn/noir%20banner%20primary.png")
 
     #     return embed
 
