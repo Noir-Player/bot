@@ -3,7 +3,6 @@ import json
 import disnake
 from disnake.ext import commands
 
-from helpers.embeds import genembed
 from objects.bot import NoirBot
 
 
@@ -47,9 +46,14 @@ class Help(commands.Cog):
         log = await self.bot.fetch_channel(1119658307729236008)
 
         await log.send(
-            embed=genembed(
-                f"Join on {guild.name}",
-                f"```yaml\nowner - {guild.owner_id}\nmembers - {guild.member_count}\nboosts - {guild.premium_subscription_count}```\n{guild.id}",
+            embed=self.bot.embedding.get(
+                {"name": "участников", "value": guild.member_count},
+                {"name": "бустов", "value": guild.premium_subscription_count},
+                title=f"Join on `{guild.name}`",
+                thumbnail=guild.icon.url if guild.icon else None,
+                author_name=guild.owner.name if guild.owner else "Неизвестный владелец",
+                author_icon=guild.icon.url if guild.icon else None,
+                color="accent",
             )
         )
 
@@ -59,10 +63,19 @@ class Help(commands.Cog):
     async def on_guild_remove(self, guild: disnake.Guild):
         log = await self.bot.fetch_channel(1119658307729236008)
         await log.send(
-            embed=genembed(
-                f"Leave on {guild.name}",
-                f"```yaml\nowner - {guild.owner_id}\nmembers - {guild.member_count}\nboosts - {guild.premium_subscription_count}```\n{guild.id}",
+            embed=self.bot.embedding.get(
+                {"name": "участников", "value": guild.member_count},
+                {"name": "бустов", "value": guild.premium_subscription_count},
+                title=f"Leave from `{guild.name}`",
+                thumbnail=guild.icon.url if guild.icon else None,
+                author_name=guild.owner.name if guild.owner else "Неизвестный владелец",
+                author_icon=guild.icon.url if guild.icon else None,
+                color="warning",
             )
+            # embed=genembed(
+            #     f"Leave on {guild.name}",
+            #     f"```yaml\nowner - {guild.owner_id}\nmembers - {guild.member_count}\nboosts - {guild.premium_subscription_count}```\n{guild.id}",
+            # )
         )
 
         try:
@@ -83,7 +96,8 @@ class Help(commands.Cog):
 
         f = self._help_embed
 
-        embed = disnake.Embed(
+        embed = self.bot.embedding.get(
+            *f.get("fields"),
             title=f.get("title"),
             description=f.get("description").format(
                 ctx.guild.name,
@@ -95,22 +109,16 @@ class Help(commands.Cog):
                 "now",
                 "infinity",
             ),
-            color=f.get("color"),
+            image=f.get("image").get("url"),
+            color="primary",
+            use_light_color=True,
+            footer=f.get("footer").get("text"),
+            footer_icon=f.get("footer").get("icon_url"),
         )
-
-        for field in f.get("fields"):
-            embed.add_field(
-                field.get("name"), field.get("value"), inline=field.get("inline", False)
-            )
-
-        embed.set_footer(
-            text=f.get("footer").get("text"), icon_url=f.get("footer").get("icon_url")
-        )
-
-        embed.set_image(f.get("image").get("url"))
 
         await ctx.send(embed=embed, ephemeral=True)
 
 
 def setup(bot: commands.Bot):
+
     bot.add_cog(Help(bot))

@@ -6,7 +6,6 @@ from disnake.ext import commands
 import services.persiktunes as persik
 from components.ui.modals import AddMultiple
 from components.ui.views import StarsView
-from helpers.embeds import *
 from objects.bot import NoirBot
 from objects.exceptions import *
 from objects.player import NoirPlayer
@@ -85,11 +84,14 @@ class Music(commands.Cog):
 
         return await player.edit_controller(
             track.ctx,
-            embed=type_embed(
-                type="info",
-                description=f"В очереди ничего нет\n\nВключите **поток** для генерации треков",
-                image=f"https://mir-s3-cdn-cf.behance.net/project_modules/disp/a11a4893658133.5e98adbead405.gif",
+            embed=self.bot.embedding.get(
+                title="🟣 | Очередь пуста",
             ),
+            # embed=type_embed(
+            #     type="info",
+            #     description=f"В очереди ничего нет\n\nВключите **поток** для генерации треков",
+            #     image=f"https://mir-s3-cdn-cf.behance.net/project_modules/disp/a11a4893658133.5e98adbead405.gif",
+            # ),
         )
 
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -127,7 +129,12 @@ class Music(commands.Cog):
 
         else:
             return await ctx.edit_original_response(
-                embed=type_embed(type="error", description=f"Не удалось найти")
+                embed=self.bot.embedding.get(
+                    title="🟠 | Не найдено",
+                    description="Не удалось найти трек",
+                    color="warning",
+                ),
+                # embed=type_embed(type="error", description=f"Не удалось найти")
             )
 
         await ctx.delete_original_message()
@@ -155,7 +162,12 @@ class Music(commands.Cog):
 
         else:
             return await ctx.edit_original_response(
-                embed=type_embed(type="error", description=f"Не удалось найти")
+                embed=self.bot.embedding.get(
+                    title="🟠 | Не найдено",
+                    description="Не удалось найти трек",
+                    color="warning",
+                ),
+                # embed=type_embed(type="error", description=f"Не удалось найти")
             )
 
         if not player.current:
@@ -259,7 +271,12 @@ class Music(commands.Cog):
 
         if not playlist:
             return await ctx.edit_original_message(
-                embed=type_embed(type="error", description="Неизвестный плейлист")
+                embed=self.bot.embedding.get(
+                    title="🟠 | Не найдено",
+                    description="Не удалось найти плейлист",
+                    color="warning",
+                ),
+                # embed=type_embed(type="error", description="Неизвестный плейлист")
             )
 
         if playlist.get("tracks"):
@@ -289,7 +306,12 @@ class Music(commands.Cog):
 
         else:
             return await ctx.edit_original_message(
-                embed=type_embed(type="error", description="Пустой плейлист")
+                embed=self.bot.embedding.get(
+                    title="🟠 | Пусто",
+                    description="Пустой плейлист",
+                    color="warning",
+                ),
+                # embed=type_embed(type="error", description="Пустой плейлист")
             )
 
         await ctx.delete_original_message()
@@ -324,14 +346,23 @@ class Music(commands.Cog):
                 return await view.refresh_pages(ctx)
             except BaseException:
                 return await ctx.edit_original_message(
-                    embed=genembed(
-                        title="", description="Похоже, у вас нет избранных треков"
-                    )
+                    embed=self.bot.embedding.get(
+                        title="🟠 | Пусто",
+                        description="У вас нет избранных треков",
+                        color="warning",
+                    ),
+                    # embed=genembed(
+                    #     title="", description="Похоже, у вас нет избранных треков"
+                    # )
                 )
 
         else:
             return await ctx.edit_original_message(
-                embed=genembed(title="У вас нет избранных треков", description="")
+                embed=self.bot.embedding.get(
+                    title="🟠 | Пусто",
+                    description="У вас нет избранных треков",
+                    color="warning",
+                ),
             )
 
     @check_player_decorator(with_connection=True)
@@ -363,7 +394,11 @@ class Music(commands.Cog):
 
         else:
             await ctx.edit_original_message(
-                embed=genembed(title="У вас нет избранных треков", description="")
+                embed=self.bot.embedding.get(
+                    title="🟠 | Пусто",
+                    description="У вас нет избранных треков",
+                    color="warning",
+                ),
             )
 
     @check_player_decorator()
@@ -381,10 +416,15 @@ class Music(commands.Cog):
             self.bot.db.stars.add_to_stars(ctx.author.id, track.model_dump())
 
             await ctx.send(
-                embed=genembed(
-                    title="",
-                    description="## Звездочка поставлена.\n\nПосмотрите ее в своем [профиле](https://noirplayer.su/me/stars).",
+                embed=self.bot.embedding.get(
+                    title="🟢 | Добавлено",
+                    description="Звездочка добавлена в `⭐ стандартный набор`",
+                    color="accent",
                 ),
+                # embed=genembed(
+                #     title="",
+                #     description="## Звездочка поставлена.\n\nПосмотрите ее в своем [профиле](https://noirplayer.su/me/stars).",
+                # ),
                 ephemeral=True,
             )
         else:

@@ -7,7 +7,6 @@ import disnake
 from disnake.ext import commands
 from disnake.utils import _assetbytes_to_base64_data
 
-from helpers.embeds import genembed
 from objects.bot import NoirBot
 from services.persiktunes import Node
 
@@ -154,7 +153,12 @@ best node:
 
             for page in pag.pages:
                 list.append(
-                    genembed(f"guilds list {pag.pages.index(page)}", description=page)
+                    self.bot.embedding.get(
+                        title="⚪ | guilds list {pag.pages.index(page)}",
+                        description=page,
+                        color="primary",
+                        use_light_color=True,
+                    ),
                 )
 
             for embed in list:
