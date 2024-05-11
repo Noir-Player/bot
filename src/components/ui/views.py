@@ -9,7 +9,6 @@ from disnake.ext import commands
 from disnake.ext.commands import Paginator
 
 from helpers.dump import Dump as Build
-from helpers.embeds import *
 from objects.exceptions import *
 from validators.player import check_player_btn_decorator
 
@@ -113,7 +112,7 @@ class ActionsView(disnake.ui.View):
         if not self.player.current:
             raise NoCurrent("нет текущего трека")
 
-        if not self.player.current.is_stream:
+        if not self.player.current.info.isStream:
             track = self.player.current
             interaction.bot.db.stars.add_to_stars(
                 interaction.author.id,
@@ -121,10 +120,15 @@ class ActionsView(disnake.ui.View):
             )
 
             await interaction.send(
-                embed=genembed(
-                    title="",
-                    description="Звездочка поставлена.\n\nПосмотрите ее в своем [профиле](https://noirplayer.su/me/stars).",
+                embed=interaction.bot.embedding.get(
+                    title="🟢 | Добавлено",
+                    description="Звездочка добавлена в `⭐ стандартный набор`",
+                    color="accent",
                 ),
+                # embed=genembed(
+                #     title="",
+                #     description="Звездочка поставлена.\n\nПосмотрите ее в своем [профиле](https://noirplayer.su/me/stars).",
+                # ),
                 ephemeral=True,
             )
         else:
@@ -213,13 +217,15 @@ class FiltersView(disnake.ui.View):
 
     @disnake.ui.select(placeholder="фильтры", options=options, row=0, max_values=7)
     async def eq(self, select: disnake.ui.StringSelect, inter):
-        await self.player.reset_filters(fast_apply=True)
+        await self.player.reset_filters()
 
         await inter.response.defer()
 
         for filter in inter.data.values:
             try:
-                await self.player.add_filter(filters[filter], fast_apply=True)
+                await self.player.add_filter(
+                    filters[filter],
+                )
             except BaseException:
                 pass
 
@@ -259,14 +265,26 @@ class QueueView(disnake.ui.View):
 
         if self.player.queue.is_empty:
             return await interaction.edit_original_message(
-                embed=genembed(
-                    title=(
-                        f'Очередь пуста | Сейчас играет "{self.player.current.title}"'
-                        if self.player.current
-                        else "Очередь пуста | Ничего не играет"
-                    ),
-                    description="",
-                )
+                embed=interaction.bot.embedding.get(
+                    {
+                        "name": "играет",
+                        "value": (
+                            self.player.current.info.title
+                            if self.player.current
+                            else "Ничего не играет"
+                        ),
+                    },
+                    title="🔵 | Пусто",
+                    color="info",
+                ),
+                # embed=genembed(
+                #     title=(
+                #         f'Очередь пуста | Сейчас играет "{self.player.current.info.title}"'
+                #         if self.player.current
+                #         else "Очередь пуста | Ничего не играет"
+                #     ),
+                #     description="",
+                # )
             )
 
         i = n = 0
@@ -282,7 +300,7 @@ class QueueView(disnake.ui.View):
 
             self.pag.add_line(
                 f"{i + 1} -{ind} "
-                + val.title
+                + val.info.title
                 + f" [{val.requester.display_name if val.requester else 'неизвестно'}]"
             )
 
@@ -293,7 +311,7 @@ class QueueView(disnake.ui.View):
             (
                 (
                     sum(
-                        i.length
+                        i.info.length
                         for i in self.player.queue.get_queue()[
                             self.player.queue.find_position(self.player.current) :
                         ]
@@ -309,21 +327,29 @@ class QueueView(disnake.ui.View):
         total = int(time.time() + total)
 
         await interaction.edit_original_message(
-            embed=genembed(
-                title=(
-                    f'Очередь | Сейчас играет "{self.player.current.title}"'
-                    if self.player.current
-                    else "Очередь | Ничего не играет"
-                ),
+            embed=interaction.bot.embedding.get(
+                {"name": "Всего треков", "value": f"`{self.player.queue.count}`"},
+                {"name": "Закончится", "value": f"<t:{total}:R>"},
+                title="🔵 | Очередь",
                 description=self.pag.pages[self.index],
                 footer=f"page {self.index + 1}/{len(self.pag.pages)}",
-            )
-            .add_field(name="Всего треков", value=f"`{self.player.queue.count}`")
-            .add_field(name="Закончится", value=f"<t:{total}:R>")
-            .add_field(
-                name="Поток",
-                value=f"`{'Да' if self.player.queue.is_nonstop else 'Нет'}`",
+                color="info",
             ),
+            # embed=genembed(
+            #     title=(
+            #         f'Очередь | Сейчас играет "{self.player.current.info.title}"'
+            #         if self.player.current
+            #         else "Очередь | Ничего не играет"
+            #     ),
+            #     description=self.pag.pages[self.index],
+            #     footer=f"page {self.index + 1}/{len(self.pag.pages)}",
+            # )
+            # .add_field(name="Всего треков", value=f"`{self.player.queue.count}`")
+            # .add_field(name="Закончится", value=f"<t:{total}:R>"),
+            # .add_field(
+            #     name="Поток",
+            #     value=f"`{'Да' if self.player.queue.is_nonstop else 'Нет'}`",
+            # ),
             view=self,
         )
 
@@ -412,13 +438,22 @@ class TracksView(disnake.ui.View):
     #     pass
 
     async def refresh_pages(self, interaction):
-        embed = genembed(
-            author_name=self.title,
-            title=self.songs[self.index].title,
-            description=self.songs[self.index].author,
-            image=self.songs[self.index].thumbnail,
-            footer=f"страница {self.index + 1}/{len(self.songs)}",
+        embed = (
+            interaction.bot.embedding.get(
+                author_name=self.title,
+                title=self.songs[self.index].info.title,
+                description=self.songs[self.index].info.author,
+                image=self.songs[self.index].info.artworkUrl,
+                use_light_color=True,
+            ),
         )
+        # embed = genembed(
+        #     author_name=self.title,
+        #     title=self.songs[self.index].info.title,
+        #     description=self.songs[self.index].info.author,
+        #     image=self.songs[self.index].info.artworkUrl,
+        #     footer=f"страница {self.index + 1}/{len(self.songs)}",
+        # )
 
         await interaction.edit_original_message(embed=embed, view=self)
 
@@ -487,7 +522,7 @@ class StarsView(disnake.ui.View):
 
     async def refresh_pages(self, interaction):
         embed = (
-            genembed(
+            interaction.bot.embedding.get(
                 author_name=self.title,
                 title=self.songs[self.index].get("title", "Неизвестное название"),
                 description=self.songs[self.index].get("author", "Неизвестный автор"),
@@ -495,7 +530,12 @@ class StarsView(disnake.ui.View):
                 footer=f"song {self.index + 1}/{len(self.songs)}",
             )
             if len(self.songs)
-            else genembed(title="", description="У вас нет избранных треков.")
+            else interaction.bot.embedding.get(
+                title="🟠 | Пусто",
+                description="У вас нет избранных треков",
+                color="warning",
+            )
+            # else genembed(title="", description="У вас нет избранных треков.")
         )
 
         await interaction.edit_original_message(embed=embed, view=self)
@@ -607,31 +647,60 @@ class PlaylistView(disnake.ui.View):
     async def refresh_pages(self, interaction):
         if not self.index:
             self.songs = interaction.bot.db.playlists.get_playlist(self.uuid)
-            embed = genembed(
-                title=self.info.get("title"),
-                description=self.info.get("description", "")
-                + "\n\nСвайпните на <:skipforward:1107250322801442877>, чтобы посмотреть треки",
-                image=self.info.get("thumbnail"),
-                author_name=None,
-                footer=f"{'публичный плейлист' if self.info.get('public') else 'приватный плейлист'} | {', '.join(self.info.get('tags', []) if self.info.get('tags') else [])}",
+            embed = (
+                interaction.bot.embedding.get(
+                    {
+                        "name": "`автор`",
+                        "value": f"`{self.info.get('author', {}).get('name')}`",
+                    },
+                    {
+                        "name": "`треки`",
+                        "value": f"{f'`{len(self.songs)}`' if self.songs else '⭐ добавьте с помощью <:pluscircle:1118459100150378550>'}",
+                    },
+                    title=self.info.get("title"),
+                    description=self.info.get("description", "")
+                    + "\n\nСвайпните на <:skipforward:1107250322801442877>, чтобы посмотреть треки",
+                    image=self.info.get("thumbnail"),
+                    footer=f"{'публичный плейлист' if self.info.get('public') else 'приватный плейлист'}",
+                ),
             )
-            embed.add_field("Автор", f"`{self.info.get('author', {}).get('name')}`")
-            embed.add_field(
-                "Треки",
-                f"{f'`{len(self.songs)}`' if self.songs else 'Добавьте с помощью <:pluscircle:1118459100150378550>'}",
-            )
+            # embed = genembed(
+            #     title=self.info.get("title"),
+            #     description=self.info.get("description", "")
+            #     + "\n\nСвайпните на <:skipforward:1107250322801442877>, чтобы посмотреть треки",
+            #     image=self.info.get("thumbnail"),
+            #     author_name=None,
+            #     footer=f"{'публичный плейлист' if self.info.get('public') else 'приватный плейлист'} | {', '.join(self.info.get('tags', []) if self.info.get('tags') else [])}",
+            # )
+            # embed.add_field("Автор", f"`{self.info.get('author', {}).get('name')}`")
+            # embed.add_field(
+            #     "Треки",
+            #     f"{f'`{len(self.songs)}`' if self.songs else 'Добавьте с помощью <:pluscircle:1118459100150378550>'}",
+            # )
 
         else:
-            embed = genembed(
-                author_name=f'Плейлист | {self.info.get("title")}',
-                author_icon=self.info.get(
-                    "thumbnail", "https://noirplayer.su/static/image/nocover.png"
+            embed = (
+                interaction.bot.embedding.get(
+                    author_name=f'Плейлист | {self.info.get("title")}',
+                    author_icon=self.info.get(
+                        "thumbnail", "https://noirplayer.su/static/image/nocover.png"
+                    ),
+                    title=self.songs[self.index - 1].get("title"),
+                    description=self.songs[self.index - 1].get("author"),
+                    image=self.songs[self.index - 1].get("thumbnail"),
+                    footer=f"page {self.index} / {len(self.songs)}",
                 ),
-                title=self.songs[self.index - 1].get("title"),
-                description=self.songs[self.index - 1].get("author"),
-                image=self.songs[self.index - 1].get("thumbnail"),
-                footer=f"page {self.index}/{len(self.songs)}",
             )
+            # embed = genembed(
+            #     author_name=f'Плейлист | {self.info.get("title")}',
+            #     author_icon=self.info.get(
+            #         "thumbnail", "https://noirplayer.su/static/image/nocover.png"
+            #     ),
+            #     title=self.songs[self.index - 1].get("title"),
+            #     description=self.songs[self.index - 1].get("author"),
+            #     image=self.songs[self.index - 1].get("thumbnail"),
+            #     footer=f"page {self.index}/{len(self.songs)}",
+            # )
         try:
             await interaction.edit_original_message(embed=embed, view=self)
         except disnake.HTTPException:
