@@ -9,6 +9,7 @@ from websockets import client, exceptions
 
 from .. import __version__
 from ..enums import LogLevel
+from ..models import ws as wsmodels
 from ..models.ws import *
 from ..utils import ExponentialBackoff, LavalinkVersion
 
@@ -138,25 +139,26 @@ class LavalinkWebsocket:
             f"Recieved raw payload from Node {self._identifier} with data {data}"
         )
 
-        op = BaseWebsocketRequest.model_validate(data).op
+        op = BaseWebsocketResponse.model_validate(data).op
 
         if op == "ready":
             self._session_id = ReadyOP.model_validate(data).sessionId
+            self._node._session_id = self._session_id
             return await self._configure_resuming()
 
         elif op == "stats":
-            self._stats = StatsOP.model_validate(data)
+            self._node._stats = StatsOP.model_validate(data)
             return
 
         elif op == "event":
-            event = EventOP.model_validate(data)
-            player = self.get_player(event.guildId)
+            event = getattr(wsmodels, data.get("type")).model_validate(data)
+            player = self.get_player(int(event.guildId))
             return await player._dispatch_event(event)
 
         elif op == "playerUpdate":
             update = PlayerUpdateOP.model_validate(data)
-            player = self.get_player(update.guildId)
-            return await player._dispatch_event(event)
+            player = self.get_player(int(update.guildId))
+            return await player._update_state(update)
 
     async def _handle_node_switch(self) -> None:
         nodes = [
