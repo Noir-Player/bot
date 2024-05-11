@@ -32,9 +32,13 @@ class AlternativeCog(commands.Cog):
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Статичные команды
 
+    @commands.slash_command(dm_permission=False)
+    async def now(self, ctx):
+        pass
+
     @check_player_decorator()
-    @commands.slash_command(description="🟣 | текущий трек", dm_permission=False)
-    async def np(self, ctx):
+    @now.sub_command(description="🟣 | текущий трек")
+    async def playing(self, ctx):
         player = self.bot.node.get_player(ctx.guild_id)
         await ctx.send(embed=await state(player), ephemeral=True)
 
