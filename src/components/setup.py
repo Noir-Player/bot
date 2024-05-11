@@ -1,7 +1,6 @@
 import disnake
 from disnake.interactions.modal import ModalInteraction
 
-from helpers.embeds import genembed
 from services.database.core import Database
 
 db = Database().setup
@@ -64,11 +63,17 @@ class MainSetup(disnake.ui.View):
     async def mainmenu(self, select, inter: disnake.Interaction):
         val = inter.data.values[0]
 
-        embed = genembed(
+        embed = self.node.bot.embedding.get(
             title=embed_descriptions[val][0],
             description=embed_descriptions[val][1],
             image="https://noirplayer.su/static/image/noir%20banner.png",
         )
+
+        # embed = genembed(
+        #     title=embed_descriptions[val][0],
+        #     description=embed_descriptions[val][1],
+        #     image="https://noirplayer.su/static/image/noir%20banner.png",
+        # )
 
         if val == "author":
             await inter.response.edit_message(embed=embed, view=AuthorSetup(self.node))
