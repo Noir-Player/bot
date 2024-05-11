@@ -5,7 +5,6 @@ from disnake.interactions.modal import ModalInteraction
 
 import services.persiktunes as persik
 from helpers.dump import Dump as Build
-from helpers.embeds import genembed, type_embed
 from services.database.core import Database
 
 build = Build()
@@ -131,10 +130,15 @@ class AddToPlaylist(disnake.ui.Modal):
                     )
             else:
                 await inter.edit_original_message(
-                    embed=genembed(
-                        title=f"Не удалось найти **{val}**. Попробуйте поискать по названию - автору",
-                        description="",
-                    )
+                    embed=self.node.bot.embedding.get(
+                        title="🟠 | Не найдено",
+                        description=f"Не удалось найти `{val}`. Попробуйте поискать по названию - автору",
+                        color="warning",
+                    ),
+                    # embed=genembed(
+                    #     title=f"Не удалось найти **{val}**. Попробуйте поискать по названию - автору",
+                    #     description="",
+                    # )
                 )
 
             db.playlists.add_to_playlist(self.uuid, inter.author.id, {"$each": result})
@@ -248,5 +252,10 @@ class PlaylistInfoModal(disnake.ui.Modal):
 
         else:
             await interaction.edit_original_message(
-                embed=type_embed("error", "Плейлист с таким именем уже существует")
+                embed=self.node.bot.embedding.get(
+                    title="🟠 | Дубликат",
+                    description="Плейлист с таким именем уже существует",
+                    color="warning",
+                ),
+                # embed=type_embed("error", "Плейлист с таким именем уже существует")
             )
