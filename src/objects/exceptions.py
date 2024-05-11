@@ -1,3 +1,5 @@
+import json
+
 from disnake.ext import commands
 
 
@@ -27,3 +29,6 @@ class InvalidIndex(commands.CommandError):
 
 class NoSubscribe(commands.CommandError):
     pass
+
+
+errors = json.load(open("data/resources/errors.json", "r", encoding="utf-8"))
