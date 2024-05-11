@@ -1,6 +1,7 @@
 import asyncio
 import configparser
 import logging
+import random
 import traceback
 from typing import Any
 
@@ -17,11 +18,12 @@ import _logging
 import services.api as api
 import services.persiktunes as persiktunes
 from config import *
-from helpers.dump import Dump as Build
 from helpers.embeds import type_embed
 from helpers.ex_load import cogsLoad, cogsReload
+from objects.exceptions import errors
 from services.app import setup
 from services.database.core import Database
+from services.ui.embed import EmbedBuilder
 
 # import api
 
@@ -77,19 +79,14 @@ class NoirBot(commands.AutoShardedInteractionBot):
         # Redis
         self._redis = Redis(host=HOST, port=PORT, password=PASS)
 
-        # Build util
-        self._build = Build()
-
         # App server
         self._app = setup(bot=self)
 
-        # Jsons
-        # self._errors = json.load(open("data/errors.json", "r", encoding="utf-8"))
-        # self._hello = json.load(open("data/embeds/hello.json", "r", encoding="utf-8"))
-        # self._help = json.load(open("data/embeds/help.json", "r", encoding="utf-8"))
-
         # Set logging
         self._log = _logging.get_logger("bot")
+
+        # Embedding
+        self._embedding = EmbedBuilder()
 
         # Setup
         self.setup()
@@ -116,7 +113,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
                 self._log.debug("Loop created")
 
     # -------------------------------------------------------------------------------------------------------------------------------------
-    # App
+    # Api
 
     def serve_api(self):
 
@@ -195,8 +192,9 @@ class NoirBot(commands.AutoShardedInteractionBot):
             )
 
         except Exception as e:
-            traceback.print_exc()
-            return self._log.error(f"Node was not created: {e}")
+            return self._log.error(
+                f"Node was not created: {e}\n{traceback.format_exc()}"
+            )
 
         self._log.info("Node created")
 
@@ -227,28 +225,30 @@ class NoirBot(commands.AutoShardedInteractionBot):
 
     async def on_slash_command_error(self, inter: disnake.Interaction, error):
         if error is commands.CommandError or error is commands.CommandInvokeError:
-            e = self._errors.get(
-                error.__cause__.__class__.__name__, "Неизвестная ошибка. Простите..."
-            )
+            e = errors.get(error.__cause__.__class__.__name__, "Ошибка")
         else:
-            e = self._errors.get(
-                error.__class__.__name__, "Неизвестная ошибка. Простите..."
-            )
+            e = errors.get(error.__class__.__name__, "Ошибка")
         await inter.send(
-            embed=type_embed(
-                "error", f"```diff\n- {e}```\n||```diff\n- {error}```||"
-            ),  # \n*Исходное сообщение об ошибке*: ||```Текст: {error.__cause__}\nИмя ошибки: {error.__cause__.__class__.__name__}```||"),
+            embed=self.embedding.get(
+                {
+                    "name": "`исходные данные:`",
+                    "value": f"||```diff\n+ {e}\n- {error.__cause__}```||",
+                },
+                title=f"🟠 | {e}",
+                description=random.choice(errors["ShortResponses"]),
+                color="warning",
+            ),
             ephemeral=True,
             components=[
                 disnake.ui.Button(
                     style=disnake.ButtonStyle.url,
-                    label="report",
+                    label="Support server",
                     url="https://discord.gg/ua4kpgzpWJ",
                 )
             ],
         )
 
-        self._log.error(f"Slash command error: {error}")
+        self._log.error(f"Slash command error: {error}\n{traceback.format_exc()}")
 
     async def on_error(self, event_method: str, *args: Any, **kwargs: Any) -> None:
         self._log.error(
@@ -315,6 +315,11 @@ class NoirBot(commands.AutoShardedInteractionBot):
         return self._app
 
     @property
-    def build(self) -> Build:
-        """Build class"""
-        return self._build
+    def log(self) -> logging.Logger:
+        """Logger class"""
+        return self._log
+
+    @property
+    def embedding(self) -> EmbedBuilder:
+        """EmbedBuilder class"""
+        return self._embedding
