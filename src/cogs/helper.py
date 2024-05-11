@@ -111,7 +111,6 @@ class Help(commands.Cog):
             ),
             image=f.get("image").get("url"),
             color="primary",
-            use_light_color=True,
             footer=f.get("footer").get("text"),
             footer_icon=f.get("footer").get("icon_url"),
         )
