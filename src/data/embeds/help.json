@@ -41,9 +41,9 @@
   ],
   "footer": {
     "text": "powered by noirplayer.su",
-    "icon_url": "https://noirplayer.su/static/image/n.png"
+    "icon_url": "https://noirplayer.su/cdn/n%20primary.png"
   },
   "image": {
-    "url": "https://noirplayer.su/static/image/noir%20banner.png"
+    "url": "https://noirplayer.su/cdn/noir%20banner%20primary.png"
   }
 }
