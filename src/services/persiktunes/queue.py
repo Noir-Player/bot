@@ -148,7 +148,9 @@ class Queue(Iterable[Track]):
         return (
             self._queue.pop(0)
             if self._loop_mode
-            else self._queue[self._index(self._current_item) + 1]
+            else self._queue[
+                self._index(self._current_item) if self._current_item else -1 + 1
+            ]
         )
 
     def _drop(self) -> Track:
@@ -262,10 +264,10 @@ class Queue(Iterable[Track]):
             self._current_item = self._get()
 
         except:
-            if self._loop_mode.value == "queue":
+            if self._loop_mode == LoopMode.QUEUE:
                 self._current_item = self._queue[0]
 
-                return self._current_item
+        return self._current_item
 
     def prev(self):
         """Return prevision immediately available item in queue if any.
