@@ -14,7 +14,7 @@ class SetupCog(commands.Cog):
     # Настройка сервера
 
     @commands.slash_command(
-        description="Давайте тут все настроим!",
+        description="🟣 | настройка Noir",
         default_member_permissions=disnake.Permissions(administrator=True),
         dm_permission=False,
     )
