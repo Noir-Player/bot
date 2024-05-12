@@ -81,7 +81,7 @@ class AlternativeCog(commands.Cog):
     async def pause(self, ctx):
         player = self.bot.node.get_player(ctx.guild_id)
         if player.is_playing or player.is_paused:
-            await player.set_pause(not player.is_paused)
+            await player.set_pause()
         await ctx.delete_original_message()
 
     @check_player_decorator()
