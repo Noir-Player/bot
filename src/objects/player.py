@@ -37,7 +37,7 @@ class NoirPlayer(persiktunes.Player):
         self._icon: str = ...
 
         # Кастом плеер
-        self._color = disnake.Colour.blurple()
+        self._color = int(self.bot.embedding.primary_light.replace("#", ""), base=16)
 
         # Брокер сокетов
         # self._broker = Broker(self.bot.redis, self)
@@ -54,7 +54,6 @@ class NoirPlayer(persiktunes.Player):
     @tasks.loop()
     async def update_controller(self):
         """Таск для обновления бара через интервал времени."""
-
         if not self.is_connected or not self._controller:
             return
 
@@ -137,7 +136,7 @@ class NoirPlayer(persiktunes.Player):
 
     async def play(
         self,
-        track,
+        track: persiktunes.Track,
         *,
         start: int = 0,
         end: Optional[int] = None,
@@ -148,10 +147,12 @@ class NoirPlayer(persiktunes.Player):
             track, start=start, end=end, noReplace=not replace, volume=volume
         )
 
-        await self.pub("play", track.model_dump_json())
+        await self.pub("play", track.model_dump_json(exclude=["ctx", "requester"]))
 
         if track.requester:
-            db.metrics.add_last_track(track.model_dump_json(), track.requester.id)
+            db.metrics.add_last_track(
+                track.model_dump_json(exclude=["ctx", "requester"]), track.requester.id
+            )
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Команды для js
@@ -173,7 +174,7 @@ class NoirPlayer(persiktunes.Player):
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Стандартные команды, переписанные под пад и сокет
 
-    async def set_pause(self, pause: bool):
+    async def set_pause(self, pause: Optional[bool] = None):
         if not self.current:
             return
         await super().set_pause(pause)
@@ -201,7 +202,7 @@ class NoirPlayer(persiktunes.Player):
 
     # ==========================
 
-    async def seek(self, position: float) -> Coroutine[Any, Any, float]:
+    async def seek(self, position: int) -> Coroutine[Any, Any, int]:
         value = await super().seek(position)
         await self.update_controller_once()
         await self.pub("seek", value)
@@ -215,10 +216,7 @@ class NoirPlayer(persiktunes.Player):
         except BaseException:
             pass
 
-        try:
-            await super().destroy()
-        except BaseException:
-            pass
+        await super().destroy()
 
         await self.pub("destroy", True)
         # await self.redis.delete(f"*{self.guild.id}")
