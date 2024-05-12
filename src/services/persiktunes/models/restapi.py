@@ -338,7 +338,7 @@ class UpdatePlayerRequest(BaseRestRequest):
     position: int = 0
     endTime: Optional[int] = None
     volume: Optional[int] = None
-    pause: Optional[bool] = None
+    paused: Optional[bool] = None
     filters: Optional[Filters] = None
     voice: Optional[VoiceState] = None
 
