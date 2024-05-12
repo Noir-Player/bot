@@ -153,12 +153,12 @@ class LavalinkWebsocket:
         elif op == "event":
             event = getattr(wsmodels, data.get("type")).model_validate(data)
             player = self.get_player(int(event.guildId))
-            return await player._dispatch_event(event)
+            return await player._dispatch_event(event) if player else None
 
         elif op == "playerUpdate":
             update = PlayerUpdateOP.model_validate(data)
             player = self.get_player(int(update.guildId))
-            return await player._update_state(update)
+            return await player._update_state(update) if player else None
 
     async def _handle_node_switch(self) -> None:
         nodes = [
@@ -179,7 +179,7 @@ class LavalinkWebsocket:
                 self._log.debug(f"Recieved raw websocket message {msg}")
                 self._loop.create_task(self._handle_ws_msg(data=data))
             except exceptions.ConnectionClosed:
-                if self._node.player_count > 0:
+                if self._node.player_count > 0 and not self._node._resume:
                     for _player in self._node.players.values():
                         self._loop.create_task(_player.destroy())
 
