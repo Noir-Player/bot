@@ -40,7 +40,9 @@ class NoirQueue(Queue):
         if self.is_full:
             return
         super().put(item)
-        await self.update_state("put", item.model_dump_json())
+        await self.update_state(
+            "put", item.model_dump_json(exclude=["ctx", "requester"])
+        )
 
     async def put_list(self, item: list) -> None:
         if self.is_full:
@@ -52,7 +54,7 @@ class NoirQueue(Queue):
         super().put_at_index(index, item)
         await self.update_state(
             "put",
-            item.model_dump_json(),
+            item.model_dump_json(exclude=["ctx", "requester"]),
         )
 
     async def set_loop_mode(self, mode: LoopMode | None) -> None:
