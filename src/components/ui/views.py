@@ -53,7 +53,7 @@ for i in range(len(filters)):
         SelectOption(
             label=list(filters.keys())[i],
             description=descriptions[i],
-            emoji="<:flag:1115610864054190121>",
+            emoji="<:ev_shadow_add_primary:1239113713768861877>",
         )
     )
 
@@ -102,10 +102,10 @@ class ActionsView(disnake.ui.View):
     #     logging.error(traceback.format_exc())
 
     @disnake.ui.button(
-        emoji="<:flag:1115610864054190121>",
+        emoji="<:star_primary:1239113697654472825>",
         label="поставить звездочку",
         row=0,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator()
     async def recomendations(self, button, interaction):
@@ -135,10 +135,10 @@ class ActionsView(disnake.ui.View):
             return
 
     @disnake.ui.button(
-        emoji="<:alt:1110216568295653459>",
+        emoji="<:alt_route_primary:1239113857461387264>",
         label="найти альтернативы",
         row=1,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator(with_message=True)
     async def alternative(self, button, interaction):
@@ -155,7 +155,7 @@ class ActionsView(disnake.ui.View):
 
         await interaction.delete_original_message()
 
-    # @disnake.ui.button(emoji="<:chatlefttext:1110271673975984291>", label="найти текст⠀⠀⠀⠀⠀⠀", row=2, style=disnake.ButtonStyle.blurple)
+    # @disnake.ui.button(emoji="<:chatlefttext:1110271673975984291>", label="найти текст⠀⠀⠀⠀⠀⠀", row=2, style=disnake.ButtonStyle.gray)
     # async def lyric(self, button, interaction):
     #     await check_voice(self.player, interaction)
 
@@ -177,10 +177,10 @@ class ActionsView(disnake.ui.View):
     # {self.player.current.title}", description=page), ephemeral=True)
 
     @disnake.ui.button(
-        emoji="<:trash3:1117078782096982037>",
+        emoji="<:delete_primary:1239113856027070514>",
         label="удалить из очереди",
         row=3,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator()
     async def remove(self, button, interaction):
@@ -192,10 +192,10 @@ class ActionsView(disnake.ui.View):
                 pass
 
     @disnake.ui.button(
-        emoji="<:sliders2vertical:1107250314991652904>",
+        emoji="<:equalizer_primary:1239113717656977439>",
         label="эквалайзер⠀⠀⠀⠀⠀⠀",
         row=4,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator()
     async def eq(self, button, inter):
@@ -230,10 +230,10 @@ class FiltersView(disnake.ui.View):
                 pass
 
     @disnake.ui.button(
-        emoji="<:trash3:1117078782096982037>",
+        emoji="<:ev_shadow_minus_primary:1239113854684893194>",
         label="сбросить все фильтры",
         row=2,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     async def reset_filters(self, button, inter):
         await self.player.reset_filters()
@@ -354,7 +354,9 @@ class QueueView(disnake.ui.View):
         )
 
     @disnake.ui.button(
-        emoji="<:prev:1110211620052942911>", row=0, style=disnake.ButtonStyle.blurple
+        emoji="<:skip_previous_primary:1239113698623225908>",
+        row=0,
+        style=disnake.ButtonStyle.gray,
     )
     async def prev(self, button, interaction):
         await interaction.response.defer()
@@ -363,9 +365,9 @@ class QueueView(disnake.ui.View):
             return await self.refresh_pages(interaction)
 
     @disnake.ui.button(
-        emoji="<:skipforward:1107250322801442877>",
+        emoji="<:skip_next_primary:1239113700594679838>",
         row=0,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     async def next(self, button, interaction):
         await interaction.response.defer()
@@ -374,7 +376,9 @@ class QueueView(disnake.ui.View):
             return await self.refresh_pages(interaction)
 
     @disnake.ui.button(
-        emoji="<:shuffle:1107250313221640223>", row=0, style=disnake.ButtonStyle.blurple
+        emoji="<:shuffle_primary:1239115175337001071>",
+        row=0,
+        style=disnake.ButtonStyle.gray,
     )
     async def shuffle(self, button, interaction):
         await interaction.response.defer()
@@ -382,10 +386,10 @@ class QueueView(disnake.ui.View):
         await self.refresh_pages(interaction)
 
     @disnake.ui.button(
-        emoji="<:disc:1116756102596530339>",
-        label="поток",
+        emoji="<:autoplay_primary:1239113693690859564>",
+        label="loose mode",
         row=0,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     async def recomendations(self, button, interaction):
         await interaction.response.defer()
@@ -397,10 +401,10 @@ class QueueView(disnake.ui.View):
         return await self.refresh_pages(interaction)
 
     @disnake.ui.button(
-        emoji="<:musicnotelist:1107250545523183616>",
+        emoji="<:save_primary:1239113692306739210>",
         label="сохранить как плейлист",
         row=1,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     async def shuffle(self, button, interaction):
         tracks = [
@@ -458,7 +462,9 @@ class TracksView(disnake.ui.View):
         await interaction.edit_original_message(embed=embed, view=self)
 
     @disnake.ui.button(
-        emoji="<:prev:1110211620052942911>", row=0, style=disnake.ButtonStyle.blurple
+        emoji="<:skip_previous_primary:1239113698623225908>",
+        row=0,
+        style=disnake.ButtonStyle.gray,
     )
     async def prev(self, button, interaction):
         await interaction.response.defer()
@@ -469,9 +475,9 @@ class TracksView(disnake.ui.View):
         await interaction.response.defer(ephemeral=True)
 
     @disnake.ui.button(
-        emoji="<:skipforward:1107250322801442877>",
+        emoji="<:skip_next_primary:1239113700594679838>",
         row=0,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     async def next(self, button, interaction):
         await interaction.response.defer()
@@ -482,7 +488,7 @@ class TracksView(disnake.ui.View):
         await interaction.response.defer(ephemeral=True)
 
     @disnake.ui.button(
-        label="Добавить в очередь", row=0, style=disnake.ButtonStyle.blurple
+        label="Добавить в очередь", row=0, style=disnake.ButtonStyle.gray
     )
     async def add_to_queue(self, button, interaction):
         if self.player:
@@ -541,7 +547,9 @@ class StarsView(disnake.ui.View):
         await interaction.edit_original_message(embed=embed, view=self)
 
     @disnake.ui.button(
-        emoji="<:prev:1110211620052942911>", row=0, style=disnake.ButtonStyle.blurple
+        emoji="<:skip_previous_primary:1239113698623225908>",
+        row=0,
+        style=disnake.ButtonStyle.gray,
     )
     async def prev(self, button, interaction):
         await interaction.response.defer()
@@ -552,9 +560,9 @@ class StarsView(disnake.ui.View):
         await interaction.response.defer(ephemeral=True)
 
     @disnake.ui.button(
-        emoji="<:skipforward:1107250322801442877>",
+        emoji="<:skip_next_primary:1239113700594679838>",
         row=0,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     async def next(self, button, interaction):
         await interaction.response.defer()
@@ -565,7 +573,7 @@ class StarsView(disnake.ui.View):
         await interaction.response.defer(ephemeral=True)
 
     @disnake.ui.button(
-        label="Добавить в очередь", row=0, style=disnake.ButtonStyle.blurple
+        label="Добавить в очередь", row=0, style=disnake.ButtonStyle.gray
     )
     async def add_to_queue(self, button, interaction):
         if self.player:
@@ -580,9 +588,7 @@ class StarsView(disnake.ui.View):
 
         await interaction.response.defer(ephemeral=True)
 
-    @disnake.ui.button(
-        label="Снять звездочку", row=1, style=disnake.ButtonStyle.blurple
-    )
+    @disnake.ui.button(label="Снять звездочку", row=1, style=disnake.ButtonStyle.gray)
     async def unstar(self, button, interaction):
         await interaction.response.defer()
         interaction.bot.db.stars.remove_from_stars(
@@ -659,7 +665,7 @@ class PlaylistView(disnake.ui.View):
                     },
                     title=self.info.get("title"),
                     description=self.info.get("description", "")
-                    + "\n\nСвайпните на <:skipforward:1107250322801442877>, чтобы посмотреть треки",
+                    + "\n\nСвайпните на <:skip_next_primary:1239113700594679838>, чтобы посмотреть треки",
                     image=self.info.get("thumbnail"),
                     footer=f"{'публичный плейлист' if self.info.get('public') else 'приватный плейлист'}",
                 ),
@@ -667,7 +673,7 @@ class PlaylistView(disnake.ui.View):
             # embed = genembed(
             #     title=self.info.get("title"),
             #     description=self.info.get("description", "")
-            #     + "\n\nСвайпните на <:skipforward:1107250322801442877>, чтобы посмотреть треки",
+            #     + "\n\nСвайпните на <:skip_next_primary:1239113700594679838>, чтобы посмотреть треки",
             #     image=self.info.get("thumbnail"),
             #     author_name=None,
             #     footer=f"{'публичный плейлист' if self.info.get('public') else 'приватный плейлист'} | {', '.join(self.info.get('tags', []) if self.info.get('tags') else [])}",
@@ -708,7 +714,9 @@ class PlaylistView(disnake.ui.View):
             await interaction.edit_original_message(embed=embed, view=self)
 
     @disnake.ui.button(
-        emoji="<:prev:1110211620052942911>", row=0, style=disnake.ButtonStyle.blurple
+        emoji="<:skip_previous_primary:1239113698623225908>",
+        row=0,
+        style=disnake.ButtonStyle.gray,
     )
     async def prev(self, button, interaction):
         await interaction.response.defer()
@@ -718,9 +726,9 @@ class PlaylistView(disnake.ui.View):
             return await self.refresh_pages(interaction)
 
     @disnake.ui.button(
-        emoji="<:skipforward:1107250322801442877>",
+        emoji="<:skip_next_primary:1239113700594679838>",
         row=0,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     async def next(self, button, interaction):
         await interaction.response.defer()
@@ -730,7 +738,9 @@ class PlaylistView(disnake.ui.View):
             return await self.refresh_pages(interaction)
 
     @disnake.ui.button(
-        emoji="<:trash3:1117078782096982037>", row=0, style=disnake.ButtonStyle.blurple
+        emoji="<:delete_primary:1239113856027070514>",
+        row=0,
+        style=disnake.ButtonStyle.gray,
     )
     async def delete_from_playlist(self, button, interaction):
         await interaction.response.defer()
@@ -747,9 +757,9 @@ class PlaylistView(disnake.ui.View):
             return
 
     @disnake.ui.button(
-        emoji="<:pluscircle:1118459100150378550>",
+        emoji="<:playlist_add_primary:1239115838557126678>",
         row=0,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     async def add_to_playlist(self, button, interaction):
         from components.ui.modals import AddToPlaylist
