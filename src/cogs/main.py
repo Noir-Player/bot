@@ -31,73 +31,6 @@ class Music(commands.Cog):
         self.pool = bot.pool
 
     # -------------------------------------------------------------------------------------------------------------------------------------
-    # ИВЕНТЫ ЛАВАЛИНКА
-
-    @commands.Cog.listener()
-    async def on_persik_track_start(self, player: NoirPlayer, track: persik.Track):
-        await player.edit_controller(track.ctx)
-
-        self.bot._log.debug(f"{track} started.")
-
-        if player.update_controller.is_running():
-            player.update_controller.restart()
-        else:
-            player.update_controller.start()
-
-        if not track.info.isStream:
-            try:
-                player.update_controller.change_interval(
-                    minutes=(track.info.length / 1000 / 60 / 20)
-                )
-            except BaseException:
-                pass
-        else:
-            try:
-                player.update_controller.stop()
-            except BaseException:
-                pass
-
-    """Если саундбара нет, его измененение не имеет смысла"""
-
-    """Прослушивание окончания трека"""
-
-    @commands.Cog.listener()
-    async def on_persik_track_end(
-        self, player: NoirPlayer, track: persik.Track, reason
-    ):
-        player.update_controller.stop()  # останавливаем обновление плеера
-
-        self.bot._log.debug(f"{track} ended. Reason: {reason}")
-
-        if not player.queue.is_empty and reason in [
-            "finished",
-            "stopped",
-        ]:  # если трек завершился самостоятельно или использовано skip
-            sound = player.queue.get()  # получаем трек
-            if sound:  # если очередь не пуста
-                return await player.play(sound)
-
-        elif reason == "replaced":  # если трек был заменен
-            return
-
-        await player.queue.clear()
-
-        return await player.edit_controller(
-            track.ctx,
-            embed=self.bot.embedding.get(
-                title="🟣 | Очередь пуста",
-            ),
-            # embed=type_embed(
-            #     type="info",
-            #     description=f"В очереди ничего нет\n\nВключите **поток** для генерации треков",
-            #     image=f"https://mir-s3-cdn-cf.behance.net/project_modules/disp/a11a4893658133.5e98adbead405.gif",
-            # ),
-        )
-
-    # -------------------------------------------------------------------------------------------------------------------------------------
-    # VOICE_STATE_UPDATE ИВЕНТ NOTE: перенесен в fetcher.py
-
-    # -------------------------------------------------------------------------------------------------------------------------------------
     # КОМАНДЫ
     # Группа play
 
@@ -171,7 +104,6 @@ class Music(commands.Cog):
             )
 
         if not player.current:
-            self.bot._log.debug(player.queue)
             await player.play(player.queue.get())
 
         await ctx.delete_original_message()
