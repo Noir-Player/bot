@@ -141,18 +141,31 @@ class LavalinkRest:
             response = await self.send("GET", f"loadtracks?identifier={query}")
             validated = LavalinkTrackLoadingResponse.model_validate(response)
 
-            typed = type(validated.data)
+            if validated.loadType == "search":
+                data = []
 
-            if typed == type(List[Track]):
                 for track in validated.data:
-                    track.ctx = ctx
-                    track.requester = requester
-                    track.description = description
+                    data.append(
+                        track.model_copy(
+                            update={
+                                "ctx": ctx,
+                                "requester": requester,
+                                "description": description,
+                            }
+                        )
+                    )
 
-            elif typed == type(Playlist) or typed == type(Track):
-                validated.data.ctx = ctx
-                validated.data.requester = requester
-                validated.data.description = description
+                validated = validated.model_copy(update={"data": data})
+
+            elif validated.loadType in ("track", "playlist"):
+                data = validated.data.model_copy(
+                    update={
+                        "ctx": ctx,
+                        "requester": requester,
+                        "description": description,
+                    }
+                )
+                validated = validated.model_copy(update={"data": data})
 
             return validated
 
@@ -162,20 +175,46 @@ class LavalinkRest:
         )
         validated = LavaSearchLoadingResponse.model_validate(response)
 
+        tracks = playlists = albums = []
+
         for track in validated.data.tracks or []:
-            track.ctx = ctx
-            track.requester = requester
-            track.description = description
+            tracks.append(
+                track.model_copy(
+                    update={
+                        "ctx": ctx,
+                        "requester": requester,
+                        "description": description,
+                    }
+                )
+            )
 
         for playlist in validated.data.playlists or []:
-            playlist.ctx = ctx
-            playlist.requester = requester
-            playlist.description = description
+            playlists.append(
+                playlist.model_copy(
+                    update={
+                        "ctx": ctx,
+                        "requester": requester,
+                        "description": description,
+                    }
+                )
+            )
 
         for album in validated.data.albums or []:
-            album.ctx = ctx
-            album.requester = requester
-            album.description = description
+            albums.append(
+                album.model_copy(
+                    update={
+                        "ctx": ctx,
+                        "requester": requester,
+                        "description": description,
+                    }
+                )
+            )
+
+        validated = validated.model_copy(
+            update={
+                "data": {"tracks": tracks, "playlists": playlists, "albums": albums},
+            }
+        )
 
         return validated
 
