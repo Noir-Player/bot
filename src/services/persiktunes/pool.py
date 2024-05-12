@@ -113,6 +113,8 @@ class Node:
         self._available: bool = False
         self._version: LavalinkVersion = LavalinkVersion(0, 0, 0)
 
+        self._resume = False
+
         self._route_planner = RoutePlanner(self)
         self._log = self._setup_logging(self._log_level)
 
@@ -260,22 +262,22 @@ class Node:
             )
 
     async def _configure_resuming(self) -> None:
-        if not self._resume_key:
-            return
 
         data = {"timeout": self._resume_timeout}
 
         if self._version.major == 3:
-            data["resumingKey"] = self._resume_key
+            data["resumingKey"] = self._resume_key or self._bot.user.id.__str__()
         elif self._version.major == 4:
             data["resuming"] = True
 
-        await self.send(
+        await self.rest.send(
             method="PATCH",
             path=f"sessions/{self._session_id}",
             include_version=True,
             data=data,
         )
+
+        self._resume = True
 
     async def connect(self, *, reconnect: bool = False):
         """Initiates a connection with a Lavalink node and adds it to the node pool."""
@@ -358,8 +360,9 @@ class Node:
         start = time.perf_counter()
 
         for player in self.players.copy().values():
-            await player.destroy()
-            self._log.debug("All players disconnected from node.")
+            if not self._resume:
+                await player.destroy()
+                self._log.debug(f"Player {player.id} has been disconnected from node.")
 
         await self._websocket._websocket.close()
         await self.rest._session.close()
