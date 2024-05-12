@@ -17,7 +17,7 @@ def progress_slider(start, end):
                     bar += "▬"
             else:
                 if not indicator:
-                    bar += "⚪"
+                    bar += "🟣"
                     indicator = True
                 else:
                     bar += "▬"
@@ -73,16 +73,19 @@ async def state(player: Player):
     )
 
     embed = Embed(
-        title=player.current.info.title,
         color=player.color,
-        description=f"*{player.current.info.author}*",
-        type="image",
+        description=f"<:alternate_email_primary:1239117898912497734> **{player.current.info.author}**",
+    )
+
+    embed.set_author(
+        name=player.current.info.title,
+        url=player.current.info.uri,
     )
 
     embed.set_image(image) if image else None
 
     embed.set_footer(
-        text=f"{prog}\n{times}\nгромкость: {player.volume}% {f' • повтор: {loop[player.queue.loop_mode]}' if player.queue.loop_mode else ''}"
+        text=f"{prog}\n{times}\n {f'громкость: {player.volume}%' if player.volume != 100 else ''} {f' • повтор: {loop[player.queue.loop_mode]}' if player.queue.loop_mode else ''}"
     )
 
     if player.current.playlist:
