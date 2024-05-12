@@ -107,7 +107,7 @@ class AuthorSetup(disnake.ui.View):
         emoji="<:leave:1107004941333168160>",
         label="Назад",
         row=1,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     async def leave(self, button, inter):
         settings = db.get_setup(inter.guild.id) or {}
@@ -130,7 +130,7 @@ class AuthorSetup(disnake.ui.View):
             view=MainSetup(self.node),
         )
 
-    @disnake.ui.button(label="сбросить", row=1, style=disnake.ButtonStyle.blurple)
+    @disnake.ui.button(label="сбросить", row=1, style=disnake.ButtonStyle.gray)
     async def approve_everyone(self, button, inter: disnake.Interaction):
         # table("guilds").update_one({"id": inter.guild_id}, {"$unset": {"role": 1}}, upsert=True)
         inter.bot.db.setup.set(inter.guild_id, "role")
@@ -153,7 +153,7 @@ class RadioSetup(disnake.ui.View):
         emoji="<:leave:1107004941333168160>",
         label="Назад",
         row=0,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     async def leave(self, button, inter):
         settings = db.get_setup(inter.guild.id) or {}
@@ -176,7 +176,7 @@ class RadioSetup(disnake.ui.View):
             view=MainSetup(self.node),
         )
 
-    @disnake.ui.button(emoji="✖️", style=disnake.ButtonStyle.blurple)
+    @disnake.ui.button(emoji="✖️", style=disnake.ButtonStyle.gray)
     async def disallow(self, button, inter):
         # table("guilds").update_one({"id": inter.guild_id}, {"$unset": {"radio": 1}}, upsert=True)
         inter.bot.db.setup.set(inter.guild_id, "24/7")
@@ -188,7 +188,7 @@ class RadioSetup(disnake.ui.View):
 
         await inter.response.defer(ephemeral=True)
 
-    @disnake.ui.button(emoji="✔️", style=disnake.ButtonStyle.blurple)
+    @disnake.ui.button(emoji="✔️", style=disnake.ButtonStyle.gray)
     async def allow(self, button, inter):
         # table("guilds").update_one({"id": inter.guild_id}, {"$set": {"radio": True}}, upsert=True)
         inter.bot.db.setup.set(inter.guild_id, "24/7", True)
@@ -223,7 +223,7 @@ class SliderSetup(disnake.ui.View):
         emoji="<:leave:1107004941333168160>",
         label="Назад",
         row=1,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     async def leave(self, button, inter):
         settings = db.get_setup(inter.guild.id) or {}
