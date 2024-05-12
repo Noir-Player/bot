@@ -9,7 +9,7 @@ from .star import StarsDB
 from .user import UsersDB
 
 mongoclient = pymongo.MongoClient("mongodb://localhost:27017/")
-db = mongoclient["Noir"]
+db = mongoclient["NoirV2"]
 
 
 class Database:
