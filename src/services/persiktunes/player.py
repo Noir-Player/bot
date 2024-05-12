@@ -70,7 +70,6 @@ class Player(VoiceProtocol):
 
         self._last_position: int = 0
         self._last_update: float = 0
-        self._ending_track: Optional[Track] = None
         self._log = self._node._log
 
         self._voice_state: dict = {}
@@ -131,7 +130,7 @@ class Player(VoiceProtocol):
     @property
     def is_playing(self) -> bool:
         """Property which returns whether or not the player is actively playing a track."""
-        return self._is_connected and self._current is not None
+        return self._is_connected and self._current
 
     @property
     def is_connected(self) -> bool:
@@ -191,7 +190,7 @@ class Player(VoiceProtocol):
 
     async def _update_state(self, data: PlayerUpdateOP) -> None:
         self._last_update = data.state.time
-        self._is_connected = data.state.connected
+        self._is_connected = data.state.connected or self._is_connected
         self._last_position = data.state.position
         self._ping = data.state.ping
         self._log.debug(
@@ -268,9 +267,6 @@ class Player(VoiceProtocol):
 
         ds_event.dispatch(self._bot)
 
-        if isinstance(event, TrackStartEvent):
-            self._ending_track = self._current
-
         self._log.debug(f"Dispatched event {event_type} ({ds_event}) to player.")
 
     async def _refresh_endpoint_uri(self, session_id: Optional[str]) -> None:
@@ -314,6 +310,10 @@ class Player(VoiceProtocol):
         )
         self._node._players[self.guild.id] = self
         self._is_connected = True
+
+        self._log.debug(
+            f"Connected to voice channel {self.channel} in guild {self.guild}."
+        )
 
     async def stop(self) -> None:
         """Stops the currently playing track."""
@@ -436,7 +436,9 @@ class Player(VoiceProtocol):
 
         self._paused = pause or not self._paused
 
-        self._log.debug(f"Player has been {'paused' if pause else 'resumed'}.")
+        self._log.debug(
+            f"Player has been {'paused' if self._paused else 'resumed'}. ({pause or not self._paused})"
+        )
         return self._paused
 
     async def set_volume(self, volume: int) -> int:
