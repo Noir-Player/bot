@@ -1,8 +1,8 @@
 import json
 
 import disnake
-import pomice
 
+import services.persiktunes as persik
 from components.ui.views import *
 from objects.exceptions import *
 from validators.player import check_player_btn_decorator
@@ -14,7 +14,7 @@ class Soundpad(disnake.ui.View):
     def __init__(self, player, *, timeout: float | None = None) -> None:
         super().__init__(timeout=timeout)
 
-        self.player: pomice.Player = player
+        self.player: persik.Player = player
 
     # async def on_error(self, error: Exception, item, interaction):
     #     if error is commands.CommandError or error is commands.CommandInvokeError:
@@ -32,13 +32,14 @@ class Soundpad(disnake.ui.View):
     #     logging.error(traceback.format_exc())
 
     @disnake.ui.button(
-        emoji="<:prev:1110211620052942911>", row=0, style=disnake.ButtonStyle.blurple
+        emoji="<:skip_previous_primary:1239113698623225908>",
+        row=0,
+        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator()
     async def prev(self, button, interaction):
-        # await check_voice(self.player, interaction)
         if self.player.current:
-            if self.player.queue.loop_mode != pomice.LoopMode.TRACK:
+            if self.player.queue.loop_mode != persik.LoopMode.TRACK:
                 track = self.player.queue.prev()
                 if track:
                     await self.player.play(track)
@@ -46,25 +47,23 @@ class Soundpad(disnake.ui.View):
                 raise TrackIsLooping("Нельзя пропускать звук, когда он зациклен")
 
     @disnake.ui.button(
-        emoji="<:skipendcircle:1107270817932378162>",
+        emoji="<:play_pause_primary:1239113853137326220>",
         row=0,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator()
     async def play_pause(self, button, interaction):
-        # await check_voice(self.player, interaction)
         if self.player.current:
-            await self.player.set_pause(not self.player.is_paused)
+            await self.player.set_pause()
 
     @disnake.ui.button(
-        emoji="<:skipforward:1107250322801442877>",
+        emoji="<:skip_next_primary:1239113700594679838>",
         row=0,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator()
     async def next(self, button, interaction):
-        # await check_voice(self.player, interaction)
-        if self.player.queue.loop_mode != pomice.LoopMode.TRACK:
+        if self.player.queue.loop_mode != persik.LoopMode.TRACK:
             track = self.player.queue.next()
             if track:
                 await self.player.play(track)
@@ -72,56 +71,53 @@ class Soundpad(disnake.ui.View):
             raise TrackIsLooping("Нельзя пропускать звук, когда он зациклен")
 
     @disnake.ui.button(
-        emoji="<:musicnotelist:1107250545523183616>",
+        emoji="<:queue_music_primary:1239113703824293979>",
         row=0,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator(with_message=True)
     async def queue(self, button, interaction: disnake.MessageInteraction):
-        # await check_voice(self.player, interaction, with_message=True)
         if self.player.current:
             view = QueueView(self.player)
             await view.refresh_pages(interaction)
 
     @disnake.ui.button(
-        emoji="<:repeat1:1107250320301629460>", row=1, style=disnake.ButtonStyle.blurple
+        emoji="<:repeat_primary:1239113702129664082>",
+        row=1,
+        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator()
     async def loop(self, button, interaction):
-        # await check_voice(self.player, interaction)
-
-        if self.player.queue.loop_mode == pomice.LoopMode.QUEUE:
-            await self.player.queue.set_loop_mode(pomice.LoopMode.TRACK)
-        elif self.player.queue.loop_mode == pomice.LoopMode.TRACK:
-            await self.player.queue.disable_loop()
+        if self.player.queue.loop_mode == persik.LoopMode.QUEUE:
+            await self.player.queue.set_loop_mode(persik.LoopMode.TRACK)
+        elif self.player.queue.loop_mode == persik.LoopMode.TRACK:
+            await self.player.queue.set_loop_mode()
         else:
-            await self.player.queue.set_loop_mode(pomice.LoopMode.QUEUE)
+            await self.player.queue.set_loop_mode(persik.LoopMode.QUEUE)
 
     @disnake.ui.button(
-        emoji="<:volumedown:1107250325578063953>",
+        emoji="<:volume_down_primary:1239113694856876076>",
         row=1,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator()
     async def vol_down(self, button, interaction):
-        # await check_voice(self.player, interaction)
         await self.player.volume_down()
 
     @disnake.ui.button(
-        emoji="<:volumeup:1107250326974771241>",
+        emoji="<:volume_up_primary:1239113696337199165>",
         row=1,
-        style=disnake.ButtonStyle.blurple,
+        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator()
     async def vol_up(self, button, interaction):
-        # await check_voice(self.player, interaction)
         await self.player.volume_up()
 
     @disnake.ui.button(
-        emoji="<:threedots:1117080320261500940>", row=1, style=disnake.ButtonStyle.gray
+        emoji="<:apps_primary:1239113725714104441>",
+        row=1,
+        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator()
     async def action(self, button, interaction):
-        # await check_voice(self.player, interaction)
-
         await interaction.send(ephemeral=True, view=ActionsView(self.player))
