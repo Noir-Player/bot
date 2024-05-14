@@ -184,14 +184,6 @@ class Playlist(ExtraModel):
         """Length of playlist"""
         return sum([t.info.length for t in self.tracks])
 
-    def name(self) -> str:
-        """Name of playlist"""
-        return self.info.name
-
-    def selected_track(self) -> int:
-        """Selected track of playlist"""
-        return self.info.selectedTrack
-
     def track_count(self) -> int:
         """Count of tracks in playlist"""
         return len(self.tracks)
