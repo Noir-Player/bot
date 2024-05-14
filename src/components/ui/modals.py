@@ -4,10 +4,8 @@ import disnake
 from disnake.interactions.modal import ModalInteraction
 
 import services.persiktunes as persik
-from helpers.dump import Dump as Build
 from services.database.core import Database
 
-build = Build()
 db = Database()
 
 
@@ -118,16 +116,10 @@ class AddToPlaylist(disnake.ui.Modal):
                 if isinstance(query, persik.Playlist):
                     for track in query.tracks:
                         result.append(
-                            build.track(
-                                track.info, track.track_type.value, track.thumbnail
-                            )
+                            track.model_dump_json(exclude=["ctx", "requester"])
                         )
                 else:
-                    result.append(
-                        build.track(
-                            query[0].info, query[0].track_type.value, query[0].thumbnail
-                        )
-                    )
+                    result.append()
             else:
                 await inter.edit_original_message(
                     embed=self.node.bot.embedding.get(
