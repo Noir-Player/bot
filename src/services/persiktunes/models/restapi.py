@@ -116,6 +116,11 @@ class LavalinkPlaylistInfo(BaseModel):
     selectedTrack: Optional[int] = -1
 
 
+class AlbumLink(BaseModel):
+    name: str
+    id: str
+
+
 """
 LAVALINK MAIN MODELS
 """
@@ -136,11 +141,13 @@ class Track(ExtraModel):
     lyrics: Optional[dict] = None
 
     ctx: Optional[Union[commands.Context, Interaction]] = None  # Additional context
-    requester: Optional[Union[Member, User, ClientUser]] = None  # Additional requester
+    requester: Optional[Union[Member, User, ClientUser, str]] = (
+        None  # Additional requester
+    )
 
     filters: Optional[Filters] = None  # Additional filters
 
-    playlist: Optional["Playlist"] = None
+    album: Optional[AlbumLink] = None
 
     description: Optional[str] = None  # Optional track description
 
@@ -171,16 +178,19 @@ class Playlist(ExtraModel):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     uri: Optional[str] = None
+
     ctx: Optional[Union[commands.Context, Interaction]] = None  # Additional context
     requester: Optional[Union[Member, User, ClientUser]] = None  # Additional requester
 
     description: Optional[str] = None  # Optional playlist description
 
+    thumbnail: Optional[str] = None
+
     color: Optional[int] = None  # Playlist color
 
     tag: Optional[AnyStr] = None  # Optional playlist tag
 
-    def length(self) -> int:
+    def get_length(self) -> int:
         """Length of playlist"""
         return sum([t.info.length for t in self.tracks])
 
@@ -188,7 +198,7 @@ class Playlist(ExtraModel):
         """Count of tracks in playlist"""
         return len(self.tracks)
 
-    def thumbnail(self) -> str | None:
+    def get_thumbnail(self) -> str | None:
         """Thumbnail of playlist (artwork)"""
         return self.pluginInfo.get("artworkUrl") if self.pluginInfo else None
 
