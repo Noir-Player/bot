@@ -1,4 +1,4 @@
-from typing import Any, Coroutine, Dict, List, Union
+from typing import Any, Dict, List
 
 import ytmusicapi
 
@@ -9,7 +9,23 @@ from .template import BaseSearch
 
 
 class YoutubeMusicSearch(BaseSearch):
-    """Youtube Music search abstract class."""
+    """
+    Youtube Music search abstract class.
+
+    You can use mathods without `Node`, just pass context in `kwargs` and go:
+
+    ```py
+    from persiktunes import YoutubeMusicSearch
+    ...
+    search = YoutubeMusicSearch(node = node)
+    ...
+    @commands.slash_command(description="Play song")
+    asyng def play(self, ctx, query: str):
+        songs = await search.search_songs(query, ctx=ctx, requester=ctx.author)
+        ...
+        await player.play(songs[0])
+    ```
+    """
 
     def __init__(self, node: Any, *args, **kwargs) -> None:
         self.client = ytmusicapi.YTMusic(language=kwargs.get("language", "ru"))
@@ -144,7 +160,7 @@ class YoutubeMusicSearch(BaseSearch):
 
         moods = []
 
-        for name, rawmoods in raw:
+        for name, rawmoods in raw.items():
             for mood in rawmoods:
                 moods.append(Mood(title=mood["title"], params=mood["params"]))
 
