@@ -4,8 +4,7 @@ from typing import Any, Coroutine, Optional
 import disnake
 from disnake.ext import tasks
 
-from components.buttons import Soundpad
-from components.ui.player import state
+from components.ui.objects.player import Soundpad, state
 from helpers.dump import Dump as Build
 from objects.queue import NoirQueue
 from services import persiktunes
