@@ -2,7 +2,7 @@ from datetime import datetime
 
 from disnake.ext import commands
 
-from components.ui.player import state
+from components.ui.objects.player import state
 from components.ui.views import ActionsView, FiltersView, QueueView
 from objects.bot import NoirBot
 from objects.exceptions import InvalidIndex
