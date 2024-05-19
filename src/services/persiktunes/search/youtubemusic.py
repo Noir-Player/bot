@@ -27,11 +27,12 @@ class YoutubeMusicSearch(BaseSearch):
     ```
     """
 
-    def __init__(self, node: Any, *args, **kwargs) -> None:
+    def __init__(self, node: Any, **kwargs) -> None:
+        """Pass a `Node` instance and get started.\nYou can pass any additional kwarg: `language`"""
         self.client = ytmusicapi.YTMusic(language=kwargs.get("language", "ru"))
         self.node = node
 
-    async def song(self, id: str, *args, **kwargs) -> Track | None:
+    async def song(self, id: str, **kwargs) -> Track | None:
         raw = self.client.get_song(id)
 
         if not raw:
@@ -52,7 +53,7 @@ class YoutubeMusicSearch(BaseSearch):
             sourceName="youtube",
         )
 
-        return Track(
+        track = Track(
             encoded=(
                 await self.node.rest.send(
                     "GET", f"loadtracks?identifier={raw['videoId']}"
@@ -61,7 +62,9 @@ class YoutubeMusicSearch(BaseSearch):
             info=info,
         )
 
-    async def album(self, id: str, *args, **kwargs) -> Album | None:
+        return self.node.patch_context(data=track, **kwargs)
+
+    async def album(self, id: str, **kwargs) -> Album | None:
         raw = self.client.get_album(id)
 
         if not raw:
@@ -101,14 +104,16 @@ class YoutubeMusicSearch(BaseSearch):
 
         info = LavalinkPlaylistInfo(name=raw["title"], selectedTrack=0)
 
-        return Album(
+        album = Album(
             info=info,
             tracks=tracks,
             description=raw.get("description"),
             uri=f"https://music.youtube.com/playlist?list={raw['audioPlaylistId']}",
         )
 
-    async def playlist(self, id: str, *args, **kwargs) -> Playlist | None:
+        return self.node.patch_context(data=album, **kwargs)
+
+    async def playlist(self, id: str, **kwargs) -> Playlist | None:
         raw = self.client.get_playlist(id, limit=500)
 
         if not raw:
@@ -148,14 +153,16 @@ class YoutubeMusicSearch(BaseSearch):
 
         info = LavalinkPlaylistInfo(name=raw["title"], selectedTrack=0)
 
-        return Playlist(
+        playlist = Playlist(
             info=info,
             tracks=tracks,
             description=raw.get("description"),
             uri=f"https://music.youtube.com/playlist?list={raw['audioPlaylistId']}",
         )
 
-    async def moods(self, *args, **kwargs) -> List[Mood]:
+        return self.node.patch_context(data=playlist, **kwargs)
+
+    async def moods(self, **kwargs) -> List[Mood]:
         raw = self.client.get_mood_categories()
 
         moods = []
@@ -166,17 +173,18 @@ class YoutubeMusicSearch(BaseSearch):
 
         return moods
 
-    async def get_mood_playlists(self, mood: Mood, *args, **kwargs) -> List[Playlist]:
+    async def get_mood_playlists(self, mood: Mood, **kwargs) -> List[Playlist]:
         raw = self.client.get_mood_playlists(mood.params)
 
         playlists = []
 
         for rawplaylist in raw:
-            playlists.append(self.playlist(rawplaylist["playlistId"]))
+            playlist = self.playlist(rawplaylist["playlistId"])
+            playlists.append(self.node.patch_context(data=playlist, **kwargs))
 
         return playlists
 
-    async def search_songs(self, query: str, *args, **kwargs) -> List[Track] | None:
+    async def search_songs(self, query: str, **kwargs) -> List[Track] | None:
         raw = self.client.search(query, filter="songs")
 
         if not raw:
@@ -185,11 +193,12 @@ class YoutubeMusicSearch(BaseSearch):
         tracks = []
 
         for rawresult in raw:
-            tracks.append(self.song(rawresult["videoId"]))
+            song = self.song(rawresult["videoId"])
+            tracks.append(self.node.patch_context(data=song, **kwargs))
 
         return tracks
 
-    async def search_albums(self, query: str, *args, **kwargs) -> List[Album] | None:
+    async def search_albums(self, query: str, **kwargs) -> List[Album] | None:
         raw = self.client.search(query, filter="albums")
 
         if not raw:
@@ -198,13 +207,12 @@ class YoutubeMusicSearch(BaseSearch):
         albums = []
 
         for rawresult in raw:
-            albums.append(self.album(rawresult["browseId"]))
+            album = self.album(rawresult["browseId"])
+            albums.append(self.node.patch_context(data=album, **kwargs))
 
         return albums
 
-    async def search_playlists(
-        self, query: str, *args, **kwargs
-    ) -> List[Playlist] | None:
+    async def search_playlists(self, query: str, **kwargs) -> List[Playlist] | None:
         raw = self.client.search(query, filter="playlists")
 
         if not raw:
@@ -213,11 +221,12 @@ class YoutubeMusicSearch(BaseSearch):
         playlists = []
 
         for rawresult in raw:
-            playlists.append(self.playlist(rawresult["browseId"]))
+            playlist = self.playlist(rawresult["browseId"])
+            playlists.append(self.node.patch_context(data=playlist, **kwargs))
 
         return playlists
 
-    async def relayted(self, song: Track, *args, **kwargs) -> List[Track]:
+    async def relayted(self, song: Track, **kwargs) -> List[Track]:
         raw = self.client.get_watch_playlist(song.info.identifier, limit=1)
 
         relayted = self.client.get_song_related(raw["playlistId"])
@@ -225,11 +234,12 @@ class YoutubeMusicSearch(BaseSearch):
         tracks = []
 
         for rawtrack in relayted["tracks"]:
-            tracks.append(self.song(rawtrack["videoId"]))
+            track = self.song(rawtrack["videoId"])
+            tracks.append(self.node.patch_context(data=track, **kwargs))
 
         return tracks
 
-    async def lyrics(self, song: Track, *args, **kwargs) -> Track | None:
+    async def lyrics(self, song: Track, **kwargs) -> Track | None:
         raw = self.client.get_watch_playlist(song.info.identifier, limit=1)
 
         if not raw.get("lyrics"):
@@ -238,6 +248,8 @@ class YoutubeMusicSearch(BaseSearch):
         lyrics = self.client.get_song_lyrics(raw["lyrics"]).get("lyrics")
 
         track = song.model_copy(update={"lyrics": lyrics})
+
+        track = self.node.patch_context(data=track, **kwargs)
 
         return track
 
@@ -275,7 +287,7 @@ class YoutubeMusicSearch(BaseSearch):
     #     return patched_tracks
 
     # async def search(
-    #     self, query: str, filter: str = None, only_top: bool = False, *args, **kwargs
+    #     self, query: str, filter: str = None, only_top: bool = False, **kwargs
     # ) -> LavaSearchLoadingResponse | Union[Track, Playlist]:
     #     response = self.client.search(query, filter)
 
