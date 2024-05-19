@@ -89,14 +89,14 @@ class Queue(Iterable[Track]):
         Does not remove item from queue.
         """
         if not isinstance(index, int):
-            raise ValueError("'int' type required.'")
+            raise ValueError("'int' type required.")
 
         return self._queue[index]
 
     def __setitem__(self, index: int, item: Track) -> None:
         """Inserts an item at given position."""
         if not isinstance(index, int):
-            raise ValueError("'int' type required.'")
+            raise ValueError("'int' type required.")
 
         self.put_at_index(index, item)
 
@@ -147,14 +147,14 @@ class Queue(Iterable[Track]):
     def _get(self) -> Track:
         return (
             self._queue.pop(0)
-            if self._loop_mode
+            if self._loose_mode
             else self._queue[
-                self._index(self._current_item) if self._current_item else -1 + 1
+                self._index(self._current_item) if self._current_item else 0
             ]
         )
 
     def _drop(self) -> Track:
-        return self._queue.pop()
+        return self._queue.pop(0)
 
     def _index(self, item: Track) -> int:
         return self._queue.index(item)
@@ -173,6 +173,19 @@ class Queue(Iterable[Track]):
             return item
 
         return self._queue[item]
+
+    def _check_puttable(self) -> bool:
+        if self.is_full:
+            if not self._overflow:
+                if self._return_exceptions:
+                    raise QueueFull(
+                        f"Queue max_size of {self.max_size} has been reached.",
+                    )
+                return False
+            else:
+                self._drop()
+
+        return True
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # static methods
@@ -321,61 +334,31 @@ class Queue(Iterable[Track]):
 
     def put(self, item: Track) -> None:
         """Put the given item into the back of the queue."""
-        if self.is_full:
-            if not self._overflow:
-                if self._return_exceptions:
-                    raise QueueFull(
-                        f"Queue max_size of {self.max_size} has been reached.",
-                    )
-                else:
-                    return
+        if self._check_puttable():
+            return self._put(self._check_track(item))
 
-            self._drop()
-
-        return self._put(self._check_track(item))
+    def put_next(self, item: Track) -> None:
+        """Put the given item after current track."""
+        if self._check_puttable():
+            return self._insert(
+                self.find_position(self._current_item) + 1 if self._current_item else 0,
+                self._check_track(item),
+            )
 
     def put_at_index(self, index: int, item: Track) -> None:
         """Put the given item into the queue at the specified index."""
-        if self.is_full:
-            if not self._overflow:
-                if self._return_exceptions:
-                    raise QueueFull(
-                        f"Queue max_size of {self.max_size} has been reached.",
-                    )
-                else:
-                    return
-
-            self._drop()
-
-        return self._insert(index, self._check_track(item))
+        if self._check_puttable():
+            return self._insert(index, self._check_track(item))
 
     def put_at_front(self, item: Track) -> None:
         """Put the given item into the front of the queue."""
-        if self.is_full:
-            if not self._overflow:
-                if self._return_exceptions:
-                    raise QueueFull(
-                        f"Queue max_size of {self.max_size} has been reached.",
-                    )
-                else:
-                    return
-
-            self._drop()
-
-        return self.put_at_index(0, item)
+        if self._check_puttable():
+            return self.put_at_index(0, item)
 
     def put_list(self, item: List[Track]) -> None:
         """Put the given list into the back of the queue."""
-        if self.is_full:
-            if not self._overflow:
-                if self._return_exceptions:
-                    raise QueueFull(
-                        f"Queue max_size of {self.max_size} has been reached.",
-                    )
-                else:
-                    return
-
-            for _ in range(item.__len__()):
+        if self._check_puttable() and self.__len__() + 1 >= self.max_size:
+            for _ in range(item.__len__() - 1):
                 self._drop()
 
         [self._check_track(track) for track in item]
@@ -477,7 +460,5 @@ class Queue(Iterable[Track]):
             self._insert(index, item)
 
     def set_primary(self, item: Track) -> None:
-        """
-        Set the primary item of the queue.
-        """
+        """Set the primary item of the queue."""
         self._primary = self._check_track(item)
