@@ -1,4 +1,5 @@
 import json
+import time
 
 import disnake
 from disnake.ext import commands
@@ -25,7 +26,7 @@ RadioUrls = list(
 )
 
 
-class Music(commands.Cog):
+class MusicCog(commands.Cog):
     def __init__(self, bot: NoirBot):
         self.bot = bot
         self.pool = bot.pool
@@ -47,24 +48,22 @@ class Music(commands.Cog):
     ):
         player: NoirPlayer = self.bot.node.get_player(ctx.guild_id)
 
-        query = await player.search(search, ctx=ctx, requester=ctx.author)
+        query = await player.search(
+            search, ctx=ctx, requester=ctx.author, use_client_search=True
+        )
 
-        if query.loadType == "playlist":
-            await player.queue.put_list(query.data.tracks)
-            await player.play(player.queue.get())
-
-        elif query.loadType == "search":
-            await player.queue.put(query.data)
-            await player.play(query[0])
-
-        elif query.loadType == "track":
-            await player.play(query)
+        if query.tracks:
+            await player.play(query.tracks[0])
 
         else:
             return await ctx.edit_original_response(
                 embed=self.bot.embedding.get(
                     title="🟠 | Не найдено",
-                    description="Не удалось найти трек",
+                    description=(
+                        "Не удалось найти трек. " + "Поищите отдельно от плейлиста."
+                        if query.playlists
+                        else ""
+                    ),
                     color="warning",
                 ),
                 # embed=type_embed(type="error", description=f"Не удалось найти")
@@ -77,30 +76,64 @@ class Music(commands.Cog):
     async def search(
         self,
         ctx,
-        search: str = commands.Param(description="пишите для поиска... 🔍"),
+        search: str = commands.Param(description="Поиск трека или плейлиста... 🔍"),
     ):  # , replace: bool = commands.Param(description="заменить текущий трек")):
 
         player: NoirPlayer = self.bot.node.get_player(ctx.guild_id)
 
-        query = await player.search(search, ctx=ctx, requester=ctx.author)
+        query = await player.search(
+            search,
+            ctx=ctx,
+            requester=ctx.author,
+            use_client_search=True,
+            single_result=True,
+        )
 
-        if query.loadType == "playlist":
-            await player.queue.put_list(query.data.tracks)
+        self.bot.log.debug(
+            f"Search result: {query.model_dump()} ({query.__class__.__name__})"
+        )
 
-        elif query.loadType == "search":
-            await player.queue.put(query.data[0])
+        if isinstance(query, persik.Track):
+            await player.queue.put(query)
 
-        elif query.loadType == "track":
-            await player.queue.put(query.data)
+        elif isinstance(query, persik.Playlist):
+            await player.queue.put_list(query.tracks)
+
+        elif isinstance(query, persik.LavalinkTrackLoadingResponse):
+            if query.loadType == "playlist":
+                await player.queue.put_list(query.data.tracks)
+
+            elif query.loadType == "search":
+                await player.queue.put(query.data[0])
+
+            elif query.loadType == "track":
+                await player.queue.put(query.data)
+
+            else:
+                self.bot.log.warn(f"{query.model_dump()} Not found")
+                return await ctx.edit_original_response(
+                    embed=self.bot.embedding.get(
+                        title="🟠 | Не найдено",
+                        description="Не удалось найти трек",
+                        color="warning",
+                    ),
+                )
+
+        elif isinstance(query, persik.LavaSearchLoadingResponse):
+            if query.tracks:
+                await player.queue.put(query.tracks[0])
+
+            elif query.playlists:
+                await player.queue.put_list(query.playlists[0].tracks)
 
         else:
+            self.bot.log.warn(f"{query.model_dump()} Not found")
             return await ctx.edit_original_response(
                 embed=self.bot.embedding.get(
                     title="🟠 | Не найдено",
                     description="Не удалось найти трек",
                     color="warning",
                 ),
-                # embed=type_embed(type="error", description=f"Не удалось найти")
             )
 
         if not player.current:
@@ -113,41 +146,55 @@ class Music(commands.Cog):
         if not user_input:
             return []
 
-        search = await self.bot.node.rest.search(
-            query=user_input,
-            ctx=inter,
-            stype=persik.SearchType.ytmsearch,
-            requester=inter.author,
-        )
+        start = time.perf_counter()
+
+        if persik.URLRegex.BASE_URL.match(user_input):
+            return [disnake.OptionChoice(name=f"🔎 | {user_input}", value=user_input)]
+
+        search = await self.bot.node.rest.ytmclient.complete_search(query=user_input)
 
         result = []
 
-        if search.loadType == "playlist":
-            result.append(
-                disnake.OptionChoice(
-                    name=f"🎶 | {search.data.info.name}"[:100],
-                    value=user_input,
-                )
-            )
+        for object in search:
+            names = []
 
-        elif search.loadType == "search":
-            for track in search.data:
-                result.append(
-                    disnake.OptionChoice(
-                        name=f"🎵 | {track.info.title} ({track.info.author})"[:100],
-                        value=track.info.uri,
+            try:
+                if object["resultType"] in ("song", "video"):
+                    emoji = "⭐"
+                    (
+                        names.append(", ".join([i["name"] for i in object["artists"]]))
+                        if object["artists"]
+                        else None
                     )
-                )
 
-        elif search.loadType == "track":
+                    uri = "https://youtube.com/watch?v=" + object["videoId"]
+
+                elif object["resultType"] == "playlist":
+                    emoji = "📁"
+                    (names.append(object["author"]) if object.get("author") else None)
+
+                    uri = (
+                        "https://music.youtube.com/playlist?list="
+                        + object["browseId"][2:]
+                    )
+
+                else:
+                    continue
+            except:
+                continue
+
+            names.append(object["title"])
+
             result.append(
                 disnake.OptionChoice(
-                    name=f"🎵 | {search.data.info.title} ({search.data.info.author})"[
-                        :100
-                    ],
-                    value=search.data.info.uri,
+                    name=(f"{emoji} | " + " - ".join(names))[:100],
+                    value=uri,
                 )
             )
+
+        end = time.perf_counter()
+
+        self.bot._log.debug(f"Autocomplete took {end - start:.3f}s")
 
         return result
 
@@ -178,7 +225,8 @@ class Music(commands.Cog):
             if user_input in station or not user_input:
                 list.append(
                     disnake.OptionChoice(
-                        name=station, value=RadioUrls[RadioNames.index(station)]
+                        name=f"📻 | {station}",
+                        value=RadioUrls[RadioNames.index(station)],
                     )
                 )
 
@@ -388,7 +436,7 @@ class Music(commands.Cog):
             except BaseException:
                 self.bot.node._players.pop(ctx.guild.id)
                 if self.bot.node.is_connected:
-                    await self._node.send(
+                    await self._node.rest.send(
                         method="DELETE",
                         path=player._player_endpoint_uri,
                         guild_id=ctx.guild.id,
@@ -398,4 +446,4 @@ class Music(commands.Cog):
 
 
 def setup(bot: commands.Bot):
-    bot.add_cog(Music(bot))
+    bot.add_cog(MusicCog(bot))
