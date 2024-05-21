@@ -1,7 +1,5 @@
-from helpers.dump import Dump as Build
 from services.persiktunes import LoopMode, Player, Queue, Track
-
-build = Build()
+from services.persiktunes.models import *
 
 
 class NoirQueue(Queue):
@@ -56,6 +54,22 @@ class NoirQueue(Queue):
             "put",
             item.model_dump_json(exclude=["ctx", "requester"]),
         )
+
+    async def put_next(self, item: Track) -> None:
+        super().put_next(item)
+        await self.update_state(
+            "put_next",
+            item.model_dump_json(exclude=["ctx", "requester"]),
+        )
+
+    async def put_auto(
+        self,
+        item: (
+            LavalinkTrackLoadingResponse | LavaSearchLoadingResponse | Track | Playlist
+        ),
+        put_type: Literal["once", "tracks", "playlists", "mixes"] = "once",
+    ) -> None:
+        pass
 
     async def set_loop_mode(self, mode: LoopMode | None) -> None:
         if self._queue:
