@@ -138,7 +138,7 @@ class Track(ExtraModel):
     userData: Optional[Any] = None
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    lyrics: Optional[dict] = None
+    lyrics: Optional[Union[str, dict]] = None
 
     ctx: Optional[Union[commands.Context, Interaction]] = None  # Additional context
     requester: Optional[Union[Member, User, ClientUser, str]] = (
