@@ -12,7 +12,7 @@ class SounpadCog(commands.Cog):
 
     @check_player_decorator()
     @commands.slash_command(
-        description="🔵 | где плеер?",
+        description="🟣 | где контроллер плеера?",
         dm_permission=False,
     )
     async def soundpad(self, ctx):
@@ -21,27 +21,18 @@ class SounpadCog(commands.Cog):
         try:
             return await ctx.send(
                 embed=self.bot.embedding.get(
-                    title="🔵 | Расположение",
+                    title="🟣 | Расположение",
                     description=f"[⭐ клик]({player.controller.jump_url})",
-                    color="info",
                 ),
-                # embed=type_embed(
-                #     "info",
-                #     f"Сейчас плеер находится [здесь]({player.controller.jump_url})\nВы можете не видеть его, если не имеете прав.",
-                # ),
                 ephemeral=True,
             )
         except BaseException:
             return await ctx.send(
                 embed=self.bot.embedding.get(
                     title="🟠 | Не найдено",
-                    description="Не удалось найти плеер. Вы по-прежнему можете смотреть текущий трек через команду `/now playing`",
+                    description="Не удалось найти контроллер плеера. Вы по-прежнему можете смотреть текущий трек через команду `/now playing`",
                     color="warning",
                 ),
-                # embed=type_embed(
-                #     "load",
-                #     "Похоже, плеера на этом сервере нет. Вы можете его создать, используя одну из этих команд: `/play zaycevfm`, `/play multiple`, `/play search`",
-                # ),
                 ephemeral=True,
             )
 
@@ -49,7 +40,7 @@ class SounpadCog(commands.Cog):
 
     @check_player_decorator()
     @commands.slash_command(
-        description="🔵 | повторно отправить плеер", dm_permission=False
+        description="🟣 | повторно отправить контроллер", dm_permission=False
     )
     async def resend(self, ctx):
         player = self.bot.node.get_player(ctx.guild_id)
@@ -63,10 +54,6 @@ class SounpadCog(commands.Cog):
                     description="Не удалось найти плеер. Вы по-прежнему можете смотреть текущий трек через команду `/now playing`",
                     color="warning",
                 ),
-                # embed=type_embed(
-                #     "load",
-                #     "Не смогла найти плеер. Вы можете его создать, используя одну из этих команд: `/play zaycevfm`, `/play multiple`, `/play search`",
-                # ),
                 ephemeral=True,
             )
 
