@@ -245,7 +245,7 @@ class YoutubeMusicSearch(BaseSearch):
         if not raw.get("lyrics"):
             return
 
-        lyrics = self.client.get_song_lyrics(raw["lyrics"]).get("lyrics")
+        lyrics = self.client.get_lyrics(raw["lyrics"]).get("lyrics")
 
         track = song.model_copy(update={"lyrics": lyrics})
 
