@@ -37,11 +37,11 @@ class ContextView(disnake.ui.View):
             await player.queue.start_autoplay(self.track)
 
     @disnake.ui.button(
-        emoji="<:star_primary:1239113697654472825>",
+        emoji="<:bookmark_primary:1242557997624983592>",
         row=1,
     )
     @check_player_btn_decorator(with_message=True)
-    async def take_star(self, button, interaction):
+    async def add_to_stars(self, button, interaction):
         await interaction.response.defer(ephemeral=True)
         # NOTE: write a db models first
 
