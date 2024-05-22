@@ -9,7 +9,7 @@ from objects.bot import NoirBot
 from objects.exceptions import *
 
 
-class Playlists(commands.Cog):
+class PlaylistsCog(commands.Cog):
     def __init__(self, bot: NoirBot):
         self.bot = bot
         self.pool = bot.pool
@@ -265,4 +265,4 @@ class Playlists(commands.Cog):
 
 
 def setup(bot: commands.Bot):
-    bot.add_cog(Playlists(bot))
+    bot.add_cog(PlaylistsCog(bot))

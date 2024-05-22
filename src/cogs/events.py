@@ -7,7 +7,7 @@ from objects.bot import NoirBot
 from objects.player import NoirPlayer
 
 
-class Events(commands.Cog):
+class EventsCog(commands.Cog):
     def __init__(self, bot: NoirBot):
         self.bot = bot
         self.pool = bot.pool
@@ -71,4 +71,4 @@ class Events(commands.Cog):
 
 
 def setup(bot: commands.Bot):
-    bot.add_cog(Events(bot))
+    bot.add_cog(EventsCog(bot))

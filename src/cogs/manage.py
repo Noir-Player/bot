@@ -14,7 +14,7 @@ config = configparser.ConfigParser()
 config.read("noir.properties")
 
 
-class Manage(commands.Cog):
+class ManageCog(commands.Cog):
     def __init__(self, bot: NoirBot):
         self.bot = bot
         self.pool = bot.pool
@@ -212,4 +212,4 @@ best node:
 
 
 def setup(bot: commands.Bot):
-    bot.add_cog(Manage(bot))
+    bot.add_cog(ManageCog(bot))

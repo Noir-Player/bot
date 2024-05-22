@@ -6,7 +6,7 @@ from disnake.ext import commands
 from objects.bot import NoirBot
 
 
-class Help(commands.Cog):
+class HelpCog(commands.Cog):
     def __init__(self, bot: NoirBot):
         self.bot = bot
 
@@ -120,4 +120,4 @@ class Help(commands.Cog):
 
 def setup(bot: commands.Bot):
 
-    bot.add_cog(Help(bot))
+    bot.add_cog(HelpCog(bot))

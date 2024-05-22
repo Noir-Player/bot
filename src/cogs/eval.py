@@ -45,7 +45,7 @@ class EvalModal(Modal):
         await interaction.send(f"## Вывод в консоли:\n```py\n{output}\n```")
 
 
-class Eval(commands.Cog):  # Not enabled
+class EvalCog(commands.Cog):  # Not enabled
     def __init__(self, bot: NoirBot):
         self.bot = bot
         self.pool = bot.pool
@@ -59,4 +59,4 @@ class Eval(commands.Cog):  # Not enabled
 
 
 def setup(bot: commands.Bot):
-    bot.add_cog(Eval(bot))
+    bot.add_cog(EvalCog(bot))
