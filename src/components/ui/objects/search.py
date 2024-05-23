@@ -27,7 +27,6 @@ class SearchView(disnake.ui.View):
     ):
         self.results = results
         self.node = node
-        self.api = YoutubeMusicSearch(node=node)
         self.bot: NoirBot = node.bot
 
         self.message = message
@@ -35,6 +34,8 @@ class SearchView(disnake.ui.View):
         self.init_select()
 
         super().__init__(timeout=600)
+
+        self.api = YoutubeMusicSearch(node=node)
 
     def init_select(self):
 
@@ -61,7 +62,7 @@ class SearchView(disnake.ui.View):
 
     @disnake.ui.select(placeholder="Выберите результат ...", row=0)
     async def select(self, select, interaction):
-        result = self.results[select.values[0]]
+        result = self.results[int(select.values[0])]
 
         if isinstance(result, Playlist, Album):
             await EmbedPlaylist(self.node, result).send(interaction)
@@ -76,7 +77,7 @@ class SearchView(disnake.ui.View):
     @check_player_btn_decorator(with_connection=True)
     async def start_autoplay(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
-        await player.queue.start_autoplay(self.results[0].contents)
+        await player.queue.start_autoplay(self.results[0])
 
     @disnake.ui.button(
         emoji="<:playlist_add_primary:1239115838557126678>",
@@ -85,7 +86,7 @@ class SearchView(disnake.ui.View):
     @check_player_btn_decorator(with_connection=True)
     async def add(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
-        await player.queue.put(self.results[0].contentsk)
+        await player.queue.put(self.results[0])
         if not player.current:
             await player.play(player.queue.get())
 
@@ -125,7 +126,6 @@ class EmbedTrack:
     def __init__(self, track: Track, node: Node):
         self.track = track
         self.node = node
-        self.api = YoutubeMusicSearch(node=node)
         self.bot: NoirBot = node.bot
 
     def embed(self) -> disnake.Embed:
@@ -137,7 +137,7 @@ class EmbedTrack:
 
     async def send(self, ctx: disnake.Interaction, ephemeral: bool = False):
         """Send embed with track info"""
-        await ctx.response.send_message(embed=self.embed(), ephemeral=ephemeral)
+        await ctx.edit_original_response(embed=self.embed())
 
         message = await ctx.original_response()
 

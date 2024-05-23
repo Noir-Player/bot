@@ -4,7 +4,9 @@ import disnake
 from disnake import Embed
 
 import services.persiktunes as persik
-from components.ui.views import *
+from components.modals.multiple import AddMultiple
+from components.ui.objects.context import EmbedContext
+from components.ui.objects.queue import EmbedQueue
 from objects.exceptions import *
 from services.persiktunes import LoopMode, Player
 from validators.player import check_player_btn_decorator
@@ -12,12 +14,12 @@ from validators.player import check_player_btn_decorator
 loop = {LoopMode.QUEUE: "очередь", LoopMode.TRACK: "трек"}
 
 
-def progress_slider(start, end):
+def progress_slider(start, end, length=24):
     bar, indicator = "", False
 
-    for i in range(24):
+    for i in range(length):
         try:
-            if start / end * 24 >= i + 1:
+            if start / end * length >= i + 1:
                 if not indicator:
                     bar += "▬"
             else:
@@ -59,12 +61,6 @@ async def state(player: Player):
         else f"https://mir-s3-cdn-cf.behance.net/project_modules/disp/a11a4893658133.5e98adbead405.gif"
     )
 
-    prog = (
-        progress_slider(player.adjusted_position, player.adjusted_length)
-        if not player.current.info.isStream
-        else ""
-    )
-
     embed = Embed(
         color=player.current.color or player.color,
         description=f"<:alternate_email_primary:1239117898912497734> **{player.current.info.author}**",
@@ -73,31 +69,19 @@ async def state(player: Player):
     embed.set_author(
         name=player.current.info.title,
         url=player.current.info.uri,
-        icon_url=player.current.info.artworkUrl,
     )
 
     embed.set_image(image) if image else None
 
-    embed.set_footer(
-        text=f"{prog}\n{times}\n {f'громкость: {player.volume}%' if player.volume != 100 else ''} {f' • повтор: {loop[player.queue.loop_mode]}' if player.queue.loop_mode else ''}",
-        icon_url=(
-            player.current.ctx.author.display_avatar.url
-            if player.current.ctx
-            else (
-                player.current.requester.display_avatar.url
-                if player.current.requester
-                else None
-            )
-        ),
+    prog = (
+        progress_slider(player.adjusted_position, player.adjusted_length)
+        if not player.current.info.isStream
+        else ""
     )
 
-    if player.current.playlist:
-        embed.set_author(
-            name=player.current.playlist.info.name,
-            icon_url=player.current.playlist.pluginInfo.get(
-                "artworkUrl", player.current.playlist.tracks[0].info.artworkUrl
-            ),
-        )
+    embed.set_footer(
+        text=f"{prog}\n{times}\n {f'громкость: {player.volume}%' if player.volume != 100 else ''} {f' • повтор: {loop[player.queue.loop_mode]}' if player.queue.loop_mode else ''}",
+    )
 
     return embed
 
@@ -126,7 +110,6 @@ class Soundpad(disnake.ui.View):
     @disnake.ui.button(
         emoji="<:skip_previous_primary:1239113698623225908>",
         row=0,
-        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator()
     async def prev(self, button, interaction):
@@ -141,7 +124,6 @@ class Soundpad(disnake.ui.View):
     @disnake.ui.button(
         emoji="<:play_pause_primary:1239113853137326220>",
         row=0,
-        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator()
     async def play_pause(self, button, interaction):
@@ -151,7 +133,6 @@ class Soundpad(disnake.ui.View):
     @disnake.ui.button(
         emoji="<:skip_next_primary:1239113700594679838>",
         row=0,
-        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator()
     async def next(self, button, interaction):
@@ -165,18 +146,15 @@ class Soundpad(disnake.ui.View):
     @disnake.ui.button(
         emoji="<:queue_music_primary:1239113703824293979>",
         row=0,
-        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator(with_message=True)
     async def queue(self, button, interaction: disnake.MessageInteraction):
         if self.player.current:
-            view = QueueView(self.player)
-            await view.refresh_pages(interaction)
+            await EmbedQueue(self.player.node).send(interaction)
 
     @disnake.ui.button(
         emoji="<:repeat_primary:1239113702129664082>",
         row=1,
-        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator()
     async def loop(self, button, interaction):
@@ -188,28 +166,26 @@ class Soundpad(disnake.ui.View):
             await self.player.queue.set_loop_mode(persik.LoopMode.QUEUE)
 
     @disnake.ui.button(
-        emoji="<:volume_down_primary:1239113694856876076>",
+        emoji="<:playlist_add_primary:1239115838557126678>",
         row=1,
-        style=disnake.ButtonStyle.gray,
     )
-    @check_player_btn_decorator()
-    async def vol_down(self, button, interaction):
-        await self.player.volume_down()
+    @check_player_btn_decorator(with_defer=False)
+    async def add(self, button, interaction):
+        await interaction.response.send_modal(AddMultiple(self.player))
 
     @disnake.ui.button(
-        emoji="<:volume_up_primary:1239113696337199165>",
+        emoji="<:delete_primary:1239113856027070514>",
         row=1,
-        style=disnake.ButtonStyle.gray,
     )
     @check_player_btn_decorator()
-    async def vol_up(self, button, interaction):
-        await self.player.volume_up()
+    async def remove(self, button, interaction):
+        """"""
+        # TODO
 
     @disnake.ui.button(
         emoji="<:apps_primary:1239113725714104441>",
         row=1,
-        style=disnake.ButtonStyle.gray,
     )
-    @check_player_btn_decorator()
+    @check_player_btn_decorator(with_message=True)
     async def action(self, button, interaction):
-        await interaction.send(ephemeral=True, view=ActionsView(self.player))
+        await EmbedContext(self.player.node).send(interaction)

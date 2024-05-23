@@ -97,4 +97,4 @@ class EmbedEffects:
 
     async def send(self, ctx: disnake.Interaction, ephemeral: bool = True):
         """Send effects"""
-        await ctx.response.send_message(ephemeral=ephemeral, view=self.view())
+        await ctx.edit_original_response(view=self.view())

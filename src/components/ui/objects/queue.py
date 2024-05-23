@@ -12,7 +12,6 @@ class QueueButtons(disnake.ui.View):
 
     def __init__(self, node: Node, message: disnake.Message, embed_queue: "EmbedQueue"):
         self.node = node
-        self.api = YoutubeMusicSearch(node=node)
         self.bot: NoirBot = node.bot
 
         self.embed_queue = embed_queue
@@ -21,10 +20,13 @@ class QueueButtons(disnake.ui.View):
 
         super().__init__(timeout=600)
 
+        self.api = YoutubeMusicSearch(node=node)
+
     @disnake.ui.button(
         emoji="<:skip_previous_primary:1239113698623225908>",
         row=0,
     )
+    @check_player_btn_decorator()
     async def prev(self, button, interaction):
         await interaction.response.defer()
         if self.index > 0:
@@ -35,6 +37,7 @@ class QueueButtons(disnake.ui.View):
         emoji="<:skip_next_primary:1239113700594679838>",
         row=0,
     )
+    @check_player_btn_decorator()
     async def next(self, button, interaction):
         await interaction.response.defer()
         if (self.index + 1) < len(self.pag.pages):
@@ -42,50 +45,34 @@ class QueueButtons(disnake.ui.View):
             return await self.embed_queue.generate_pages(interaction)
 
     @disnake.ui.button(
-        emoji="<:playlist_add_primary:1239115838557126678>",
+        emoji="<:shuffle_primary:1239115175337001071>",
         row=0,
     )
-    @check_player_btn_decorator(with_connection=True)
-    async def add(self, button, interaction):
+    @check_player_btn_decorator()
+    async def shuffle(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
-        await player.queue.put(self.track)
-        if not player.current:
-            await player.play(player.queue.get())
+        if not player:
+            return
+        await player.queue.shuffle()
 
     @disnake.ui.button(
         emoji="<:autoplay_primary:1239113693690859564>",
         row=0,
     )
-    @check_player_btn_decorator(with_connection=True)
+    @check_player_btn_decorator()
     async def start_autoplay(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
-        await player.queue.start_autoplay(self.track)
-
-    @disnake.ui.button(
-        emoji="<:lyrics_primary:1239113708203020368>",
-        row=0,
-    )
-    async def lyrics(self, button, interaction):
-        self.track = await self.api.lyrics(self.track)
-
-        await interaction.send(
-            embed=self.bot.embedding.get(
-                author_name=self.track.info.title,
-                author_icon=self.track.info.artworkUrl,
-                description="```fix\n" + self.track.lyrics + "\n```",
-                footer=f"Album: {self.track.album.name}" if self.track.album else "",
-                color="info",
-            ),
-            ephemeral=True,
-        )
+        if not player.current:
+            return
+        await player.queue.start_autoplay(player.current)
 
     @disnake.ui.button(
         emoji="<:save_primary:1239113692306739210>",
         label="сохранить",
-        row=0,
-        style=disnake.ButtonStyle.gray,
+        row=1,
     )
-    async def shuffle(self, button, interaction):
+    @check_player_btn_decorator()
+    async def save(self, button, interaction):
         tracks = [
             track.model_dump(exclude=["ctx", "requester"])
             for track in self.player.queue.get_queue()
@@ -104,7 +91,6 @@ class EmbedQueue:
 
     def __init__(self, node: Node):
         self.node = node
-        self.api = YoutubeMusicSearch(node=node)
         self.bot: NoirBot = node.bot
 
         self.message = None
@@ -113,36 +99,23 @@ class EmbedQueue:
         self.paginator = Paginator(prefix="```md\n", max_size=1000)
 
     async def generate_pages(self, inter):
+        self.player = self.node.get_player(inter.guild_id)
 
-        n = 1
+        if not self.player:
+            return await self.message.delete()
 
-        for val in self.player.queue.get_queue():
+        total = 0
 
-            if n - 1 == self.player.queue.find_position(self.player.current):
-                ind = f"# {' '*len(str(n))}"
+        for i, val in enumerate(self.player.queue.get_queue()):
+
+            if i == self.player.queue.find_position(self.player.current):
+                ind = f"# {' '*len(str(i + 1))}"
             else:
-                ind = f"{n}. "
+                ind = f"{i + 1}. "
 
             self.paginator.add_line(ind + val.info.title)
 
-            n += 1
-
-        total = (
-            (
-                (
-                    sum(
-                        i.info.length
-                        for i in self.player.queue.get_queue()[
-                            self.player.queue.find_position(self.player.current) :
-                        ]
-                    )
-                    - self.player.position
-                )
-                / 1000
-            )
-            if not self.player.queue.is_empty
-            else 0
-        )
+            total += (val.info.length) / 1000
 
         total = int(time.time() + total)
 
@@ -152,19 +125,30 @@ class EmbedQueue:
                 {"name": "Закончится", "value": f"<t:{total}:R>"},
                 {"name": "Автоплей", "value": f"`нет`"},
                 title="🟣 | Очередь",
-                description=self.pag.pages[self.index],
-                footer=f"page {self.index + 1}/{len(self.pag.pages)}",
+                description=(
+                    self.paginator.pages[self.index]
+                    if self.paginator.pages
+                    else "```\nПусто!\n```"
+                ),
+                footer=(
+                    f"page {self.index + 1}/{len(self.paginator.pages)}"
+                    if len(self.paginator.pages)
+                    else None
+                ),
+                image=(
+                    self.player.current.info.artworkUrl if self.player.current else None
+                ),
             ),
-            view=self.view(await inter.original_response()),
+            view=self.view(),
         )
 
     def view(self) -> disnake.ui.View:
         """Return view of track (buttons)"""
-        return QueueButtons(track=self.track, node=self.node, message=self.message)
+        return QueueButtons(node=self.node, message=self.message, embed_queue=self)
 
     async def send(self, ctx: disnake.Interaction, ephemeral: bool = True):
         """Send embed with track info"""
-        await ctx.response.defer(ephemeral=ephemeral)
+        # await ctx.response.defer(ephemeral=ephemeral)
 
         self.message = await ctx.original_response()
 

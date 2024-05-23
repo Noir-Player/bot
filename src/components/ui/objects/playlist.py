@@ -1,10 +1,7 @@
-import time
-
 import disnake
-from disnake.ext.commands import Paginator
 
 from objects.bot import NoirBot
-from services.persiktunes import Node, Playlist, Track, YoutubeMusicSearch
+from services.persiktunes import Album, Node, Playlist, Track, YoutubeMusicSearch
 from validators.player import check_player_btn_decorator
 
 from .track import EmbedTrack
@@ -143,7 +140,7 @@ class PlaylistButtons(disnake.ui.View):
 
 class EmbedPlaylist:
 
-    def __init__(self, node: Node, playlist: Playlist):
+    def __init__(self, node: Node, playlist: Playlist | Album):
         self.node = node
         self.api = YoutubeMusicSearch(node=node)
         self.bot: NoirBot = node.bot
@@ -185,7 +182,7 @@ class EmbedPlaylist:
 
     async def send(self, ctx: disnake.Interaction, ephemeral: bool = True):
         """Send embed with track info"""
-        await ctx.response.defer(ephemeral=ephemeral)
+        # await ctx.response.defer(ephemeral=ephemeral)
 
         self.message = await ctx.original_response()
 

@@ -10,12 +10,13 @@ class TrackButtons(disnake.ui.View):
     def __init__(self, track: Track, node: Node, message: disnake.Message):
         self.track = track
         self.node = node
-        self.api = YoutubeMusicSearch(node=node)
         self.bot: NoirBot = node.bot
 
         self.message = message
 
         super().__init__(timeout=600)
+
+        self.api = YoutubeMusicSearch(node=node)
 
     @disnake.ui.button(
         emoji="<:playlist_add_primary:1239115838557126678>",
@@ -71,7 +72,6 @@ class EmbedTrack:
     def __init__(self, track: Track, node: Node):
         self.track = track
         self.node = node
-        self.api = YoutubeMusicSearch(node=node)
         self.bot: NoirBot = node.bot
 
     def embed(self) -> disnake.Embed:
@@ -100,7 +100,7 @@ class EmbedTrack:
 
     async def send(self, ctx: disnake.Interaction, ephemeral: bool = False):
         """Send embed with track info"""
-        await ctx.response.send_message(embed=self.embed(), ephemeral=ephemeral)
+        await ctx.edit_original_response(embed=self.embed())
 
         message = await ctx.original_response()
 
