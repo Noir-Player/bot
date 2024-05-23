@@ -88,16 +88,15 @@ def check_player_decorator(with_connection=False):
 # Декораторы для кнопок
 
 
-def check_player_btn_decorator(with_message=False):
+def check_player_btn_decorator(
+    with_message=False, with_connection=False, with_defer=True
+):
     def decorator(func):
         async def wrapper(*args, **kwargs):
             inter = args[2]
 
-            (
-                await inter.response.defer(ephemeral=True, with_message=True)
-                if with_message
-                else await inter.response.defer(ephemeral=True)
-            )
+            if with_defer:
+                await inter.response.defer(ephemeral=True, with_message=with_message)
 
             node = inter.bot.node
 
@@ -113,7 +112,42 @@ def check_player_btn_decorator(with_message=False):
                     except BaseException:
                         pass
 
-                raise NoInVoiceWithMe("Вам нужно быть в войсе")
+                if not inter.author.voice.channel.permissions_for(
+                    inter.me
+                ).connect:  # нет доступа к войсу
+                    raise commands.BotMissingPermissions(["connect to voice"])
+
+                if with_connection:  # если указано подключиться
+                    params = inter.bot.db.setup.get_setup(
+                        inter.guild.id
+                    )  # поиск прав в бд
+
+                    if params:  # если есть требования к правам
+                        if (
+                            params.get("role")
+                            and not (
+                                params.get("role")
+                                in [role.id for role in inter.author.roles]
+                            )
+                            and not inter.permissions.administrator
+                        ):
+                            raise commands.MissingPermissions(
+                                ["setup or manage player"]
+                            )
+
+                    from objects.player import (
+                        NoirPlayer,
+                    )  # предотвращает циркулярный импорт
+
+                    player = await inter.author.voice.channel.connect(
+                        cls=NoirPlayer
+                    )  # подключение
+                    await inter.guild.change_voice_state(
+                        channel=inter.author.voice.channel, self_deaf=True
+                    )
+                    return True
+                else:
+                    raise NoInVoiceWithMe("Вам нужно быть в войсе")
 
             else:  # Нуар уже в войсе
                 if inter.guild.voice_client.channel.id != inter.author.voice.channel.id:
