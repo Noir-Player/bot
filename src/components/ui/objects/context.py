@@ -1,7 +1,7 @@
 import disnake
 
 from objects.bot import NoirBot
-from services.persiktunes import Node, YoutubeMusicSearch
+from services.persiktunes import Node
 from services.persiktunes.filters import *
 from validators.player import check_player_btn_decorator
 
@@ -16,7 +16,7 @@ class ContextView(disnake.ui.View):
 
         super().__init__(timeout=600)
 
-        self.api = YoutubeMusicSearch(node=node)
+        self.api = node.rest.ytmclient
 
     @disnake.ui.button(emoji="<:volume_down_primary:1239113694856876076>", row=0)
     @check_player_btn_decorator()
