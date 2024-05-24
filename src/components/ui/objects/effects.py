@@ -62,8 +62,6 @@ class EffectsView(disnake.ui.View):
 
         await player.reset_filters()
 
-        await inter.response.defer()
-
         for filter in inter.data.values:
             try:
                 await player.add_filter(
@@ -80,9 +78,8 @@ class EffectsView(disnake.ui.View):
     )
     @check_player_btn_decorator()
     async def reset_filters(self, button, inter):
-        await self.player.reset_filters()
-
-        await inter.response.defer()
+        player = self.node.get_player(inter.guild_id)
+        await player.reset_filters()
 
 
 class EmbedEffects:
