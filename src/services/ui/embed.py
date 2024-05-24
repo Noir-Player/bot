@@ -63,8 +63,9 @@ class EmbedBuilder:
         if type(colour) == str:
             colour = int(colour.replace("#", ""), 16)
 
-        if " | " in title and not title.startswith("`"):  # griding emojies
-            title = f"`{title}`"
+        if title:
+            if " | " in title and not title.startswith("`"):  # griding emojies
+                title = f"`{title}`"
 
         embed = disnake.Embed(
             title=title,
