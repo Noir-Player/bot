@@ -1,9 +1,12 @@
 from datetime import datetime
 
+import disnake
 from disnake.ext import commands
 
+from components.ui.objects.context import EmbedContext
+from components.ui.objects.effects import EmbedEffects
 from components.ui.objects.player import state
-from components.ui.views import ActionsView, FiltersView, QueueView
+from components.ui.objects.queue import EmbedQueue
 from objects.bot import NoirBot
 from objects.exceptions import InvalidIndex
 from validators.player import check_player_decorator
@@ -44,16 +47,35 @@ class AlternativeCog(commands.Cog):
 
     @check_player_decorator()
     @commands.slash_command(description="🟣 | очередь", dm_permission=False)
-    async def queue(self, ctx):
-        player = self.bot.node.get_player(ctx.guild_id)
-        view = QueueView(player)
-        await view.refresh_pages(ctx)
+    async def queue(
+        self,
+        ctx,
+        hidden: bool = commands.Param(
+            default=True,
+            description="Видимость всем",
+            choices=[
+                disnake.OptionChoice(name="Скрыть", value=True),
+                disnake.OptionChoice(name="Показать", value=False),
+            ],
+        ),
+    ):
+        await EmbedQueue(self.bot.node).send(ctx, ephemeral=hidden)
 
     @check_player_decorator()
     @commands.slash_command(description="🟣 | дополнительно", dm_permission=False)
-    async def menu(self, ctx):
-        player = self.bot.node.get_player(ctx.guild_id)
-        await ctx.send(ephemeral=True, view=ActionsView(player))
+    async def menu(
+        self,
+        ctx,
+        hidden: bool = commands.Param(
+            default=True,
+            description="Видимость всем",
+            choices=[
+                disnake.OptionChoice(name="Скрыть", value=True),
+                disnake.OptionChoice(name="Показать", value=False),
+            ],
+        ),
+    ):
+        await EmbedContext(self.bot.node).send(ctx, ephemeral=hidden)
 
     @check_player_decorator()
     @commands.slash_command(description="🟣 | очистить очередь", dm_permission=False)
@@ -209,9 +231,19 @@ class AlternativeCog(commands.Cog):
 
     @check_player_decorator()
     @effects.sub_command(description="🟣 | эквалайзер")
-    async def open(self, ctx):
-        player = self.bot.node.get_player(ctx.guild_id)
-        await ctx.send(view=FiltersView(player=player))
+    async def open(
+        self,
+        ctx,
+        hidden: bool = commands.Param(
+            default=True,
+            description="Видимость всем",
+            choices=[
+                disnake.OptionChoice(name="Скрыть", value=True),
+                disnake.OptionChoice(name="Показать", value=False),
+            ],
+        ),
+    ):
+        await EmbedEffects(self.bot.node).send(ctx, ephemeral=hidden)
 
     @check_player_decorator()
     @effects.sub_command(description="🟣 | сбросить фильтры")
