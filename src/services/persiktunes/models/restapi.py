@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from disnake import ClientUser, Interaction, Member, User
 from disnake.ext import commands
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 
 """
 LAVALINK BASE MODELS
@@ -129,7 +129,7 @@ LAVALINK MAIN MODELS
 class Track(ExtraModel):
     """Base lavalink track model."""
 
-    uuid: str = uuid4().__str__()  # Unique uuid for the track
+    _uuid: Optional[str] = None
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     encoded: str
@@ -154,6 +154,13 @@ class Track(ExtraModel):
     color: Optional[int] = None  # Track color
 
     tag: Optional[AnyStr] = None  # Optional track tag
+
+    @computed_field
+    @property
+    def uuid(self) -> str:
+        if not self._uuid:
+            self._uuid = uuid4().__str__()
+        return self._uuid
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Track):
@@ -190,17 +197,17 @@ class Playlist(ExtraModel):
 
     tag: Optional[AnyStr] = None  # Optional playlist tag
 
-    def get_length(self) -> int:
+    @computed_field
+    @property
+    def length(self) -> int:
         """Length of playlist"""
         return sum([t.info.length for t in self.tracks])
 
+    @computed_field
+    @property
     def track_count(self) -> int:
         """Count of tracks in playlist"""
         return len(self.tracks)
-
-    def get_thumbnail(self) -> str | None:
-        """Thumbnail of playlist (artwork)"""
-        return self.pluginInfo.get("artworkUrl") if self.pluginInfo else None
 
     def __str__(self) -> str:
         return self.info.name
