@@ -102,7 +102,7 @@ class ActionsView(disnake.ui.View):
     #     logging.error(traceback.format_exc())
 
     @disnake.ui.button(
-        emoji="<:star_primary:1239113697654472825>",
+        emoji="<:bookmark_primary:1242557997624983592>",
         label="поставить звездочку",
         row=0,
         style=disnake.ButtonStyle.gray,
@@ -402,8 +402,8 @@ class QueueView(disnake.ui.View):
 
     @disnake.ui.button(
         emoji="<:save_primary:1239113692306739210>",
-        label="сохранить как плейлист",
-        row=1,
+        label="сохранить",
+        row=0,
         style=disnake.ButtonStyle.gray,
     )
     async def shuffle(self, button, interaction):
