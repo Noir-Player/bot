@@ -5,7 +5,7 @@ import disnake
 from disnake.ext import commands
 
 import services.persiktunes as persik
-from components.ui.modals import AddMultiple
+from components.modals.multiple import AddMultiple
 from components.ui.views import StarsView
 from objects.bot import NoirBot
 from objects.exceptions import *
@@ -14,16 +14,7 @@ from validators.player import check_player_decorator
 
 """Список станций по json"""
 
-RadioNames = list(
-    dict(json.load(open("data/resources/radio.json", "r", encoding="utf-8")))[
-        "Зайцев.FM"
-    ].keys()
-)
-RadioUrls = list(
-    dict(json.load(open("data/resources/radio.json", "r", encoding="utf-8")))[
-        "Зайцев.FM"
-    ].values()
-)
+radio = json.load(open("data/resources/radio.json", "r", encoding="utf-8"))["Record"]
 
 
 class MusicCog(commands.Cog):
@@ -34,8 +25,6 @@ class MusicCog(commands.Cog):
     # -------------------------------------------------------------------------------------------------------------------------------------
     # КОМАНДЫ
     # Группа play
-
-    """Подключается к войсу и добавляет в очередь трек"""
 
     @commands.slash_command(name="play", dm_permission=False)
     async def add(self, ctx):
@@ -48,25 +37,15 @@ class MusicCog(commands.Cog):
     ):
         player: NoirPlayer = self.bot.node.get_player(ctx.guild_id)
 
-        query = await player.search(
-            search, ctx=ctx, requester=ctx.author, use_client_search=True
-        )
+        query = await player.search(search, ctx=ctx, requester=ctx.author)
 
-        if query.tracks:
-            await player.play(query.tracks[0])
-
-        else:
+        if await player.queue.put_auto(query) == False:
             return await ctx.edit_original_response(
                 embed=self.bot.embedding.get(
                     title="🟠 | Не найдено",
-                    description=(
-                        "Не удалось найти трек. " + "Поищите отдельно от плейлиста."
-                        if query.playlists
-                        else ""
-                    ),
+                    description=("Не удалось найти трек. "),
                     color="warning",
                 ),
-                # embed=type_embed(type="error", description=f"Не удалось найти")
             )
 
         await ctx.delete_original_message()
@@ -77,7 +56,7 @@ class MusicCog(commands.Cog):
         self,
         ctx,
         search: str = commands.Param(description="Поиск трека или плейлиста... 🔍"),
-    ):  # , replace: bool = commands.Param(description="заменить текущий трек")):
+    ):
 
         player: NoirPlayer = self.bot.node.get_player(ctx.guild_id)
 
@@ -85,53 +64,13 @@ class MusicCog(commands.Cog):
             search,
             ctx=ctx,
             requester=ctx.author,
-            use_client_search=True,
-            single_result=True,
         )
 
-        self.bot.log.debug(
-            f"Search result: {query.model_dump()} ({query.__class__.__name__})"
-        )
-
-        if isinstance(query, persik.Track):
-            await player.queue.put(query)
-
-        elif isinstance(query, persik.Playlist):
-            await player.queue.put_list(query.tracks)
-
-        elif isinstance(query, persik.LavalinkTrackLoadingResponse):
-            if query.loadType == "playlist":
-                await player.queue.put_list(query.data.tracks)
-
-            elif query.loadType == "search":
-                await player.queue.put(query.data[0])
-
-            elif query.loadType == "track":
-                await player.queue.put(query.data)
-
-            else:
-                self.bot.log.warn(f"{query.model_dump()} Not found")
-                return await ctx.edit_original_response(
-                    embed=self.bot.embedding.get(
-                        title="🟠 | Не найдено",
-                        description="Не удалось найти трек",
-                        color="warning",
-                    ),
-                )
-
-        elif isinstance(query, persik.LavaSearchLoadingResponse):
-            if query.tracks:
-                await player.queue.put(query.tracks[0])
-
-            elif query.playlists:
-                await player.queue.put_list(query.playlists[0].tracks)
-
-        else:
-            self.bot.log.warn(f"{query.model_dump()} Not found")
+        if await player.queue.put_auto(query) == False:
             return await ctx.edit_original_response(
                 embed=self.bot.embedding.get(
                     title="🟠 | Не найдено",
-                    description="Не удалось найти трек",
+                    description=("Не удалось найти трек. "),
                     color="warning",
                 ),
             )
@@ -148,48 +87,57 @@ class MusicCog(commands.Cog):
 
         start = time.perf_counter()
 
-        if persik.URLRegex.BASE_URL.match(user_input):
-            return [disnake.OptionChoice(name=f"🔎 | {user_input}", value=user_input)]
+        # if persik.URLRegex.BASE_URL.match(user_input):
+        #     return [disnake.OptionChoice(name=f"🔎 | {user_input}", value=user_input)]
 
-        search = await self.bot.node.rest.ytmclient.complete_search(query=user_input)
+        # search = await self.bot.node.rest.ytmclient.complete_search(query=user_input)
+
+        # result = []
+
+        # for object in search:
+        #     names = []
+
+        #     try:
+        #         if object["resultType"] in ("song", "video"):
+        #             emoji = "⭐"
+        #             (
+        #                 names.append(", ".join([i["name"] for i in object["artists"]]))
+        #                 if object["artists"]
+        #                 else None
+        #             )
+
+        #             uri = "https://youtube.com/watch?v=" + object["videoId"]
+
+        #         elif object["resultType"] == "playlist":
+        #             emoji = "📁"
+        #             (names.append(object["author"]) if object.get("author") else None)
+
+        #             uri = (
+        #                 "https://music.youtube.com/playlist?list="
+        #                 + object["browseId"][2:]
+        #             )
+
+        #         else:
+        #             continue
+        #     except:
+        #         continue
+
+        #     names.append(object["title"])
+
+        #     result.append(
+        #         disnake.OptionChoice(
+        #             name=(f"{emoji} | " + " - ".join(names))[:100],
+        #             value=uri,
+        #         )
+        #     )
 
         result = []
 
-        for object in search:
-            names = []
-
-            try:
-                if object["resultType"] in ("song", "video"):
-                    emoji = "⭐"
-                    (
-                        names.append(", ".join([i["name"] for i in object["artists"]]))
-                        if object["artists"]
-                        else None
-                    )
-
-                    uri = "https://youtube.com/watch?v=" + object["videoId"]
-
-                elif object["resultType"] == "playlist":
-                    emoji = "📁"
-                    (names.append(object["author"]) if object.get("author") else None)
-
-                    uri = (
-                        "https://music.youtube.com/playlist?list="
-                        + object["browseId"][2:]
-                    )
-
-                else:
-                    continue
-            except:
-                continue
-
-            names.append(object["title"])
-
+        for suggestion in await self.bot.node.rest.ytmclient.search_suggestions(
+            user_input
+        ):
             result.append(
-                disnake.OptionChoice(
-                    name=(f"{emoji} | " + " - ".join(names))[:100],
-                    value=uri,
-                )
+                disnake.OptionChoice(name=f"🔎 | {suggestion}", value=suggestion)
             )
 
         end = time.perf_counter()
@@ -201,36 +149,43 @@ class MusicCog(commands.Cog):
     """Поиск радиостанции по json"""
 
     @check_player_decorator(with_connection=True)
-    @add.sub_command(description="🟣 | радио ZaycevFM")
-    async def zaycevfm(
+    @add.sub_command(description="🟣 | радиостанции")
+    async def radio(
         self, ctx, station: str = commands.Param(description="пишите для поиска... 🔍")
     ):
 
         player: NoirPlayer = self.bot.node.get_player(ctx.guild_id)
 
-        query = await player.search(query=station, ctx=ctx)
+        query = (await player.search(query=station, ctx=ctx, requester=ctx.author)).data
 
-        await player.queue.put(query[0])
+        player.queue.set_primary(query)
 
-        if not player.current:
-            await player.play(player.queue.get())
+        await player.play(player.queue.primary)
 
         await ctx.delete_original_message()
 
-    @zaycevfm.autocomplete("station")
+    @radio.autocomplete("station")
     async def autostation(self, inter, user_input):
         list = []
 
-        for station in RadioNames:
-            if user_input in station or not user_input:
+        i = 0
+        for name, url in radio.items():
+            if user_input.lower() in name.lower() or not user_input:
                 list.append(
                     disnake.OptionChoice(
-                        name=f"📻 | {station}",
-                        value=RadioUrls[RadioNames.index(station)],
+                        name=f"📻 | {name}",
+                        value=url,
                     )
                 )
 
+                i += 1
+
+                if i == 19:
+                    break
+
         return list
+
+    # TODO : Database
 
     @check_player_decorator(with_connection=True)
     @add.sub_command(description="🟣 | играть (несколько)")
@@ -240,7 +195,7 @@ class MusicCog(commands.Cog):
         await ctx.response.send_modal(AddMultiple(player))
 
     @check_player_decorator(with_connection=True)
-    @add.sub_command(description="🟣 | играть (плейлист)")
+    @add.sub_command(description="🟣 | играть (плейлист на noirplayer.su)")
     async def playlist(
         self, ctx, playlist: str = commands.Param(description="пишите для поиска... 🔍")
     ):
@@ -312,6 +267,8 @@ class MusicCog(commands.Cog):
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Избранные
 
+    # TODO: Database
+
     @commands.slash_command(description="🟣 | избранное", dm_permission=False)
     async def stars(self, ctx):
 
@@ -344,6 +301,8 @@ class MusicCog(commands.Cog):
                     color="warning",
                 ),
             )
+
+    # TODO: Database
 
     @check_player_decorator(with_connection=True)
     @add.sub_command(name="stars", description="🟣 | играть (ваше избранное)")
