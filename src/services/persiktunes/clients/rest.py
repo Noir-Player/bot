@@ -138,11 +138,9 @@ class LavalinkRest:
             "tag": tag,
         }
 
-        for key, value in update.items():
-            if not value:
-                del update[key]
-
-        return data.model_copy(update=update)
+        return data.model_copy(
+            update={k: v for k, v in update.items() if v is not None}
+        )
 
     async def search(
         self,
