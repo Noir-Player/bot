@@ -5,12 +5,10 @@ import disnake
 from disnake.ext import tasks
 
 from components.ui.objects.player import Soundpad, state
-from helpers.dump import Dump as Build
 from objects.queue import NoirQueue
 from services import persiktunes
 from services.database.core import Database
 
-build = Build()
 db = Database()
 
 
@@ -139,11 +137,11 @@ class NoirPlayer(persiktunes.Player):
         *,
         start: int = 0,
         end: Optional[int] = None,
-        replace: bool = False,
-        volume: int = None,
+        noReplace: bool = False,
+        volume: int | None = None,
     ) -> None:
         await super().play(
-            track, start=start, end=end, noReplace=not replace, volume=volume
+            track, start=start, end=end, noReplace=noReplace, volume=volume
         )
 
         await self.pub("play", track.model_dump_json(exclude=["ctx", "requester"]))
@@ -283,7 +281,7 @@ class NoirPlayer(persiktunes.Player):
     @property
     def dj_role(self) -> int | None:
         """Возвращает массив с `roles` и `users`"""
-        return self.dj
+        return self._dj
 
     @property
     def queue(self) -> NoirQueue:
@@ -319,14 +317,3 @@ class NoirPlayer(persiktunes.Player):
     def volume_step(self) -> int:
         """Шаг громкости"""
         return self._volume_step
-
-    @property
-    def current_build(self) -> dict | None:
-        """Текущий билд трека"""
-        return (
-            build.track(
-                self.current.info, self.current.track_type.value, self.current.thumbnail
-            )
-            if self.current
-            else None
-        )
