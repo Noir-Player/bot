@@ -13,11 +13,11 @@ class QueueCog(commands.Cog):
         self.pool = bot.pool
 
     # -------------------------------------------------------------------------------------------------------------------------------------
-    # Избранные
+    # Очередь
 
     # TODO: Database
 
-    @commands.slash_command(name="queue", dm_permission=False)
+    @commands.slash_command(dm_permission=False)
     async def queue(self, ctx):
         pass
 
@@ -111,16 +111,6 @@ class QueueCog(commands.Cog):
         player = self.bot.node.get_player(ctx.guild_id)
         if position - 1 >= 0 and position <= player.queue.count:
             await player.play(player.queue.jump(position - 1))
-        await ctx.delete_original_message()
-
-    @check_player_decorator()
-    @queue.sub_command(description="🟣 | ")
-    async def rewind(
-        self, ctx, seconds: int = commands.Param(description="количество секунд")
-    ):
-        player = self.bot.node.get_player(ctx.guild_id)
-        await player.seek(player.position + float(seconds * 1000))
-        await player.update_controller_once()
         await ctx.delete_original_message()
 
 
