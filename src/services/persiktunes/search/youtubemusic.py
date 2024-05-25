@@ -266,7 +266,7 @@ class YoutubeMusicSearch(BaseSearch):
 
         tracks = []
 
-        for rawtrack in raw["contents"]:
+        for rawtrack in raw["tracks"]:
 
             track = await self.song(rawtrack["videoId"], **kwargs)
             tracks.append(track)
