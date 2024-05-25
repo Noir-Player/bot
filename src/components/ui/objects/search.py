@@ -3,14 +3,7 @@ from typing import List, Union
 import disnake
 
 from objects.bot import NoirBot
-from services.persiktunes import (
-    Album,
-    Artist,
-    Node,
-    Playlist,
-    Track,
-    YoutubeMusicSearch,
-)
+from services.persiktunes import Album, Artist, Node, Playlist, Track
 from validators.player import check_player_btn_decorator
 
 from .playlist import EmbedPlaylist
@@ -35,7 +28,7 @@ class SearchView(disnake.ui.View):
 
         super().__init__(timeout=600)
 
-        self.api = YoutubeMusicSearch(node=node)
+        self.api = node.rest.ytmclient
 
     def init_select(self):
 
