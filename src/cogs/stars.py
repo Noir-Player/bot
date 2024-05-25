@@ -16,7 +16,7 @@ class StarsCog(commands.Cog):
 
     # TODO: Database
 
-    @commands.slash_command(name="star", dm_permission=False)
+    @commands.slash_command(name="stars", dm_permission=False)
     async def star(self, ctx):
         pass
 
@@ -39,9 +39,6 @@ class StarsCog(commands.Cog):
                         description="У вас нет избранных треков",
                         color="warning",
                     ),
-                    # embed=genembed(
-                    #     title="", description="Похоже, у вас нет избранных треков"
-                    # )
                 )
 
         else:
