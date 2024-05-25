@@ -18,10 +18,10 @@ import _logging
 import services.api as api
 import services.persiktunes as persiktunes
 from config import *
-from helpers.embeds import type_embed
 from helpers.ex_load import cogsLoad, cogsReload
 from objects.exceptions import errors
-from services.app import setup
+
+# from services.app import setup
 from services.database.core import Database
 from services.ui.embed import EmbedBuilder
 
@@ -80,7 +80,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
         self._redis = Redis(host=HOST, port=PORT, password=PASS)
 
         # App server
-        self._app = setup(bot=self)
+        # self._app = setup(bot=self)
 
         # Set logging
         self._log = _logging.get_logger("bot")
@@ -177,6 +177,41 @@ class NoirBot(commands.AutoShardedInteractionBot):
 
         self._log.info("Starting nodes")
 
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        async def _set_resume_key(key: str | None = None):
+            self.log.debug(f"Setting resume key: {key} (expiring in 60 seconds)")
+            if key:
+                await self.redis.set("resume_key", key)
+            else:
+                await self.redis.delete("resume_key")
+
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        key = await self.redis.get("resume_key")
+        if key:
+            key = key.decode("utf-8")
+
+        async def _get_resume_key():
+            self.log.debug(f"Getting resume key")
+            key = await self.redis.get("resume_key")
+            if key:
+                return key.decode("utf-8")
+
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        async def _get_player_channel(guild_id: int):
+            channel_id = await self.redis.get(f"player_guild-{guild_id}")
+            if channel_id:
+                return await self.fetch_channel(channel_id.decode("utf-8"))
+
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        async def _set_player_channel(player, channel_id: int | None = None):
+            if channel_id:
+                await self.redis.set(f"player_guild-{player.guild.id}", channel_id)
+            else:
+                await self.redis.delete(f"player_guild-{player.guild.id}")
+
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
         try:
             self._node = await self._pool.create_node(
                 bot=self,
@@ -185,6 +220,10 @@ class NoirBot(commands.AutoShardedInteractionBot):
                 password=self._config.get("lavapass", "pass"),
                 identifier="Noir",
                 log_level=logging.DEBUG,
+                set_resume_key=_set_resume_key,
+                get_resume_key=_get_resume_key,
+                get_player_channel=_get_player_channel,
+                set_player_channel=_set_player_channel,
                 spotify_credentials=SpotifyClientCredentials(
                     client_id=self._config.get("spotify", "client_id"),
                     client_secret=self._config.get("spotify", "client_secret"),
@@ -206,24 +245,10 @@ class NoirBot(commands.AutoShardedInteractionBot):
 
         self._log.info("Player is ready")
 
-        if not self.pool.node_count:
-            return
-
-        self._log.debug("Checking for dead players...")
-
-        for player in list(self.node.players.values()):
-            if player.is_dead or not player.is_connected:
-                try:
-                    await player.destroy()
-                except BaseException:
-                    self._log.debug(f"Player {player} is not cleaned")
-
-        self._log.debug("Cleanup done")
-
     async def on_shard_connect(self, id):
         self._log.debug(f"Player connected | {id}")
 
-    async def on_slash_command_error(self, inter: disnake.Interaction, error):
+    async def _on_slash_command_error(self, inter: disnake.Interaction, error):
         if error is commands.CommandError or error is commands.CommandInvokeError:
             e = errors.get(error.__cause__.__class__.__name__, "Ошибка")
         else:
@@ -250,7 +275,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
 
         self._log.error(f"Slash command error: {error}\n{traceback.format_exc()}")
 
-    async def on_error(self, event_method: str, *args: Any, **kwargs: Any) -> None:
+    async def _on_error(self, event_method: str, *args: Any, **kwargs: Any) -> None:
         self._log.error(
             f"Exception in event_method {event_method}\n{traceback.format_exc()}"
         )
@@ -262,7 +287,8 @@ class NoirBot(commands.AutoShardedInteractionBot):
         try:
             self.loop.run_until_complete(self.start())
         except KeyboardInterrupt:
-            self.stop()
+            pass  # TODO: add graceful shutdown
+            # self.loop.run_until_complete(self.stop())
             # cancel all tasks lingering
 
     def start(self):
