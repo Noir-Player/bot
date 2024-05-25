@@ -1,7 +1,7 @@
 import disnake
 
 from objects.bot import NoirBot
-from services.persiktunes import Node, Track, YoutubeMusicSearch
+from services.persiktunes import Node, Track
 from validators.player import check_player_btn_decorator
 
 
@@ -16,7 +16,7 @@ class TrackButtons(disnake.ui.View):
 
         super().__init__(timeout=600)
 
-        self.api = YoutubeMusicSearch(node=node)
+        self.api = node.rest.ytmclient
 
     @disnake.ui.button(
         emoji="<:playlist_add_primary:1239115838557126678>",
