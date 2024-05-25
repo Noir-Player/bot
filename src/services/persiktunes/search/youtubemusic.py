@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Union
 
 import ytmusicapi
 
@@ -36,8 +36,6 @@ class YoutubeMusicSearch(BaseSearch):
 
     async def song(self, id: str, **kwargs) -> Track | None:
         raw = self.client.get_song(id)
-
-        self.node.bot.log.info(id)
 
         if not raw:
             return None
@@ -103,6 +101,9 @@ class YoutubeMusicSearch(BaseSearch):
                         )
                     )["data"]["encoded"],
                     info=info,
+                    ctx=kwargs.get("ctx"),
+                    requester=kwargs.get("requester"),
+                    description=rawtrack.get("description"),
                 )
             )
 
@@ -152,6 +153,9 @@ class YoutubeMusicSearch(BaseSearch):
                         )
                     )["data"]["encoded"],
                     info=info,
+                    ctx=kwargs.get("ctx"),
+                    requester=kwargs.get("requester"),
+                    description=rawtrack.get("description"),
                 )
             )
 
@@ -197,8 +201,8 @@ class YoutubeMusicSearch(BaseSearch):
         tracks = []
 
         for rawresult in raw:
-            song = await self.song(rawresult["videoId"])
-            tracks.append(self.node.rest.patch_context(data=song, **kwargs))
+            song = await self.song(rawresult["videoId"], **kwargs)
+            tracks.append(song)
 
         return tracks
 
@@ -230,8 +234,17 @@ class YoutubeMusicSearch(BaseSearch):
 
         return playlists
 
-    async def relayted(self, song: Track, limit: int = 10, **kwargs) -> List[Track]:
-        raw = self.client.get_watch_playlist(song.info.identifier, limit=2)
+    async def relayted(
+        self, song_or_playlist_id: Union[Track, str], limit: int = 10, **kwargs
+    ) -> List[Track]:
+        if isinstance(song_or_playlist_id, Track):
+            raw = self.client.get_watch_playlist(
+                song_or_playlist_id, radio=True, limit=2
+            )
+        else:
+            raw = self.client.get_watch_playlist(
+                playlistId=song_or_playlist_id, limit=2
+            )
 
         relayted = self.client.get_song_related(raw["related"])
 
@@ -241,9 +254,22 @@ class YoutubeMusicSearch(BaseSearch):
             if i == limit:
                 break
 
-            self.node.bot.log.debug(rawtrack)
-            track = await self.song(rawtrack["videoId"])
-            tracks.append(self.node.rest.patch_context(data=track, **kwargs))
+            track = await self.song(rawtrack["videoId"], **kwargs)
+            tracks.append(track)
+
+        return tracks
+
+    async def ongoing(self, song: Track, limit: int = 25, **kwargs) -> List[Track]:
+        raw = self.client.get_watch_playlist(
+            song.info.identifier, radio=True, limit=limit
+        )
+
+        tracks = []
+
+        for rawtrack in raw["contents"]:
+
+            track = await self.song(rawtrack["videoId"], **kwargs)
+            tracks.append(track)
 
         return tracks
 
