@@ -49,13 +49,8 @@ class SetupCog(commands.Cog):
     async def webhook(self, ctx):
         await ctx.response.send_modal(modal=WebhookSetup(self.bot.node))
 
-    # -------------------------------------------------------------------------------------------------------------------------------------
-    # Настройка сервера
-
-    @commands.slash_command(
-        description="🟣 | настройка Noir",
-        default_member_permissions=disnake.Permissions(administrator=True),
-        dm_permission=False,
+    @settings.sub_command(
+        description="⭐ | настройка Noir",
     )
     async def setup(self, ctx):
         settings = (

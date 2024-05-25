@@ -90,7 +90,7 @@ class HelpCog(commands.Cog):
 
     # ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    @commands.slash_command(description="🟣 | нужна помощь?")
+    @commands.slash_command(description="⭐ | нужна помощь?")
     async def help(self, ctx):
         settings = self.bot.db.setup.get_setup(ctx.guild.id) or {}
 
