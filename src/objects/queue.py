@@ -33,14 +33,14 @@ class NoirQueue(Queue):
     # Основные функции
 
     async def put_relayted(self, item: Track):
-        relayted = await self.api.relayted(item)
+        async for track in self.api.ongoing(item):  # type: ignore
+            await self.put(track)
 
-        if relayted:
-            await self.put_list(relayted)
-
-    def _get(self) -> Track:
+    def _get(self) -> Track | None:
         if self.loose_mode and self.count <= 1:
             self.player.bot.loop.create_task(self.put_relayted(self._current_item))
+        if not self.count:
+            return
         return super()._get()
 
     async def shuffle(self) -> None:
