@@ -18,9 +18,22 @@ class QueueButtons(disnake.ui.View):
 
         self.message = message
 
+        self.api = node.rest.ytmclient
+
         super().__init__(timeout=600)
 
-        self.api = node.rest.ytmclient
+        for i in range(2, 5):
+            self.children.insert(
+                i,
+                disnake.ui.Button(
+                    custom_id=i,
+                    row=0,
+                    disabled=True,
+                ),
+            )
+
+        if embed_queue.paginator.pages.__len__() < 2:
+            self.children = self.children[5:]
 
     @disnake.ui.button(
         emoji="<:skip_previous_primary:1239113698623225908>",
@@ -29,8 +42,8 @@ class QueueButtons(disnake.ui.View):
     @check_player_btn_decorator()
     async def prev(self, button, interaction):
         await interaction.response.defer()
-        if self.index > 0:
-            self.index -= 1
+        if self.embed_queue.index > 0:
+            self.embed_queue.index -= 1
             return await self.embed_queue.generate_pages(interaction)
 
     @disnake.ui.button(
@@ -39,14 +52,21 @@ class QueueButtons(disnake.ui.View):
     )
     @check_player_btn_decorator()
     async def next(self, button, interaction):
-        await interaction.response.defer()
-        if (self.index + 1) < len(self.pag.pages):
-            self.index += 1
+        if (self.embed_queue.index + 1) < len(self.embed_queue.paginator.pages):
+            self.embed_queue.index += 1
             return await self.embed_queue.generate_pages(interaction)
 
     @disnake.ui.button(
+        emoji="<:refresh_primary:1243850637112774697>",
+        row=1,
+    )
+    @check_player_btn_decorator()
+    async def refresh(self, button, interaction):
+        return await self.embed_queue.generate_pages(interaction)
+
+    @disnake.ui.button(
         emoji="<:shuffle_primary:1239115175337001071>",
-        row=0,
+        row=1,
     )
     @check_player_btn_decorator()
     async def shuffle(self, button, interaction):
@@ -57,32 +77,42 @@ class QueueButtons(disnake.ui.View):
 
     @disnake.ui.button(
         emoji="<:autoplay_primary:1239113693690859564>",
-        row=0,
+        row=1,
     )
     @check_player_btn_decorator()
     async def start_autoplay(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
         if not player.current:
             return
+        await interaction.send(
+            embed=self.bot.embedding.get(
+                title="🟣 | Autoplay",
+                description=f"Автоплей на основе трека `{player.current.info.title}` запущен, подождите немного...",
+            ),
+            ephemeral=True,
+        )
         await player.queue.start_autoplay(player.current)
 
     @disnake.ui.button(
         emoji="<:save_primary:1239113692306739210>",
         label="сохранить",
-        row=0,
+        row=1,
     )
     @check_player_btn_decorator()
     async def save(self, button, interaction):
+        player = self.node.get_player(interaction.guild_id)
+        if not player.queue.count:
+            return
         tracks = [
             track.model_dump(exclude=["ctx", "requester"])
-            for track in self.player.queue.get_queue()
+            for track in player.queue.get_queue()
         ]
 
         from components.ui.modals import PlaylistInfoModal
 
         await interaction.response.send_modal(
             PlaylistInfoModal(
-                node=self.player.node, title="Сохранить очередь", tracks=tracks
+                node=player.node, title="Сохранить очередь", tracks=tracks
             )
         )
 
@@ -105,6 +135,8 @@ class EmbedQueue:
             return await self.message.delete()
 
         total = 0
+
+        self.paginator.clear()
 
         for i, val in enumerate(self.player.queue.get_queue()):
 
@@ -133,14 +165,14 @@ class EmbedQueue:
                 description=(
                     self.paginator.pages[self.index]
                     if self.paginator.pages
-                    else "Пусто!"
+                    else "```diff\n- Пусто!\n```"
                 ),
                 footer=(
                     f"page {self.index + 1}/{len(self.paginator.pages)}"
                     if len(self.paginator.pages)
                     else None
                 ),
-                image="https://noirplayer.su/cdn/ambient_h.gif",
+                image="https://noirplayer.su/cdn/ambient.gif",
             ),
             view=self.view(),
         )
