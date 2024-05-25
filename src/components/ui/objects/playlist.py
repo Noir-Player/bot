@@ -29,6 +29,8 @@ class PlaylistButtons(disnake.ui.View):
 
         self.track = track
 
+        super().__init__(timeout=600)
+
         if not track:  # Main page
             self.prev.disabled = True
             self.lyrics.disabled = True
@@ -43,8 +45,6 @@ class PlaylistButtons(disnake.ui.View):
 
         else:
             self.remove_item(self.save)
-
-        super().__init__(timeout=600)
 
     @disnake.ui.button(
         emoji="<:skip_previous_primary:1239113698623225908>",
