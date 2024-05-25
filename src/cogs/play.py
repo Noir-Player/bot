@@ -272,28 +272,6 @@ class MusicCog(commands.Cog):
 
         return list
 
-    # -------------------------------------------------------------------------------------------------------------------------------------
-    # Если плеер стакнулся
-
-    @check_player_decorator(with_connection=True)
-    @commands.slash_command(description="⭐ | неисправен плеер?", dm_permission=False)
-    async def fix(self, ctx):
-        player = self.bot.node.get_player(ctx.guild.id)
-
-        if player:
-            try:
-                await player.destroy()
-            except BaseException:
-                self.bot.node._players.pop(ctx.guild.id)
-                if self.bot.node.is_connected:
-                    await self._node.rest.send(
-                        method="DELETE",
-                        path=player._player_endpoint_uri,
-                        guild_id=ctx.guild.id,
-                    )
-
-        await ctx.delete_original_message()
-
 
 def setup(bot: commands.Bot):
     bot.add_cog(MusicCog(bot))
