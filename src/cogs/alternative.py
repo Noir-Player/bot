@@ -39,42 +39,56 @@ class AlternativeCog(commands.Cog):
     async def now(self, ctx):
         pass
 
-    @check_player_decorator()
+    @check_player_decorator(with_defer=False)
     @now.sub_command(description="🟣 | текущий трек")
-    async def playing(self, ctx):
+    async def playing(
+        self,
+        ctx,
+        hidden: int = commands.Param(
+            default=1,
+            description="Видимость всем",
+            choices=[
+                disnake.OptionChoice(name="Скрыть", value=1),
+                disnake.OptionChoice(name="Показать", value=0),
+            ],
+        ),
+    ):
+        await ctx.response.defer(ephemeral=bool(hidden))
         player = self.bot.node.get_player(ctx.guild_id)
         await ctx.send(embed=await state(player), ephemeral=True)
 
-    @check_player_decorator()
+    @check_player_decorator(with_defer=False)
     @commands.slash_command(description="🟣 | очередь", dm_permission=False)
     async def queue(
         self,
         ctx,
-        hidden: bool = commands.Param(
-            default=True,
+        hidden: int = commands.Param(
+            default=1,
             description="Видимость всем",
             choices=[
-                disnake.OptionChoice(name="Скрыть", value=True),
-                disnake.OptionChoice(name="Показать", value=False),
+                disnake.OptionChoice(name="Скрыть", value=1),
+                disnake.OptionChoice(name="Показать", value=0),
             ],
         ),
     ):
+        await ctx.response.defer(ephemeral=bool(hidden))
         await EmbedQueue(self.bot.node).send(ctx, ephemeral=hidden)
 
-    @check_player_decorator()
+    @check_player_decorator(with_defer=False)
     @commands.slash_command(description="🟣 | дополнительно", dm_permission=False)
     async def menu(
         self,
         ctx,
-        hidden: bool = commands.Param(
-            default=True,
+        hidden: int = commands.Param(
+            default=1,
             description="Видимость всем",
             choices=[
-                disnake.OptionChoice(name="Скрыть", value=True),
-                disnake.OptionChoice(name="Показать", value=False),
+                disnake.OptionChoice(name="Скрыть", value=1),
+                disnake.OptionChoice(name="Показать", value=0),
             ],
         ),
     ):
+        await ctx.response.defer(ephemeral=bool(hidden))
         await EmbedContext(self.bot.node).send(ctx, ephemeral=hidden)
 
     @check_player_decorator()
