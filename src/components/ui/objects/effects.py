@@ -72,7 +72,7 @@ class EffectsView(disnake.ui.View):
 
     @disnake.ui.button(
         emoji="<:ev_shadow_minus_primary:1239113854684893194>",
-        label="сбросить все фильтры",
+        label="сбросить все эффекты",
         row=2,
         style=disnake.ButtonStyle.gray,
     )
