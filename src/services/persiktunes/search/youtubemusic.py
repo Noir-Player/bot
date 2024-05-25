@@ -1,4 +1,4 @@
-from typing import Any, List, Union
+from typing import Any, AsyncGenerator, List, Union
 
 import ytmusicapi
 
@@ -259,19 +259,18 @@ class YoutubeMusicSearch(BaseSearch):
 
         return tracks
 
-    async def ongoing(self, song: Track, limit: int = 25, **kwargs) -> List[Track]:
+    async def ongoing(
+        self, song: Track, limit: int = 10, **kwargs
+    ) -> AsyncGenerator[Track, None]:
         raw = self.client.get_watch_playlist(
             song.info.identifier, radio=True, limit=limit
         )
 
-        tracks = []
+        for rawtrack in raw["tracks"][1:]:
 
-        for rawtrack in raw["tracks"]:
+            yield await self.song(rawtrack["videoId"], **kwargs)
 
-            track = await self.song(rawtrack["videoId"], **kwargs)
-            tracks.append(track)
-
-        return tracks
+        return
 
     async def lyrics(self, song: Track, **kwargs) -> Track | None:
         raw = self.client.get_watch_playlist(song.info.identifier, limit=1)
