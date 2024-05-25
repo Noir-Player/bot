@@ -8,16 +8,18 @@ from objects.exceptions import *
 # Декораторы для slash-команд
 
 
-def check_player_decorator(with_connection=False):
+def check_player_decorator(with_connection=False, with_defer=True):
     """
     ### Проверить, находится ли юзер в канале с Noir и имеет нужные права.
 
     ---
     Параметр `with_connection` определяет, нужно ли подключиться в случае неудачи.
+    Параметр `with_defer` определяет, нужно ли делать defer() перед вызовом функции.
     """
 
     async def wrapper(inter, *args, **kwargs):
-        await inter.response.defer(ephemeral=True)
+        if with_defer:
+            await inter.response.defer(ephemeral=True)
 
         node = inter.bot.node
 
