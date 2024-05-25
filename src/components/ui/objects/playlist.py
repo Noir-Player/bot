@@ -1,7 +1,7 @@
 import disnake
 
 from objects.bot import NoirBot
-from services.persiktunes import Album, Node, Playlist, Track, YoutubeMusicSearch
+from services.persiktunes import Album, Node, Playlist, Track
 from validators.player import check_player_btn_decorator
 
 from .track import EmbedTrack
@@ -18,7 +18,7 @@ class PlaylistButtons(disnake.ui.View):
         local: bool = False,
     ):
         self.node = node
-        self.api = YoutubeMusicSearch(node=node)
+        self.api = node.rest.ytmclient
         self.bot: NoirBot = node.bot
 
         self.local = local  # TODO: if local playlist, show edit and follow buttons
@@ -142,7 +142,7 @@ class EmbedPlaylist:
 
     def __init__(self, node: Node, playlist: Playlist | Album):
         self.node = node
-        self.api = YoutubeMusicSearch(node=node)
+        self.api = node.rest.ytmclient
         self.bot: NoirBot = node.bot
 
         self.message: disnake.Message = None
