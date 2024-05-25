@@ -58,7 +58,7 @@ async def state(player: Player):
     image = (
         player.current.info.artworkUrl
         if player.current.info.artworkUrl
-        else f"https://mir-s3-cdn-cf.behance.net/project_modules/disp/a11a4893658133.5e98adbead405.gif"
+        else f"https://noirplayer.su/cdn/ambient.gif"
     )
 
     embed = Embed(
@@ -79,8 +79,16 @@ async def state(player: Player):
         else ""
     )
 
+    infos = []
+
+    if player.volume != 100:
+        infos.append(f"громкость: {player.volume}%")
+
+    if player.queue.loop_mode:
+        infos.append(f"повтор: {loop[player.queue.loop_mode]}")
+
     embed.set_footer(
-        text=f"{prog}\n{times}\n {f'громкость: {player.volume}%' if player.volume != 100 else ''} {f' • повтор: {loop[player.queue.loop_mode]}' if player.queue.loop_mode else ''}",
+        text=f"{prog}\n{times}\n {' • '.join(infos)}",
     )
 
     return embed
