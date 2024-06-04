@@ -22,18 +22,8 @@ class QueueButtons(disnake.ui.View):
 
         super().__init__(timeout=600)
 
-        self.children.insert(
-            1,
-            disnake.ui.Button(
-                label="ㅤ",
-                custom_id=1,
-                row=0,
-                disabled=True,
-            ),
-        )
-
         if embed_queue.paginator.pages.__len__() < 2:
-            self.children = self.children[3:]
+            self.children = self.children[2:]
 
     @disnake.ui.button(
         emoji="<:skip_previous_primary:1239113698623225908>",
