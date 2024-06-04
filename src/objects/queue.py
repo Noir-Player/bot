@@ -19,7 +19,7 @@ class NoirQueue(Queue):
             loose_mode=loose_mode,
         )
 
-        self.api = player.node.rest.ytmclient
+        self.api = player.node.rest.abstract_search
 
         self.player = player
 
@@ -32,8 +32,8 @@ class NoirQueue(Queue):
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Основные функции
 
-    async def put_relayted(self, item: Track):
-        async for track in self.api.ongoing(item):  # type: ignore
+    async def put_relayted(self, item: Track, limit: int = 10) -> None:
+        async for track in self.api.default.ongoing(item, limit):  # type: ignore
             await self.put(track)
 
     def _get(self) -> Track | None:
@@ -96,10 +96,12 @@ class NoirQueue(Queue):
                     return False
             elif isinstance(item, LavaSearchLoadingResponse):
                 await self.put(item.tracks[0])
-            elif isinstance(item, Playlist, Album):
+            elif isinstance(item, (Playlist, Album)):
                 await self.put_list(item.tracks)
             elif isinstance(item, Track):
                 await self.put(item)
+            elif isinstance(item, list):
+                return await self.put_auto(item[0])
             else:
                 return False
 
@@ -112,11 +114,16 @@ class NoirQueue(Queue):
         await self.clear()
         await self.put_relayted(item)
 
+    async def stop_autoplay(self) -> None:
+        self._loose_mode = False
+
     async def set_loop_mode(self, mode: LoopMode | None = None) -> None:
         if self._queue:
             self._loop_mode = mode
             await self.player.update_controller_once()
-            await self.update_state("loop", str(self.loop_mode.value))
+            await self.update_state(
+                "loop", str(self.loop_mode.value if self.loop_mode else None)
+            )
 
     async def remove(self, item_or_index: Track | int) -> None:
         await self.update_state(
