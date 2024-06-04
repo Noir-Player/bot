@@ -145,9 +145,10 @@ class Soundpad(disnake.ui.View):
     @check_player_btn_decorator()
     async def next(self, button, interaction):
         if self.player.queue.loop_mode != persik.LoopMode.TRACK:
-            track = self.player.queue.next()
-            if track:
-                await self.player.play(track)
+            try:
+                await self.player.play(self.player.queue.next())
+            except:
+                pass
         else:
             raise TrackIsLooping("Нельзя пропускать звук, когда он зациклен")
 
@@ -157,8 +158,7 @@ class Soundpad(disnake.ui.View):
     )
     @check_player_btn_decorator(with_message=True)
     async def queue(self, button, interaction: disnake.MessageInteraction):
-        if self.player.current:
-            await EmbedQueue(self.player.node).send(interaction)
+        await EmbedQueue(self.player.node).send(interaction)
 
     @disnake.ui.button(
         emoji="<:repeat_primary:1239113702129664082>",
@@ -182,13 +182,12 @@ class Soundpad(disnake.ui.View):
         await interaction.response.send_modal(AddMultiple(self.player))
 
     @disnake.ui.button(
-        emoji="<:delete_primary:1239113856027070514>",
+        emoji="<:stop_primary:1247529015103979552>",
         row=1,
     )
     @check_player_btn_decorator()
-    async def remove(self, button, interaction):
-        """"""
-        # TODO
+    async def stop(self, button, interaction):
+        await self.player.destroy()
 
     @disnake.ui.button(
         emoji="<:apps_primary:1239113725714104441>",
