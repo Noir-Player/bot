@@ -195,43 +195,49 @@ class YoutubeMusicSearch(BaseSearch):
 
         return playlists
 
-    async def search_songs(self, query: str, **kwargs) -> List[Track] | None:
-        raw = self.client.search(query, filter="songs")
+    async def search_songs(
+        self, query: str, limit: int = 10, **kwargs
+    ) -> List[Track] | None:
+        raw = self.client.search(query, filter="songs", limit=limit)
 
         if not raw:
             return None
 
         tracks = []
 
-        for rawresult in raw:
+        for rawresult in raw[:limit]:
             song = await self.song(rawresult["videoId"], **kwargs)
             tracks.append(song)
 
         return tracks
 
-    async def search_albums(self, query: str, **kwargs) -> List[Album] | None:
-        raw = self.client.search(query, filter="albums")
+    async def search_albums(
+        self, query: str, limit: int = 10, **kwargs
+    ) -> List[Album] | None:
+        raw = self.client.search(query, filter="albums", limit=limit)
 
         if not raw:
             return None
 
         albums = []
 
-        for rawresult in raw:
+        for rawresult in raw[:limit]:
             album = await self.album(rawresult["browseId"], **kwargs)
             albums.append(album)
 
         return albums
 
-    async def search_playlists(self, query: str, **kwargs) -> List[Playlist] | None:
-        raw = self.client.search(query, filter="playlists")
+    async def search_playlists(
+        self, query: str, limit: int = 10, **kwargs
+    ) -> List[Playlist] | None:
+        raw = self.client.search(query, filter="playlists", limit=limit)
 
         if not raw:
             return None
 
         playlists = []
 
-        for rawresult in raw:
+        for rawresult in raw[:limit]:
             playlist = await self.playlist(rawresult["browseId"])
             playlists.append(self.node.rest.patch_context(data=playlist, **kwargs))
 
@@ -290,6 +296,9 @@ class YoutubeMusicSearch(BaseSearch):
         return track
 
     async def search_suggestions(self, query: str, *args, **kwargs) -> List[str] | None:
-        raw = self.client.get_search_suggestions(query)
+        try:
+            raw = self.client.get_search_suggestions(query)
+        except:
+            return None
 
         return raw
