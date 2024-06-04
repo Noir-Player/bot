@@ -28,26 +28,6 @@ class MusicCog(commands.Cog):
     async def add(self, ctx):
         pass
 
-    # @check_player_decorator(with_connection=True)
-    # @add.sub_command(description="🟣 | играть (вне очереди)")
-    # async def now(
-    #     self, ctx, search: str = commands.Param(description="пишите для поиска... 🔍")
-    # ):
-    #     player: NoirPlayer = self.bot.node.get_player(ctx.guild_id)
-
-    #     query = await player.search(search, ctx=ctx, requester=ctx.author)
-
-    #     if await player.queue.put_auto(query) == False:
-    #         return await ctx.edit_original_response(
-    #             embed=self.bot.embedding.get(
-    #                 title="🟠 | Не найдено",
-    #                 description=("Не удалось найти трек. "),
-    #                 color="warning",
-    #             ),
-    #         )
-
-    #     await ctx.delete_original_message()
-
     @check_player_decorator(with_connection=True)
     @add.sub_command(description="⭐ | играть")
     async def search(
@@ -58,10 +38,10 @@ class MusicCog(commands.Cog):
 
         player: NoirPlayer = self.bot.node.get_player(ctx.guild_id)
 
-        query = await player.search(
+        query = await player.node.rest.abstract_search.search(
             search,
             ctx=ctx,
-            requester=ctx.author,
+            requester=ctx.author.display_name,
         )
 
         if await player.queue.put_auto(query) == False:
@@ -132,12 +112,15 @@ class MusicCog(commands.Cog):
 
         result = []
 
-        for suggestion in await self.bot.node.rest.ytmclient.search_suggestions(
+        for suggestion in await self.bot.node.rest.abstract_search.search_suggestions(
             user_input
         ):
             result.append(
                 disnake.OptionChoice(name=f"🔎 | {suggestion}", value=suggestion)
             )
+
+        if not result:
+            result = [disnake.OptionChoice(name=f"🔎 | {user_input}", value=user_input)]
 
         end = time.perf_counter()
 
@@ -155,7 +138,11 @@ class MusicCog(commands.Cog):
 
         player: NoirPlayer = self.bot.node.get_player(ctx.guild_id)
 
-        query = (await player.search(query=station, ctx=ctx, requester=ctx.author)).data
+        query = (
+            await player.search(
+                query=station, ctx=ctx, requester=ctx.author.display_name
+            )
+        ).data
 
         if not query.info.isStream:
             return await ctx.edit_original_response(
@@ -229,7 +216,9 @@ class MusicCog(commands.Cog):
                 try:
                     query = (
                         await player.search(
-                            query=track.get("url"), ctx=ctx, requester=ctx.author
+                            query=track.get("url"),
+                            ctx=ctx,
+                            requester=ctx.author.display_name,
                         )
                     )[0]
 
