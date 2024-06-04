@@ -301,7 +301,7 @@ class QueueView(disnake.ui.View):
             self.pag.add_line(
                 f"{i + 1} -{ind} "
                 + val.info.title
-                + f" [{val.requester.display_name if val.requester else 'неизвестно'}]"
+                + f" [{val.requester or 'неизвестно'}]"
             )
 
             i += 1
