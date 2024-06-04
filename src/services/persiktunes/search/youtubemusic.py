@@ -2,7 +2,7 @@ from typing import Any, AsyncGenerator, List, Union
 
 import ytmusicapi
 
-from services.persiktunes.models import Album, Mood
+from services.persiktunes.models import Album, LavalinkTrackLoadingResponse, Mood
 
 from ..models import (
     LavalinkPlaylistInfo,
@@ -81,43 +81,46 @@ class YoutubeMusicSearch(BaseSearch):
 
         tracks = []
 
+        from_lavalink = LavalinkTrackLoadingResponse.model_validate(
+            await self.node.rest.send(
+                "GET",
+                f"loadtracks?identifier=https://music.youtube.com/playlist?list={raw['audioPlaylistId']}",
+            )
+        ).data
+
+        founded_tracks = {
+            track.info.identifier: track for track in from_lavalink.tracks
+        }
+
         for rawtrack in raw["tracks"]:
+            if lavatrack := founded_tracks.get(rawtrack["videoId"]):
 
-            from_lavalink = LavalinkTrackLoadingResponse.model_validate(
-                await self.node.rest.send(
-                    "GET", f"loadtracks?identifier={rawtrack['videoId']}"
+                info = LavalinkTrackInfo(
+                    identifier=rawtrack["videoId"],
+                    isSeekable=True,
+                    author=",".join([artist["name"] for artist in rawtrack["artists"]]),
+                    length=lavatrack.info.length,
+                    isStream=False,
+                    position=0,
+                    title=rawtrack["title"],
+                    uri=f"https://music.youtube.com/watch?v={rawtrack['videoId']}",
+                    artworkUrl=(
+                        rawtrack["thumbnails"][0]["url"].split("=")[0]
+                        if rawtrack["thumbnails"]
+                        else None
+                    ),
+                    sourceName="youtube",
                 )
-            ).data
 
-            if not from_lavalink:
-                continue
-
-            info = LavalinkTrackInfo(
-                identifier=rawtrack["videoId"],
-                isSeekable=True,
-                author=",".join([artist["name"] for artist in rawtrack["artists"]]),
-                length=int(int(rawtrack["lengthSeconds"]) * 1000),
-                isStream=False,
-                position=0,
-                title=rawtrack["title"],
-                uri=f"https://music.youtube.com/watch?v={rawtrack['videoId']}",
-                artworkUrl=(
-                    rawtrack["thumbnails"][0]["url"].split("=")[0]
-                    if rawtrack["thumbnails"]
-                    else None
-                ),
-                sourceName="youtube",
-            )
-
-            tracks.append(
-                Track(
-                    encoded=from_lavalink.encoded,
-                    info=info,
-                    ctx=kwargs.get("ctx"),
-                    requester=kwargs.get("requester"),
-                    description=rawtrack.get("description"),
+                tracks.append(
+                    Track(
+                        encoded=lavatrack.encoded,
+                        info=info,
+                        ctx=kwargs.get("ctx"),
+                        requester=kwargs.get("requester"),
+                        description=rawtrack.get("description"),
+                    )
                 )
-            )
 
         info = LavalinkPlaylistInfo(name=raw["title"], selectedTrack=0)
 
@@ -138,43 +141,45 @@ class YoutubeMusicSearch(BaseSearch):
 
         tracks = []
 
+        from_lavalink = LavalinkTrackLoadingResponse.model_validate(
+            await self.node.rest.send(
+                "GET",
+                f"loadtracks?identifier=https://music.youtube.com/playlist?list={raw['id']}",
+            )
+        ).data
+
+        founded_tracks = {
+            track.info.identifier: track for track in from_lavalink.tracks
+        }
+
         for rawtrack in raw["tracks"]:
-
-            from_lavalink = LavalinkTrackLoadingResponse.model_validate(
-                await self.node.rest.send(
-                    "GET", f"loadtracks?identifier={rawtrack['videoId']}"
+            if lavatrack := founded_tracks.get(rawtrack["videoId"]):
+                info = LavalinkTrackInfo(
+                    identifier=lavatrack.info.identifier,
+                    isSeekable=True,
+                    author=",".join([artist["name"] for artist in rawtrack["artists"]]),
+                    length=lavatrack.info.length,
+                    isStream=False,
+                    position=0,
+                    title=rawtrack["title"],
+                    uri=f"https://music.youtube.com/watch?v={rawtrack['videoId']}",
+                    artworkUrl=(
+                        rawtrack["thumbnails"][0]["url"].split("=")[0]
+                        if rawtrack["thumbnails"]
+                        else None
+                    ),
+                    sourceName="youtube",
                 )
-            ).data
 
-            if not from_lavalink:
-                continue
-
-            info = LavalinkTrackInfo(
-                identifier=rawtrack["videoId"],
-                isSeekable=True,
-                author=",".join([artist["name"] for artist in rawtrack["artists"]]),
-                length=from_lavalink.info.length,
-                isStream=False,
-                position=0,
-                title=rawtrack["title"],
-                uri=f"https://music.youtube.com/watch?v={rawtrack['videoId']}",
-                artworkUrl=(
-                    rawtrack["thumbnails"][0]["url"].split("=")[0]
-                    if rawtrack["thumbnails"]
-                    else None
-                ),
-                sourceName="youtube",
-            )
-
-            tracks.append(
-                Track(
-                    encoded=from_lavalink.encoded,
-                    info=info,
-                    ctx=kwargs.get("ctx"),
-                    requester=kwargs.get("requester"),
-                    description=rawtrack.get("description"),
+                tracks.append(
+                    Track(
+                        encoded=lavatrack.encoded,
+                        info=info,
+                        ctx=kwargs.get("ctx"),
+                        requester=kwargs.get("requester"),
+                        description=rawtrack.get("description"),
+                    )
                 )
-            )
 
         info = LavalinkPlaylistInfo(name=raw["title"], selectedTrack=0)
 
@@ -283,14 +288,14 @@ class YoutubeMusicSearch(BaseSearch):
         return tracks
 
     async def ongoing(
-        self, song: Track, limit: int = 10, **kwargs
+        self, song: Track, limit: int = 40, **kwargs
     ) -> AsyncGenerator[Track, None]:
         """Generate ongoing playlist for song"""
         raw = self.client.get_watch_playlist(
             song.info.identifier, radio=True, limit=limit
         )
 
-        for rawtrack in raw["tracks"][1 : limit + 1]:
+        for rawtrack in raw["tracks"][1:]:
 
             yield await self.song(rawtrack["videoId"], **kwargs)
 
