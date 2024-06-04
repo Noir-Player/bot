@@ -18,7 +18,7 @@ class QueueButtons(disnake.ui.View):
 
         self.message = message
 
-        self.api = node.rest.ytmclient
+        self.api = node.rest.abstract_search
 
         super().__init__(timeout=600)
 
@@ -145,7 +145,7 @@ class EmbedQueue:
                     f"+ {' '*len(str(i))}" if not self.player.queue.loose_mode else "+ "
                 )
             else:
-                ind = f"{i + 1}. " if not self.player.queue.loose_mode else f"* "
+                ind = f"{i + 1}" + (". " if not self.player.queue.loose_mode else f"* ")
 
             self.paginator.add_line(ind + val.info.title)
 

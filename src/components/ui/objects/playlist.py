@@ -18,7 +18,7 @@ class PlaylistButtons(disnake.ui.View):
         local: bool = False,
     ):
         self.node = node
-        self.api = node.rest.ytmclient
+        self.api = node.rest.abstract_search
         self.bot: NoirBot = node.bot
 
         self.local = local  # TODO: if local playlist, show edit and follow buttons
@@ -142,7 +142,7 @@ class EmbedPlaylist:
 
     def __init__(self, node: Node, playlist: Playlist | Album):
         self.node = node
-        self.api = node.rest.ytmclient
+        self.api = node.rest.abstract_search
         self.bot: NoirBot = node.bot
 
         self.message: disnake.Message = None

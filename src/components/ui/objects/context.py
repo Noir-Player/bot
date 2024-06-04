@@ -16,7 +16,7 @@ class ContextView(disnake.ui.View):
 
         super().__init__(timeout=600)
 
-        self.api = node.rest.ytmclient
+        self.api = node.rest.abstract_search
 
     @disnake.ui.button(emoji="<:volume_down_primary:1239113694856876076>", row=0)
     @check_player_btn_decorator()

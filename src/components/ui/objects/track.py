@@ -16,7 +16,7 @@ class TrackButtons(disnake.ui.View):
 
         super().__init__(timeout=600)
 
-        self.api = node.rest.ytmclient
+        self.api = node.rest.abstract_search
 
     @disnake.ui.button(
         emoji="<:playlist_add_primary:1239115838557126678>",
