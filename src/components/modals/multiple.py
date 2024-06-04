@@ -18,8 +18,8 @@ class AddMultiple(disnake.ui.Modal):
 
         components = [
             disnake.ui.TextInput(
-                label='Названия/ссылки через "; "',
-                placeholder="rickroll; Gambare remix",
+                label="Названия/ссылки через строку",
+                placeholder="rickroll\nGambare remix",
                 custom_id="sounds",
                 style=disnake.TextInputStyle.long,
             )
@@ -34,18 +34,16 @@ class AddMultiple(disnake.ui.Modal):
 
         values = str(list(inter.text_values.values())[0])
 
-        for val in values.split("; "):
-            query = await self.player.get_tracks(
-                query=val,
+        for query in values.split("\n"):
+            result = await self.player.node.rest.abstract_search.search(
+                query=query,
                 ctx=inter,
                 requester=inter.author.display_name,
-                search_type=persik.SearchType.ytmsearch,
             )
 
-            if (
-                not self.player.current
-                and await self.player.queue.put_auto(query) != False
-            ):
+            success = await self.player.queue.put_auto(result)
+
+            if not self.player.current and success:
                 await self.player.play(self.player.queue.get())
 
         await inter.delete_original_response()
