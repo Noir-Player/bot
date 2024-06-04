@@ -122,20 +122,20 @@ class LavalinkRest:
     def patch_context(
         self,
         data: Union[Track, Playlist, Album],
-        *,
-        ctx: Optional[Union[commands.Context, Interaction]] = None,
-        requester: Optional[Union[Member, User]] = None,
-        description: Optional[str] = None,
-        color: Optional[int] = None,
-        tag: Optional[AnyStr] = None,
+        # ctx: Optional[Union[commands.Context, Interaction]] = None,
+        # requester: Optional[Union[Member, User]] = None,
+        # description: Optional[str] = None,
+        # color: Optional[int] = None,
+        # tag: Optional[AnyStr] = None,
+        **kwargs,
     ):
 
         update = {
-            "ctx": ctx,
-            "requester": requester,
-            "description": description,
-            "color": color,
-            "tag": tag,
+            "ctx": kwargs.get("ctx"),
+            "requester": kwargs.get("requester"),
+            "description": kwargs.get("description"),
+            "color": kwargs.get("color"),
+            "tag": kwargs.get("tag"),
         }
 
         return data.model_copy(
