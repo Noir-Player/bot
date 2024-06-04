@@ -38,7 +38,7 @@ class AddMultiple(disnake.ui.Modal):
             query = await self.player.get_tracks(
                 query=val,
                 ctx=inter,
-                requester=inter.author,
+                requester=inter.author.display_name,
                 search_type=persik.SearchType.ytmsearch,
             )
 
