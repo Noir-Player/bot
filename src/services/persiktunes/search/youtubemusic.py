@@ -12,7 +12,7 @@ class YoutubeMusicSearch(BaseSearch):
     """
     Youtube Music search abstract class.
 
-    You can use methods without `Node`, just pass context in `kwargs` and go:
+    You can use methods without `Node.patch_context`, just pass context in `kwargs` and go:
 
     ```py
     from persiktunes import YoutubeMusicSearch
@@ -57,7 +57,8 @@ class YoutubeMusicSearch(BaseSearch):
 
         track = Track(
             encoded=(
-                await self.node.rest.send(
+                kwargs.get("encoded")
+                or await self.node.rest.send(
                     "GET", f"loadtracks?identifier={raw['videoId']}"
                 )
             )["data"]["encoded"],
@@ -96,7 +97,8 @@ class YoutubeMusicSearch(BaseSearch):
             tracks.append(
                 Track(
                     encoded=(
-                        await self.node.rest.send(
+                        kwargs.get("encoded", ()).pop(0)
+                        or await self.node.rest.send(
                             "GET", f"loadtracks?identifier={rawtrack['videoId']}"
                         )
                     )["data"]["encoded"],
@@ -148,7 +150,8 @@ class YoutubeMusicSearch(BaseSearch):
             tracks.append(
                 Track(
                     encoded=(
-                        await self.node.rest.send(
+                        kwargs.get("encoded", ()).pop(0)
+                        or await self.node.rest.send(
                             "GET", f"loadtracks?identifier={rawtrack['videoId']}"
                         )
                     )["data"]["encoded"],
@@ -187,8 +190,8 @@ class YoutubeMusicSearch(BaseSearch):
         playlists = []
 
         for rawplaylist in raw:
-            playlist = await self.playlist(rawplaylist["playlistId"])
-            playlists.append(self.node.rest.patch_context(data=playlist, **kwargs))
+            playlist = await self.playlist(rawplaylist["playlistId"], **kwargs)
+            playlists.append(playlist)
 
         return playlists
 
@@ -215,8 +218,8 @@ class YoutubeMusicSearch(BaseSearch):
         albums = []
 
         for rawresult in raw:
-            album = await self.album(rawresult["browseId"])
-            albums.append(self.node.rest.patch_context(data=album, **kwargs))
+            album = await self.album(rawresult["browseId"], **kwargs)
+            albums.append(album)
 
         return albums
 
@@ -266,7 +269,7 @@ class YoutubeMusicSearch(BaseSearch):
             song.info.identifier, radio=True, limit=limit
         )
 
-        for rawtrack in raw["tracks"][1:]:
+        for rawtrack in raw["tracks"][1 : limit + 1]:
 
             yield await self.song(rawtrack["videoId"], **kwargs)
 
