@@ -61,10 +61,13 @@ class EventsCog(commands.Cog):
 
         await player.queue.clear()
 
-        try:
-            await player.controller.delete(5)
-        except:
-            pass
+        await player.edit_controller(
+            embed=self.bot.embedding.get(
+                image="https://noirplayer.su/cdn/ambient.gif",
+                color="secondary",
+                use_light_color=True,
+            ),
+        )
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # VOICE_STATE_UPDATE ИВЕНТ NOTE: перенесен в fetcher.py
