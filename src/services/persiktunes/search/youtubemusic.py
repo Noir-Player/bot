@@ -4,7 +4,13 @@ import ytmusicapi
 
 from services.persiktunes.models import Album, Mood
 
-from ..models import LavalinkPlaylistInfo, LavalinkTrackInfo, Playlist, Track
+from ..models import (
+    LavalinkPlaylistInfo,
+    LavalinkTrackInfo,
+    LavalinkTrackLoadingResponse,
+    Playlist,
+    Track,
+)
 from .template import BaseSearch
 
 
@@ -77,11 +83,20 @@ class YoutubeMusicSearch(BaseSearch):
 
         for rawtrack in raw["tracks"]:
 
+            from_lavalink = LavalinkTrackLoadingResponse.model_validate(
+                await self.node.rest.send(
+                    "GET", f"loadtracks?identifier={rawtrack['videoId']}"
+                )
+            ).data
+
+            if not from_lavalink:
+                continue
+
             info = LavalinkTrackInfo(
                 identifier=rawtrack["videoId"],
                 isSeekable=True,
                 author=",".join([artist["name"] for artist in rawtrack["artists"]]),
-                length=rawtrack["length"],
+                length=int(int(rawtrack["lengthSeconds"]) * 1000),
                 isStream=False,
                 position=0,
                 title=rawtrack["title"],
@@ -96,12 +111,7 @@ class YoutubeMusicSearch(BaseSearch):
 
             tracks.append(
                 Track(
-                    encoded=(
-                        kwargs.get("encoded", ()).pop(0)
-                        or await self.node.rest.send(
-                            "GET", f"loadtracks?identifier={rawtrack['videoId']}"
-                        )
-                    )["data"]["encoded"],
+                    encoded=from_lavalink.encoded,
                     info=info,
                     ctx=kwargs.get("ctx"),
                     requester=kwargs.get("requester"),
@@ -130,11 +140,20 @@ class YoutubeMusicSearch(BaseSearch):
 
         for rawtrack in raw["tracks"]:
 
+            from_lavalink = LavalinkTrackLoadingResponse.model_validate(
+                await self.node.rest.send(
+                    "GET", f"loadtracks?identifier={rawtrack['videoId']}"
+                )
+            ).data
+
+            if not from_lavalink:
+                continue
+
             info = LavalinkTrackInfo(
                 identifier=rawtrack["videoId"],
                 isSeekable=True,
                 author=",".join([artist["name"] for artist in rawtrack["artists"]]),
-                length=rawtrack["length"],
+                length=from_lavalink.info.length,
                 isStream=False,
                 position=0,
                 title=rawtrack["title"],
@@ -149,12 +168,7 @@ class YoutubeMusicSearch(BaseSearch):
 
             tracks.append(
                 Track(
-                    encoded=(
-                        kwargs.get("encoded", ()).pop(0)
-                        or await self.node.rest.send(
-                            "GET", f"loadtracks?identifier={rawtrack['videoId']}"
-                        )
-                    )["data"]["encoded"],
+                    encoded=from_lavalink.encoded,
                     info=info,
                     ctx=kwargs.get("ctx"),
                     requester=kwargs.get("requester"),
@@ -168,7 +182,7 @@ class YoutubeMusicSearch(BaseSearch):
             info=info,
             tracks=tracks,
             description=raw.get("description"),
-            uri=f"https://music.youtube.com/playlist?list={raw['audioPlaylistId']}",
+            uri=f"https://music.youtube.com/playlist?list={raw['id']}",
         )
 
         return self.node.rest.patch_context(data=playlist, **kwargs)
@@ -271,6 +285,7 @@ class YoutubeMusicSearch(BaseSearch):
     async def ongoing(
         self, song: Track, limit: int = 10, **kwargs
     ) -> AsyncGenerator[Track, None]:
+        """Generate ongoing playlist for song"""
         raw = self.client.get_watch_playlist(
             song.info.identifier, radio=True, limit=limit
         )
@@ -295,10 +310,10 @@ class YoutubeMusicSearch(BaseSearch):
 
         return track
 
-    async def search_suggestions(self, query: str, *args, **kwargs) -> List[str] | None:
+    async def search_suggestions(self, query: str, *args, **kwargs) -> List[str]:
         try:
             raw = self.client.get_search_suggestions(query)
         except:
-            return None
+            return []
 
         return raw
