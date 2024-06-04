@@ -1,5 +1,5 @@
 import json
-from typing import Any, Coroutine, Optional
+from typing import Any, Coroutine, List, Optional
 
 import disnake
 from disnake.ext import tasks
@@ -42,6 +42,8 @@ class NoirPlayer(persiktunes.Player):
         # NOTE: перенесено в очередь classes.Queue
         # """Генерация треков"""
         # self._nonstop = False
+
+        self._search_cls = persiktunes.AbstractSearch(self.node)
 
         self.bot.loop.create_task(self.refresh_init())
 
@@ -146,20 +148,21 @@ class NoirPlayer(persiktunes.Player):
 
         await self.pub("play", track.model_dump_json(exclude=["ctx", "requester"]))
 
-        if track.requester:
-            db.metrics.add_last_track(
-                track.model_dump_json(exclude=["ctx", "requester"]), track.requester.id
-            )
+        # if track.requester:
+        #     db.metrics.add_last_track(
+        #         track.model_dump_json(exclude=["ctx", "requester"]), track.requester.id
+        #     )
 
     # -------------------------------------------------------------------------------------------------------------------------------------
-    # Команды для js
+    #
 
     async def skip(self) -> None:
         if self.current:
             if self.queue.loop_mode.value != "track":
-                track = self.queue.next()
-                if track:
-                    await self.play(track)
+                try:
+                    await self.play(self.queue.next())
+                except:
+                    pass
 
     async def prev(self) -> None:
         if self.current:
@@ -167,6 +170,18 @@ class NoirPlayer(persiktunes.Player):
                 track = self.queue.prev()
                 if track:
                     await self.play(track)
+
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    # Поиск
+
+    async def search(
+        self,
+        query: str,
+        *args,
+        **kwargs,
+    ) -> Optional[List[persiktunes.Track]]:
+
+        return await self._search_cls.search(query, *args, **kwargs)
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Стандартные команды, переписанные под пад и сокет
