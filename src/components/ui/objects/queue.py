@@ -22,18 +22,18 @@ class QueueButtons(disnake.ui.View):
 
         super().__init__(timeout=600)
 
-        for i in range(2, 5):
-            self.children.insert(
-                i,
-                disnake.ui.Button(
-                    custom_id=i,
-                    row=0,
-                    disabled=True,
-                ),
-            )
+        self.children.insert(
+            1,
+            disnake.ui.Button(
+                label="ㅤ",
+                custom_id=1,
+                row=0,
+                disabled=True,
+            ),
+        )
 
         if embed_queue.paginator.pages.__len__() < 2:
-            self.children = self.children[5:]
+            self.children = self.children[3:]
 
     @disnake.ui.button(
         emoji="<:skip_previous_primary:1239113698623225908>",
@@ -41,7 +41,6 @@ class QueueButtons(disnake.ui.View):
     )
     @check_player_btn_decorator()
     async def prev(self, button, interaction):
-        await interaction.response.defer()
         if self.embed_queue.index > 0:
             self.embed_queue.index -= 1
             return await self.embed_queue.generate_pages(interaction)
@@ -84,14 +83,29 @@ class QueueButtons(disnake.ui.View):
         player = self.node.get_player(interaction.guild_id)
         if not player.current:
             return
-        await interaction.send(
-            embed=self.bot.embedding.get(
-                title="🟣 | Autoplay",
-                description=f"Автоплей на основе трека `{player.current.info.title}` запущен, подождите немного...",
-            ),
-            ephemeral=True,
-        )
-        await player.queue.start_autoplay(player.current)
+
+        if not player.queue.loose_mode:
+            await interaction.send(
+                embed=self.bot.embedding.get(
+                    title="🟣 | Autoplay",
+                    description=f"Автоплей на основе трека `{player.current.info.title}` запущен, подождите немного...",
+                    image="https://noirplayer.su/cdn/ambient.gif",
+                ),
+                ephemeral=True,
+            )
+            await player.queue.start_autoplay(player.current)
+
+        else:
+            await interaction.send(
+                embed=self.bot.embedding.get(
+                    title="🟣 | Autoplay",
+                    description=f"Автоплей выключен, очередь возвращена в обычное состояние.",
+                    image="https://noirplayer.su/cdn/ambient.gif",
+                ),
+                ephemeral=True,
+            )
+
+            await player.queue.stop_autoplay()
 
     @disnake.ui.button(
         emoji="<:save_primary:1239113692306739210>",
@@ -173,6 +187,7 @@ class EmbedQueue:
                     else None
                 ),
                 image="https://noirplayer.su/cdn/ambient.gif",
+                use_light_color=True,
             ),
             view=self.view(),
         )
