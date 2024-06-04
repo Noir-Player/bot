@@ -33,7 +33,7 @@ class NoirQueue(Queue):
     # Основные функции
 
     async def put_relayted(self, item: Track, limit: int = 10) -> None:
-        async for track in self.api.default.ongoing(item, limit):  # type: ignore
+        async for track in await self.api.ongoing(item, limit):  # type: ignore
             await self.put(track)
 
     def _get(self) -> Track | None:
