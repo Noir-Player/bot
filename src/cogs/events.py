@@ -1,5 +1,3 @@
-import asyncio
-
 from disnake.ext import commands
 
 import services.persiktunes as persik
@@ -52,9 +50,11 @@ class EventsCog(commands.Cog):
             "finished",
             "stopped",
         ):  # если трек завершился самостоятельно или использовано skip
-            sound = player.queue.get()  # получаем трек
-            if sound:  # если очередь не пуста
-                return await player.play(sound)
+
+            try:
+                return await player.play(player.queue.get())
+            except:
+                pass
 
         elif reason == "replaced":  # если трек был заменен
             return
