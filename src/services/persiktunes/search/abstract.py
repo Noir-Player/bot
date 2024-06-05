@@ -10,14 +10,28 @@ from .youtubemusic import *
 
 class AbstractSearch(BaseSearch):
     """
-    #### Abstract class for search functions.
-    You can use this class to search from many services from here.
+    Abstract search class.
+
+    You can use methods without `Node.patch_context`, just pass context in `kwargs` and go:
+
+    ```py
+    from persiktunes import AbstractSearch
+    ...
+    search = AbstractSearch(node = node)
+    ...
+    @commands.slash_command(description="Play song")
+    asyng def play(self, ctx, query: str):
+        songs = await search.search_songs(query, ctx=ctx, requester=ctx.author.display_name)
+        ...
+        await player.play(songs[0])
     """
 
     def __init__(
         self,
         node: Any,
-        default: Union[BaseSearch, YoutubeMusicSearch] = YoutubeMusicSearch,
+        default: Union[
+            YandexMusicSearch, YoutubeMusicSearch, SpotifySearch
+        ] = YoutubeMusicSearch,
         **kwargs,
     ) -> None:
         """Pass a `Node` instance and get started.\nYou can pass any additional kwarg: `language`"""
@@ -65,7 +79,18 @@ class AbstractSearch(BaseSearch):
     async def search_songs(
         self, query: str, limit: int = 10, *args, **kwargs
     ) -> Optional[List[Track]] | Any:
-        """Search for songs"""
+        """
+        Search for songs.
+
+        Args:
+            query: The search query.
+            limit: The maximum number of results to return.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            A list of Track objects or None.
+        """
         return await self._call_method(
             "search_songs", query, limit=limit, *args, **kwargs
         )
@@ -73,7 +98,18 @@ class AbstractSearch(BaseSearch):
     async def search_albums(
         self, query: str, limit: int = 10, *args, **kwargs
     ) -> Optional[List[Album]] | Any:
-        """Search for albums"""
+        """
+        Search for albums.
+
+        Args:
+            query: The search query.
+            limit: The maximum number of results to return.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            A list of Album objects or None.
+        """
         return await self._call_method(
             "search_albums", query, limit=limit, *args, **kwargs
         )
@@ -81,7 +117,18 @@ class AbstractSearch(BaseSearch):
     async def search_playlists(
         self, query: str, limit: int = 10, *args, **kwargs
     ) -> Optional[List[Playlist]] | Any:
-        """Search for playlists"""
+        """
+        Search for playlists.
+
+        Args:
+            query: The search query.
+            limit: The maximum number of results to return.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            A list of Playlist objects or None.
+        """
         return await self._call_method(
             "search_playlists", query, *args, limit=limit, **kwargs
         )
@@ -89,59 +136,193 @@ class AbstractSearch(BaseSearch):
     async def search_artists(
         self, query: str, *args, **kwargs
     ) -> Optional[List[Artist]] | Any:
-        """Search for artists"""
+        """
+        Search for artists.
+
+        Args:
+            query: The search query.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            A list of Artist objects or None.
+        """
         return await self._call_method("search_artists", query, *args, **kwargs)
 
     async def search_suggestions(
         self, query: str, *args, **kwargs
-    ) -> Optional[Dict[str, str]] | Any:
-        """Autocomplete your search from default service"""
+    ) -> Optional[List[str]] | Any:
+        """
+        Autocomplete your search from default service.
+
+        Args:
+            query (str): The search query.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            A list of suggestions or None.
+        """
         return await self._call_method("search_suggestions", query, *args, **kwargs)
 
     async def search(
         self, query: str, limit: int = 1, *args, **kwargs
     ) -> Optional[List[Track]] | Any:
-        """Legacy provider for search_songs"""
+        """
+        Legacy provider for search_songs.
+
+        This method is kept for backward compatibility.
+        It calls `search_songs` method with the given query and limit.
+
+        Args:
+            query: The search query.
+            limit: The maximum number of results to return.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            A list of Track objects or None.
+        """
         return await self.search_songs(query, limit=limit, *args, **kwargs)
 
     async def song(self, id: str, *args, **kwargs) -> Optional[Track]:
-        """Get song by id"""
+        """
+        Get song by id.
+
+        Args:
+            id: The id of the song.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            A Track object or None.
+        """
         return await self._call_method("song", id, *args, **kwargs)
 
     async def album(self, id: str, *args, **kwargs) -> Optional[Album]:
-        """Get album by id"""
+        """
+        Get album by id.
+
+        Args:
+            id: The id of the album.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            An Album object or None.
+        """
         return await self._call_method("album", id, *args, **kwargs)
 
     async def playlist(self, id: str, *args, **kwargs) -> Optional[Playlist]:
-        """Get playlist by id"""
+        """
+        Get playlist by id.
+
+        Args:
+            id: The id of the playlist.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            A Playlist object or None.
+        """
         return await self._call_method("playlist", id, *args, **kwargs)
 
     async def artist(self, id: str, *args, **kwargs) -> Optional[Artist]:
-        """Get artist by id"""
+        """
+        Get artist by id.
+
+        Args:
+            id: The id of the artist.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            An Artist object or None.
+        """
         return await self._call_method("artist", id, *args, **kwargs)
 
-    async def moods(self, *args, **kwargs) -> Optional[Dict[str, str]]:
-        """Get all moods from default service"""
+    async def moods(self, *args, **kwargs) -> Optional[List[Mood]]:
+        """
+        Get all moods from default service.
+
+        Args:
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            A list of moods or None.
+        """
         return await self._call_method("moods", *args, **kwargs)
 
     async def get_mood_playlists(
         self, mood: Mood, *args, **kwargs
     ) -> Optional[Playlist]:
-        """Get mood playlists from default service"""
+        """
+        Get mood playlists from default service.
+
+        Args:
+            mood: The mood of the playlists.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            A Playlist object or None.
+        """
         return await self._call_method("get_mood_playlists", mood, *args, **kwargs)
 
     async def lyrics(self, song: Track, *args, **kwargs) -> Optional[Track]:
-        """Get lyrics for song (using path model)"""
+        """
+        Get lyrics for song.
+
+        Args:
+            song: The Track object for which to get lyrics.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            A Track object with lyrics or None.
+        """
         return await self._call_method("lyrics", song, *args, **kwargs)
 
     async def related(
         self, song: Track, limit: int = 10, *args, **kwargs
     ) -> Optional[List[Track]]:
-        """Get related songs for song"""
+        """
+        Get related songs for song.
+
+        Args:
+            song: The Track object for which to get related songs.
+            limit: The maximum number of results to return.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            A list of Track objects or None.
+        """
         return await self._call_method("related", song, limit, *args, **kwargs)
 
+    @staticmethod
     async def ongoing(
-        self, song: Track, limit: int = 40, *args, **kwargs
+        song: Track,  # The Track object for which to generate the ongoing playlist.
+        limit: int = 40,  # The maximum number of tracks to include in the ongoing playlist.
+        *args,  # Additional positional arguments.
+        **kwargs,  # Additional keyword arguments.
     ) -> AsyncGenerator[Track, None]:
-        """Generate ongoing playlist for song"""
-        return await self._call_method("ongoing", song, limit, *args, **kwargs)
+        """
+        Generate an ongoing playlist for a given song.
+
+        Args:
+            song: The Track object for which to generate the ongoing playlist.
+            limit: The maximum number of tracks to include in the ongoing playlist.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Yields:
+            A Track object representing the next track in the ongoing playlist.
+
+        Returns:
+            None
+        """
+        return await AbstractSearch._call_method(
+            "ongoing", song, limit, *args, **kwargs
+        )
