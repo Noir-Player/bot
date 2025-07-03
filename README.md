@@ -1,1 +1,1 @@
-Noir Player Bot
+# Deprecated repo!
