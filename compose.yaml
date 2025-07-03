@@ -1,0 +1,73 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      target: debug
+      dockerfile: Dockerfile
+    networks:
+      - app-network
+    restart: always
+
+  # ============================ LAVALINK ==============================
+
+  lavalink:
+    image: ghcr.io/lavalink-devs/lavalink:4-alpine
+    restart: always
+    networks:
+      - app-network
+    expose:
+      - 2333
+
+  # ============================ NGINX + SSL ===========================
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/fullchain.pem:/etc/nginx/fullchain.pem # may be temporary before certbot
+      - ./nginx/privkey.pem:/etc/nginx/privkey.pem # may be temporary before certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - app-network
+    restart: always
+    depends_on:
+      - backend
+
+  # ============================ DB + CACHE ============================
+
+  database:
+    image: mongo:latest
+    restart: always
+    env_file: .env
+    expose:
+      - 27017
+    volumes:
+      - database_data:/data/db
+      - ./database/mongod.conf:/etc/database/mongod.conf
+    command: ["mongod", "--config", "/etc/database/mongod.conf"]
+    networks:
+      - app-network
+
+  redis:
+    image: redis:latest
+    restart: always
+    expose:
+      - 6379
+    networks:
+      - app-network
+    volumes:
+      - redis:/data
+
+# ============================ VOLS + NETWORK ========================
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  database_data:
+    driver: local
+  redis:
+    driver: local

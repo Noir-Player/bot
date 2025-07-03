@@ -1,4 +1,4 @@
-import asyncio
+# import asyncio
 import configparser
 import logging
 import random
@@ -7,17 +7,20 @@ from typing import Any
 
 # import sdc_api_py
 import disnake
-import hypercorn
+
+# import hypercorn
 import quart
+from config import *
 from disnake.ext import commands
-from hypercorn.asyncio import serve
+
+# from hypercorn.asyncio import serve
 from redis.asyncio import Redis
 from spotipy.oauth2 import SpotifyClientCredentials
 
 import _logging
-import services.api as api
+
+# import services.api as api
 import services.persiktunes as persiktunes
-from config import *
 from helpers.ex_load import cogsLoad, cogsReload
 from objects.exceptions import errors
 
@@ -102,69 +105,70 @@ class NoirBot(commands.AutoShardedInteractionBot):
 
         cogsLoad(self)
 
-        if self._config.getboolean("launch", "sdc_api_enabled"):
-            self._log.info("Sending data to SD.C")
-            try:
-                data = sdc_api_py.Bots(self, self._config.get("tokens", "sdc_token"))
-                data.create_loop()
-            except BaseException:
-                pass
-            else:
-                self._log.debug("Loop created")
+        # DEPRECATED
+        # if self._config.getboolean("launch", "sdc_api_enabled"):
+        #     self._log.info("Sending data to SD.C")
+        #     try:
+        #         data = sdc_api_py.Bots(self, self._config.get("tokens", "sdc_token"))
+        #         data.create_loop()
+        #     except BaseException:
+        #         pass
+        #     else:
+        #         self._log.debug("Loop created")
 
     # -------------------------------------------------------------------------------------------------------------------------------------
-    # Api
+    # Api DEPRECATED
 
-    def serve_api(self):
+    # def serve_api(self):
 
-        self._log.info("Loading FastAPI")
+    #     self._log.info("Loading FastAPI")
 
-        self._app = api.__init__(bot=self)
+    #     self._app = api.__init__(bot=self)
 
-        if not self._debug:
-            config = hypercorn.Config()
-            config.bind = ["0.0.0.0:5000"]
-            config.use_reloader = True
+    #     if not self._debug:
+    #         config = hypercorn.Config()
+    #         config.bind = ["0.0.0.0:5000"]
+    #         config.use_reloader = True
 
-            self._log.info("Run in prodaction")
+    #         self._log.info("Run in prodaction")
 
-            asyncio.run(serve(self._app, config))
+    #         asyncio.run(serve(self._app, config))
 
-        else:
-            config = hypercorn.Config()
-            config.bind = ["0.0.0.0:5001"]
-            config.use_reloader = True
-            config.debug = True
+    #     else:
+    #         config = hypercorn.Config()
+    #         config.bind = ["0.0.0.0:5001"]
+    #         config.use_reloader = True
+    #         config.debug = True
 
-            self._log.info("Run in debug")
+    #         self._log.info("Run in debug")
 
-            asyncio.run(serve(self._app, config))
+    #         asyncio.run(serve(self._app, config))
 
     # -------------------------------------------------------------------------------------------------------------------------------------
-    # App
+    # App DEPRECATED
 
-    def serve_app(self):
+    # def serve_app(self):
 
-        self._log.info("Loading Quart")
+    #     self._log.info("Loading Quart")
 
-        if not self._debug:
-            config = hypercorn.Config()
-            config.bind = ["0.0.0.0:5000"]
-            config.use_reloader = True
+    #     if not self._debug:
+    #         config = hypercorn.Config()
+    #         config.bind = ["0.0.0.0:5000"]
+    #         config.use_reloader = True
 
-            self._log.info("Run in prodaction")
+    #         self._log.info("Run in prodaction")
 
-            asyncio.run(serve(self.app, config))
+    #         asyncio.run(serve(self.app, config))
 
-        else:
-            config = hypercorn.Config()
-            config.bind = ["0.0.0.0:5001"]
-            config.use_reloader = True
-            config.debug = True
+    #     else:
+    #         config = hypercorn.Config()
+    #         config.bind = ["0.0.0.0:5001"]
+    #         config.use_reloader = True
+    #         config.debug = True
 
-            self._log.info("Run in debug")
+    #         self._log.info("Run in debug")
 
-            asyncio.run(serve(self.app, config))
+    #         asyncio.run(serve(self.app, config))
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Lavalink connection

@@ -16,8 +16,7 @@ class Database:
     """Основной класс базы"""
 
     def __init__(self) -> None:
-        self.mongoclient = pymongo.MongoClient("mongodb://localhost:27017/")
-        self.db = mongoclient["NoirV2"]
+        self.db = db
 
         self._setup = SetupDB(self.db["guilds"])
         self._playlists = PlaylistsDB(self.db["playlists"])

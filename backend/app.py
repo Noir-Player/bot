@@ -28,7 +28,7 @@ bot = NoirBot(debug=True)
 
 try:
     threading.Thread(target=bot.run, name="bot").start()
-    bot.serve_app()
+    # bot.serve_app() # deprecated
 
 except Exception as exp:
     if exp != KeyboardInterrupt:

@@ -166,3 +166,4 @@ config.py
 /.vscode
 **/*oauth.json
 setup_ytm.py
+privkey.pem
