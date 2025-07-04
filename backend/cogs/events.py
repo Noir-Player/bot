@@ -1,6 +1,7 @@
 from _logging import get_logger
 from disnake.ext import commands
 from entities.bot import NoirBot
+from entities.node import create_node
 from entities.player import NoirPlayer
 from services import persiktunes
 
@@ -10,10 +11,6 @@ log = get_logger("events")
 class EventsCog(commands.Cog):
     def __init__(self, bot: NoirBot):
         self.bot = bot
-
-    # -------------------------------------------------------------------------------------------------------------------------------------
-
-    # Lavalink events
 
     @commands.Cog.listener()
     async def on_persiktunes_track_start(
@@ -70,8 +67,16 @@ class EventsCog(commands.Cog):
             ),
         )
 
-    # -------------------------------------------------------------------------------------------------------------------------------------
-    # VOICE_STATE_UPDATE ИВЕНТ NOTE: moved to fetcher.py
+    @commands.Cog.listener()
+    async def on_ready(self):
+        log.info(f"Starting as {self.user} (ID: {self.user.id})")
+        log.info("on_ready was called, creating node...")
+
+        await create_node(self.bot)
+
+    @commands.Cog.listener()
+    async def on_shard_connect(self, id):
+        log.debug(f"Player connected | {id}")
 
 
 def setup(bot: commands.Bot):
