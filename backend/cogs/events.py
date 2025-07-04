@@ -1,7 +1,10 @@
-import pomice
+from _logging import get_logger
 from disnake.ext import commands
 from entities.bot import NoirBot
 from entities.player import NoirPlayer
+from services import persiktunes
+
+log = get_logger("events")
 
 
 class EventsCog(commands.Cog):
@@ -13,7 +16,9 @@ class EventsCog(commands.Cog):
     # Lavalink events
 
     @commands.Cog.listener()
-    async def on_pomice_track_start(self, player: NoirPlayer, track: pomice.Track):
+    async def on_persiktunes_track_start(
+        self, player: NoirPlayer, track: persiktunes.Track
+    ):
         await player.edit_controller(player.current.ctx)
 
         if player.update_controller.is_running():
@@ -32,29 +37,27 @@ class EventsCog(commands.Cog):
         else:
             player.update_controller.stop()
 
-    """Если саундбара нет, его измененение не имеет смысла"""
-
-    """Прослушивание окончания трека"""
+        log.debug(f"{track} started")
 
     @commands.Cog.listener()
-    async def on_pomice_track_end(
-        self, player: NoirPlayer, track: pomice.Track, reason
+    async def on_persiktunes_track_end(
+        self, player: NoirPlayer, track: persiktunes.Track, reason
     ):
-        player.update_controller.stop()  # останавливаем обновление плеера
+        player.update_controller.stop()
 
-        self.bot._log.debug(f"{track} ended. Reason: {reason}")
+        log.debug(f"{track} ended. Reason: {reason}")
 
         if not player.queue.is_empty and reason in (
             "finished",
             "stopped",
-        ):  # если трек завершился самостоятельно или использовано skip
+        ):
 
             try:
                 return await player.play(player.queue.get())
             except:
                 pass
 
-        elif reason == "replaced":  # если трек был заменен
+        elif reason == "replaced":
             return
 
         await player.queue.clear()
@@ -68,7 +71,7 @@ class EventsCog(commands.Cog):
         )
 
     # -------------------------------------------------------------------------------------------------------------------------------------
-    # VOICE_STATE_UPDATE ИВЕНТ NOTE: перенесен в fetcher.py
+    # VOICE_STATE_UPDATE ИВЕНТ NOTE: moved to fetcher.py
 
 
 def setup(bot: commands.Bot):
