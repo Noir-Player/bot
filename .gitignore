@@ -167,3 +167,4 @@ config.py
 **/*oauth.json
 setup_ytm.py
 privkey.pem
+legacy/
