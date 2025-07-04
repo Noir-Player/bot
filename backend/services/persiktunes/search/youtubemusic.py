@@ -2,8 +2,6 @@ from typing import Any, AsyncGenerator, List, Union
 
 import ytmusicapi
 
-from services.persiktunes.models import Album, LavalinkTrackLoadingResponse, Mood
-
 from ..models import (
     LavalinkPlaylistInfo,
     LavalinkTrackInfo,
@@ -11,6 +9,7 @@ from ..models import (
     Playlist,
     Track,
 )
+from ..models.search import Album, Mood
 from .template import BaseSearch
 
 

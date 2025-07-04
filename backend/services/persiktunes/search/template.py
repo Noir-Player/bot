@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, List, Optional
 
-from ..models import Album, Artist, Browse, Mood, Playlist, Track
+from ..models.search import Album, Artist, Browse, Mood, Playlist, Track
 
 
 class BaseSearch:

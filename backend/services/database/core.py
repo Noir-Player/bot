@@ -8,8 +8,8 @@ from .setup import SetupDB
 from .star import StarsDB
 from .user import UsersDB
 
-mongoclient = pymongo.MongoClient("mongodb://localhost:27017/")
-db = mongoclient["NoirV2"]
+mongoclient = pymongo.MongoClient("mongodb://database:27017/")
+db = mongoclient["debug"]
 
 
 class Database:

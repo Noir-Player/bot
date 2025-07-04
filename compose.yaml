@@ -2,11 +2,14 @@ services:
   backend:
     build:
       context: ./backend
-      target: debug
-      dockerfile: Dockerfile
+      # target: debug
     networks:
       - app-network
     restart: always
+    depends_on:
+      - database
+      - lavalink
+      - redis
 
   # ============================ LAVALINK ==============================
 
@@ -40,7 +43,6 @@ services:
   database:
     image: mongo:latest
     restart: always
-    env_file: .env
     expose:
       - 27017
     volumes:

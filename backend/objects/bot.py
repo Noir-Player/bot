@@ -5,28 +5,28 @@ import random
 import traceback
 from typing import Any
 
+import _logging
+
 # import sdc_api_py
 import disnake
 
+# import services.api as api
+import services.persiktunes as persiktunes
+
 # import hypercorn
-import quart
+# import quart
 from config import *
 from disnake.ext import commands
+from helpers.ex_load import cogsLoad, cogsReload
+from objects.exceptions import errors
 
 # from hypercorn.asyncio import serve
 from redis.asyncio import Redis
-from spotipy.oauth2 import SpotifyClientCredentials
-
-import _logging
-
-# import services.api as api
-import services.persiktunes as persiktunes
-from helpers.ex_load import cogsLoad, cogsReload
-from objects.exceptions import errors
 
 # from services.app import setup
 from services.database.core import Database
 from services.ui.embed import EmbedBuilder
+from spotipy.oauth2 import SpotifyClientCredentials
 
 # import api
 
@@ -80,7 +80,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
         self._db = Database()
 
         # Redis
-        self._redis = Redis(host=HOST, port=PORT, password=PASS)
+        self._redis = Redis(host=HOST, port=PORT)
 
         # App server
         # self._app = setup(bot=self)
@@ -339,10 +339,10 @@ class NoirBot(commands.AutoShardedInteractionBot):
         """Redis class"""
         return self._redis
 
-    @property
-    def app(self) -> quart.Quart:
-        """App class"""
-        return self._app
+    # @property
+    # def app(self) -> quart.Quart:
+    #     """App class"""
+    #     return self._app
 
     @property
     def log(self) -> logging.Logger:

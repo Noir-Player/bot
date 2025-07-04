@@ -1,5 +1,7 @@
 disnake
 pymongo
+pydantic
+websockets
 requests
 requests-oauthlib
 colorama

@@ -29,9 +29,7 @@ class AbstractSearch(BaseSearch):
     def __init__(
         self,
         node: Any,
-        default: Union[
-            YandexMusicSearch, YoutubeMusicSearch, SpotifySearch
-        ] = YoutubeMusicSearch,
+        default: Union[YoutubeMusicSearch] = YoutubeMusicSearch,
         **kwargs,
     ) -> None:
         """Pass a `Node` instance and get started.\nYou can pass any additional kwarg: `language`"""

@@ -4,11 +4,11 @@ import threading as th
 import traceback
 
 import disnake
-import pomice
 from disnake.ext import commands
-
 from objects.bot import NoirBot
 from objects.player import NoirPlayer
+
+from ..services import persiktunes as pomice
 
 
 class Fetcher(commands.Cog):
