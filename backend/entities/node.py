@@ -8,6 +8,7 @@ from services.persiktunes import Node
 from spotipy import SpotifyClientCredentials
 
 from .._logging import get_logger, logging
+from .bot import NoirBot
 from .config import get_instance as get_config
 from .pool import get_instance as get_pool
 
@@ -54,10 +55,10 @@ async def connect(bot) -> Node:
 instance = None
 
 
-async def create_node():
+async def create_node(bot: NoirBot):
     global instance
     if instance is None:
-        instance = await connect()
+        instance = await connect(bot)
 
 
 # =============================================================================
