@@ -30,7 +30,7 @@ class MusicCog(commands.Cog):
         pass
 
     @check_player_decorator(with_connection=True)
-    @add.sub_command(description="⭐⭐ | play track")
+    @add.sub_command(description="⭐⭐ | Play track")
     async def search(
         self,
         inter: disnake.ApplicationCommandInteraction,
@@ -184,7 +184,7 @@ class MusicCog(commands.Cog):
     # TODO : Database
 
     @check_player_decorator(with_connection=True)
-    @add.sub_command(description="⭐ | add multiple tracks")
+    @add.sub_command(description="⭐ | Add multiple tracks")
     async def multiple(
         self,
         inter: disnake.ApplicationCommandInteraction,
@@ -194,7 +194,7 @@ class MusicCog(commands.Cog):
         await inter.response.send_modal(AddMultipleModal(player))
 
     @check_player_decorator(with_connection=True)
-    @add.sub_command(description="⭐ | add playlist from noirplayer.su")
+    @add.sub_command(description="⭐ | Add playlist from noirplayer.su")
     async def playlist(
         self,
         inter: disnake.ApplicationCommandInteraction,

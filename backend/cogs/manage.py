@@ -22,7 +22,9 @@ class ManageCog(commands.Cog):
         self.bot = bot
         self.node: Node = get_node()
 
-    @commands.slash_command(name="set", guild_ids=[config.support_server_id])
+    @commands.slash_command(
+        name="set", description="🖤 || Manage bot", guild_ids=[config.support_server_id]
+    )
     async def manage(self, _):
         pass
 
