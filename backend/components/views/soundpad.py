@@ -36,7 +36,7 @@ def progress_slider(start, end, length=24):
     return bar
 
 
-async def state(player: NoirPlayer):
+def state(player: NoirPlayer):
     times = ""
 
     if not player.current.info.isStream:
