@@ -48,7 +48,6 @@ class TrackButtons(disnake.ui.View):
         embed = SecondaryEmbed(
             title=self.track.info.title,
             description="```fix\n" + self.track.lyrics + "\n```",
-            url=self.track.info.url,
         ).set_author(name=self.track.info.author, icon_url=self.track.info.artworkUrl)
 
         if self.track.album:
