@@ -8,7 +8,13 @@ from ..colors import *
 class BaseEmbed(Embed):
     """Base embed class for all embeds in the bot"""
 
-    def __init__(self, title: str, description: str, url: str, colour: str = None):
+    def __init__(
+        self,
+        title: str = None,
+        description: str = None,
+        url: str = None,
+        colour: str = None,
+    ):
 
         type = "rich"
         timestamp = datetime.timestamp(datetime.now())
@@ -25,25 +31,25 @@ class BaseEmbed(Embed):
 
 
 class SuccessEmbed(BaseEmbed):
-    def __init__(self, title: str, description: str, url: str):
+    def __init__(self, title: str = None, description: str = None, url: str = None):
         super().__init__(" | " + title, description, url, colour=SUCCESS)
 
 
 class ErrorEmbed(BaseEmbed):
-    def __init__(self, title: str, description: str, url: str):
+    def __init__(self, title: str, description: str = None, url: str = None):
         super().__init__(" | " + title, description, url, colour=DANGER)
 
 
 class WarningEmbed(BaseEmbed):
-    def __init__(self, title: str, description: str, url: str):
+    def __init__(self, title: str = None, description: str = None, url: str = None):
         super().__init__(" | " + title, description, url, colour=WARNING)
 
 
 class PrimaryEmbed(BaseEmbed):
-    def __init__(self, title: str, description: str, url: str):
+    def __init__(self, title: str = None, description: str = None, url: str = None):
         super().__init__(" | " + title, description, url, colour=PRIMARY)
 
 
 class SecondaryEmbed(BaseEmbed):
-    def __init__(self, title: str, description: str, url: str):
+    def __init__(self, title: str = None, description: str = None, url: str = None):
         super().__init__(" | " + title, description, url, colour=SECONDARY)
