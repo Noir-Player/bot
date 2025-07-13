@@ -2,6 +2,8 @@ import logging
 
 from colorama import Fore, Style
 
+from entities.config import get_instance as get_config
+
 
 class CustomFormatter(logging.Formatter):
 
@@ -22,7 +24,7 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-def get_logger(name, lvl=logging.DEBUG):
+def get_logger(name, lvl=get_config().loglevel):
     logger = logging.getLogger(name)
     logger.setLevel(lvl)
 
