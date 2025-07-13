@@ -7,16 +7,16 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class BotConfig(BaseSettings):
 
-    mode: Literal["dev", "prod"]
+    mode: Literal["dev", "prod"] = "dev"
     """dev or prod"""
 
     token: str
     """Bot token"""
 
-    sync_commands: bool
+    sync_commands: bool = True
     """Syncing commands parameters"""
 
-    shard_count: int
+    shard_count: int = 1
     """Shard count"""
 
     activity_name: str = "noirplayer.su"
@@ -24,36 +24,36 @@ class BotConfig(BaseSettings):
     activity_status: Literal[-1, 0, 1, 2, 3, 4, 5] = 2
     """Activity status"""
 
-    redis_host: str
+    redis_host: str = "redis"
     """Redis host"""
-    redis_port: int
+    redis_port: int = 6379
     """Redis port"""
 
-    mongodb_host: str
+    mongodb_host: str = "database"
     """MongoDB host"""
-    mongodb_port: int
+    mongodb_port: int = 27017
     """MongoDB port"""
 
     lavalink_host: str
-    """Lavalink host"""
-    lavalink_port: int
+    """Lavalink host""" = "lavalink"
+    lavalink_port: int = 2333
     """Lavalink port"""
-    lavalink_password: str
+    lavalink_password: str = "youshallnotpass"
     """Lavalink password"""
 
-    loglevel: Literal["debug", "info", "warning", "error"] = "info"
+    loglevel: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     """Log level. Default: info"""
 
-    spotify_client_id: str
+    spotify_client_id: str | None = None
     """Spotify client id"""
-    spotify_client_secret: str
+    spotify_client_secret: str | None = None
     """Spotify client secret"""
 
-    support_server_id: int
+    support_server_id: int | None = None
     """Support server id"""
-    support_server_invite: str
+    support_server_invite: str | None = None
     """Support server invite url"""
-    logs_channel_id: int
+    logs_channel_id: int | None = None
     """Logs channel id"""
 
     model_config = SettingsConfigDict(env_file=".env")
