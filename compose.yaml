@@ -6,6 +6,8 @@ services:
     networks:
       - app-network
     restart: always
+    env_file:
+      - ./backend/.env
     depends_on:
       - database
       - lavalink
