@@ -58,7 +58,7 @@ class PlayerCog(commands.Cog):
         ),
     ):
         await inter.response.defer(ephemeral=bool(hidden))
-        player = self.bot.node.get_player(inter.guild_id)
+        player = self.node.get_player(inter.guild_id)
         await inter.send(embed=state(player), ephemeral=True)
 
     @check_player_decorator(with_defer=False)
@@ -140,7 +140,7 @@ class PlayerCog(commands.Cog):
     ):
         self.node.get_player(inter.guild_id)
         try:
-            await inter.guild.voice_client.disconnect(force=True)
+            await inter.guild.voice_client.disconnect(force=True)  # type: ignore (decorator has warranty about voice client)
         except BaseException:
             pass
 
@@ -173,7 +173,7 @@ class PlayerCog(commands.Cog):
         ),
     ):
         await inter.response.defer(ephemeral=bool(hidden))
-        await EmbedEffects(self.bot.node).send(inter)
+        await EmbedEffects(self.node).send(inter)
 
     @check_player_decorator()
     @effects.sub_command(description="⭐ | Remove all effects")
@@ -236,5 +236,5 @@ class PlayerCog(commands.Cog):
             )
 
 
-def setup(bot: commands.Bot):
+def setup(bot: NoirBot):
     bot.add_cog(PlayerCog(bot))

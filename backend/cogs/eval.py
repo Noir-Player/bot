@@ -9,9 +9,9 @@ config = get_config()
 
 class EvalCog(commands.Cog):
     def __init__(self, bot: NoirBot):
-        pass
+        self.bot = bot
 
-    @commands.slash_command(name="eval_multiple", guild_ids=[config.support_server_id])
+    @commands.slash_command(name="eval_multiple", guild_ids=[config.support_server_id])  # type: ignore
     async def eval_multiple(self, interaction: ApplicationCommandInteraction):
         if interaction.author.id == self.bot.owner_id:
             await interaction.response.send_modal(EvalModal())
@@ -19,5 +19,6 @@ class EvalCog(commands.Cog):
             raise commands.NotOwner("Вы не можете пользоваться этой командой")
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(EvalCog(bot))
+def setup(bot: NoirBot):
+    if config.support_server_id is not None:
+        bot.add_cog(EvalCog(bot))

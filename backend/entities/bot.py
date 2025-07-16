@@ -7,8 +7,9 @@ from os import listdir
 import disnake
 from config import get_instance as get_config
 from disnake.ext import commands
+from typing import Callable
 
-from .._logging import get_logger
+from _logging import get_logger
 
 
 class NoirBot(commands.AutoShardedInteractionBot):
@@ -50,7 +51,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
             # self.loop.run_until_complete(self.stop())
             # cancel all tasks lingering
 
-    def start(self):
+    def start(self):  # type: ignore
         return super().start(self._config.token)
 
     async def stop(self):
@@ -59,33 +60,41 @@ class NoirBot(commands.AutoShardedInteractionBot):
 
     # ----------------------------------------------------------------------------
 
-    def load_extensions(self):
-        curr, total = 1, len(listdir("./cogs")) - 1
+    @staticmethod
+    def provide_cogs(directory: str = "./cogs"):
+        def decorator(function: Callable):
+            def wrapper(*args, **kwargs):
+                curr, total = 1, len(listdir(directory)) - 1
 
-        for filename in listdir("./cogs"):
-            if filename.endswith(".py"):
-                try:  # load cog
-                    self.load_extension(f"cogs.{filename[:-3]}")
-                    self._log.info(f"cog {filename} load, {curr}/{total}")
+                for filename in listdir(directory):
+                    if filename.endswith(".py"):
+                        function(filename, curr, total)
 
-                except Exception as error:  # something in cog wrong
-                    self.log.error(f"error in cog {filename}, {curr}/{total} | {error}")
+                    curr += 1
 
-                curr += 1  # + 1 for current amount
+            return wrapper
 
-    def reload_extensions(self):
-        curr, total = 1, len(listdir("./cogs")) - 1
+        return decorator
 
-        for filename in listdir("./cogs"):
-            if filename.endswith(".py"):
-                try:  # load cog
-                    self.reload_extension(f"cogs.{filename[:-3]}")
-                    self.log.info(f"cog {filename} reload, {curr}/{total}")
+    @provide_cogs()
+    def load_extensions(self, filename: str, curr: int, total: int):  # type: ignore
+        """Load cogs from `./cogs` directory"""
+        try:
+            self.load_extension(f"cogs.{filename[:-3]}")
+            self._log.info(f"cog {filename} load, {curr}/{total}")
 
-                except Exception as error:  # something in cog wrong
-                    self.log.error(f"error in cog {filename}, {curr}/{total} | {error}")
+        except Exception as error:  # something in cog wrong
+            self._log.error(f"error in cog {filename}, {curr}/{total} | {error}")
 
-                curr += 1  # + 1 for current amount
+    @provide_cogs()
+    def reload_extensions(self, filename: str, curr: int, total: int):
+        """Reload cogs from `./cogs` directory"""
+        try:
+            self.reload_extension(f"cogs.{filename[:-3]}")
+            self._log.info(f"cog {filename} reload, {curr}/{total}")
+
+        except Exception as error:  # something in cog wrong
+            self._log.error(f"error in cog {filename}, {curr}/{total} | {error}")
 
 
 # =============================================================================

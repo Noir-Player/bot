@@ -2,6 +2,10 @@ import disnake
 from disnake.interactions.modal import ModalInteraction
 from disnake.ui import Modal
 
+from _logging import get_logger
+
+log = get_logger("evalModal")
+
 
 class EvalModal(Modal):
     def __init__(self) -> None:
@@ -32,7 +36,7 @@ class EvalModal(Modal):
             except Exception as e:
                 out = f"Error: {e}"
 
-            self.bot._log.debug(out)
+            log.debug(out)
             output += f"[{i}] {out}\n"
 
             i += 1

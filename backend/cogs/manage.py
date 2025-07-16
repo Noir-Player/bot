@@ -5,6 +5,7 @@ import sys
 import disnake
 from _logging import get_logger
 from disnake.ext import commands
+from components.embeds import SecondaryEmbed
 from disnake.utils import _assetbytes_to_base64_data
 from entities.bot import NoirBot
 from entities.config import BotConfig
@@ -23,7 +24,7 @@ class ManageCog(commands.Cog):
         self.node: Node = get_node()
 
     @commands.slash_command(
-        name="set", description="🖤 || Manage bot", guild_ids=[config.support_server_id]
+        name="set", description="🖤 || Manage bot", guild_ids=[config.support_server_id]  # type: ignore
     )
     async def manage(self, _):
         pass
@@ -49,7 +50,7 @@ class ManageCog(commands.Cog):
         image: disnake.Attachment = commands.Param(description="new banner"),
     ):
         payload = {}
-        payload["banner"] = await _assetbytes_to_base64_data(image)
+        payload["banner"] = await _assetbytes_to_base64_data(image)  # type: ignore
 
         await self.bot.user._state.http.edit_profile(payload)
 
@@ -93,11 +94,11 @@ class ManageCog(commands.Cog):
     ):
         if self.bot.owner_id != inter.author.id:
             raise commands.NotOwner(
-                "You don't have permission to use this command", ephemeral=True
+                "You don't have permission to use this command", True
             )
 
         if command == "cogsreload":
-            self.bot.exreload()
+            self.bot.reload_extensions()
 
         elif command == "help":
             await inter.send(
@@ -119,7 +120,7 @@ class ManageCog(commands.Cog):
         elif command == "clear":
             await inter.response.defer(ephemeral=True)
             self.bot.clear()
-            await inter.edit_original_response("`done`", ephemeral=True)
+            await inter.edit_original_response("`done`")
 
         elif command == "info":
 
@@ -130,7 +131,7 @@ class ManageCog(commands.Cog):
                     bot name:   {self.bot.user}  | id: {self.bot.user.id}
                     owner:      {self.bot.owner} | id: {self.bot.owner_id}
                     status:     {self.bot.status}
-                    limit:      {self.bot.session_start_limit.reset_time}
+                    limit:      {self.bot.session_start_limit.total}
                     ============================================
                     guilds:     {len(self.bot.guilds)}
                     users:      {len(self.bot.users)}
@@ -164,11 +165,9 @@ class ManageCog(commands.Cog):
 
             for page in pag.pages:
                 list.append(
-                    self.bot.embedding.get(
-                        title=f"⚪ | guilds list {pag.pages.index(page)}",
+                    SecondaryEmbed(
+                        title=f"guilds list {pag.pages.index(page)}",
                         description=page,
-                        color="primary",
-                        use_light_color=True,
                     ),
                 )
 
@@ -200,7 +199,7 @@ class ManageCog(commands.Cog):
             ),
         )
 
-        for player in list(self.bot.node.players.values()):
+        for player in list(self.node.players.values()):
             logger.debug(f"player on {player.guild.name} deleted")
 
             try:
@@ -225,5 +224,5 @@ class ManageCog(commands.Cog):
     #     await ctx.send(f"Output:\n```python\n{eval(params)}```", ephemeral=True)
 
 
-def setup(bot: commands.Bot):
+def setup(bot: NoirBot):
     bot.add_cog(ManageCog(bot))

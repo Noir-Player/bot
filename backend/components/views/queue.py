@@ -51,7 +51,7 @@ class QueueButtons(disnake.ui.View):
         row=1,
     )
     @check_player_btn_decorator()
-    async def refresh(self, button, interaction):
+    async def refresh(self, button, interaction):  # type: ignore
         return await self.embed_queue.generate_pages(interaction)
 
     @disnake.ui.button(
@@ -121,7 +121,7 @@ class EmbedQueue:
         self.node = node
         self.bot: NoirBot = node.bot
 
-        self.message = None
+        self.message: disnake.Message
 
         self.index = 0
         self.paginator = Paginator(prefix="```diff\n", max_size=1000)

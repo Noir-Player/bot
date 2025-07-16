@@ -120,5 +120,5 @@ class QueueCog(commands.Cog):
         await inter.delete_original_message()
 
 
-def setup(bot: commands.Bot):
+def setup(bot: NoirBot):
     bot.add_cog(QueueCog(bot))

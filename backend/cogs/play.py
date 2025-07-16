@@ -274,5 +274,5 @@ class MusicCog(commands.Cog):
         return []
 
 
-def setup(bot: commands.Bot):
+def setup(bot: NoirBot):
     bot.add_cog(MusicCog(bot))

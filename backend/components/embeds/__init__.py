@@ -10,46 +10,81 @@ class BaseEmbed(Embed):
 
     def __init__(
         self,
-        title: str = None,
-        description: str = None,
-        url: str = None,
-        colour: str = None,
+        title: str | None = None,
+        description: str | None = None,
+        url: str | None = None,
+        colour: str | None = None,
     ):
 
         type = "rich"
         timestamp = datetime.timestamp(datetime.now())
-        colour = int(colour.replace("#", ""), base=16)
+        colour_int = int(colour.replace("#", ""), base=16) if colour else None
 
         super().__init__(
             title=title,
             type=type,
             description=description,
             url=url,
-            timestamp=timestamp,
-            colour=colour,
+            timestamp=timestamp,  # type: ignore
+            colour=colour_int,
         )
 
 
 class SuccessEmbed(BaseEmbed):
-    def __init__(self, title: str = None, description: str = None, url: str = None):
-        super().__init__(" | " + title, description, url, colour=SUCCESS)
+    def __init__(
+        self,
+        title: str | None = None,
+        description: str | None = None,
+        url: str | None = None,
+    ):
+        super().__init__(
+            ((" | " + title) if title else None) if title else None,
+            description,
+            url,
+            colour=SUCCESS,
+        )
 
 
 class ErrorEmbed(BaseEmbed):
-    def __init__(self, title: str, description: str = None, url: str = None):
-        super().__init__(" | " + title, description, url, colour=DANGER)
+    def __init__(
+        self, title: str, description: str | None = None, url: str | None = None
+    ):
+        super().__init__(
+            (" | " + title) if title else None, description, url, colour=DANGER
+        )
 
 
 class WarningEmbed(BaseEmbed):
-    def __init__(self, title: str = None, description: str = None, url: str = None):
-        super().__init__(" | " + title, description, url, colour=WARNING)
+    def __init__(
+        self,
+        title: str | None = None,
+        description: str | None = None,
+        url: str | None = None,
+    ):
+        super().__init__(
+            (" | " + title) if title else None, description, url, colour=WARNING
+        )
 
 
 class PrimaryEmbed(BaseEmbed):
-    def __init__(self, title: str = None, description: str = None, url: str = None):
-        super().__init__(" | " + title, description, url, colour=PRIMARY)
+    def __init__(
+        self,
+        title: str | None = None,
+        description: str | None = None,
+        url: str | None = None,
+    ):
+        super().__init__(
+            (" | " + title) if title else None, description, url, colour=PRIMARY
+        )
 
 
 class SecondaryEmbed(BaseEmbed):
-    def __init__(self, title: str = None, description: str = None, url: str = None):
-        super().__init__(" | " + title, description, url, colour=SECONDARY)
+    def __init__(
+        self,
+        title: str | None = None,
+        description: str | None = None,
+        url: str | None = None,
+    ):
+        super().__init__(
+            (" | " + title) if title else None, description, url, colour=SECONDARY
+        )

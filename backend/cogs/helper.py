@@ -21,19 +21,23 @@ class HelpCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: disnake.Guild):
+        if not self.config.logs_channel_id:
+            return
 
         log = await self.bot.fetch_channel(self.config.logs_channel_id)
 
-        await log.send(embed=GuildJoinLogEmbed(guild))
+        await log.send(embed=GuildJoinLogEmbed(guild))  # type: ignore
 
     # ---------------------------------------------------------------------------------------------------------
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild: disnake.Guild):
+        if not self.config.logs_channel_id:
+            return
+
         log = await self.bot.fetch_channel(self.config.logs_channel_id)
-        await log.send(
-            embed=GuildLeaveLogEmbed(guild),
-        )
+
+        await log.send(embed=GuildLeaveLogEmbed(guild))  # type: ignore
 
         try:
             await self.node.get_player(guild.id).destroy()
@@ -42,12 +46,11 @@ class HelpCog(commands.Cog):
 
     # ---------------------------------------------------------------------------------------------------------
 
-    @commands.slash_command(description="⭐ | нужна помощь?")
+    @commands.slash_command(description="⭐ | Need some help?")
     async def help(self, inter: disnake.ApplicationCommandInteraction):
 
         embed = PrimaryEmbed(
-            title="Нужна помощь?",
-            description="Посетите документацию **Noir Player** 👇",
+            description="You can find out more about **Noir Player** below 👇",
         )
 
         await inter.send(
@@ -61,6 +64,6 @@ class HelpCog(commands.Cog):
         )
 
 
-def setup(bot: commands.Bot):
+def setup(bot: NoirBot):
 
     bot.add_cog(HelpCog(bot))

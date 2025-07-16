@@ -58,11 +58,11 @@ class SearchView(disnake.ui.View):
     async def select(self, select, interaction):
         result = self.results[int(select.values[0])]
 
-        if isinstance(result, Playlist, Album):
+        if isinstance(result, (Playlist, Album)):
             await EmbedPlaylist(self.node, result).send(interaction)
 
         elif isinstance(result, Track):
-            await EmbedTrack(result, self.node, self.message).send(interaction)
+            await EmbedTrack(result, self.node).send(interaction)
 
     @disnake.ui.button(
         emoji="<:autoplay_primary:1239113693690859564>",
@@ -122,11 +122,11 @@ class EmbedSearch:
         self.node = node
         self.bot: NoirBot = node.bot
 
-    def embed(self) -> disnake.Embed:
+    def embed(self) -> None:
         """Return embed with track info"""
 
     def view(self, message: disnake.Message) -> disnake.ui.View:
-        return SearchView(track=self.track, node=self.node, message=message)
+        return SearchView(results=self.track, node=self.node, message=message)
 
     async def send(self, ctx: disnake.Interaction):
         "Use this function with `response.defer()` first"

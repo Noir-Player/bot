@@ -69,7 +69,7 @@ class EventsCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        log.info(f"Starting as {self.user} (ID: {self.user.id})")
+        log.info(f"Starting as {self.bot.user} (ID: {self.bot.user.id})")
         log.info("on_ready was called, creating node...")
 
         await create_node(self.bot)
@@ -79,5 +79,5 @@ class EventsCog(commands.Cog):
         log.debug(f"Player connected | {id}")
 
 
-def setup(bot: commands.Bot):
+def setup(bot: NoirBot):
     bot.add_cog(EventsCog(bot))

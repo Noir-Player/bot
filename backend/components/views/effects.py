@@ -22,7 +22,6 @@ FILTERS = {
 }
 
 
-@property
 def options() -> list[disnake.SelectOption]:
 
     descriptions = [
@@ -62,7 +61,7 @@ class EffectsView(disnake.ui.View):
 
         super().__init__(timeout=600)
 
-    @disnake.ui.select(placeholder="Add effects 💫", options=options, max_values=7)
+    @disnake.ui.select(placeholder="Add effects 💫", options=options(), max_values=7)
     @check_player_btn_decorator()
     async def effects_open(self, _, inter):
         player = self.node.get_player(inter.guild_id)

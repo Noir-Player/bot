@@ -7,6 +7,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class BotConfig(BaseSettings):
 
+    version: str = "0.1.0"
+    """Version (for database)"""
+
     mode: Literal["dev", "prod"] = "dev"
     """dev or prod"""
 

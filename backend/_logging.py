@@ -7,15 +7,17 @@ from entities.config import get_instance as get_config
 
 class CustomFormatter(logging.Formatter):
 
-    format = "[{asctime}] [{levelname:<8}] {name}: {message} ({filename}:{lineno})"
+    format_string = (
+        "[{asctime}] [{levelname:<8}] {name}: {message} ({filename}:{lineno})"
+    )
     dt_fmt = "%Y-%m-%d %H:%M:%S"
 
     FORMATS = {
-        logging.DEBUG: Fore.CYAN + format + Style.RESET_ALL,
-        logging.INFO: Fore.BLUE + format + Style.RESET_ALL,
-        logging.WARNING: Fore.YELLOW + format + Style.RESET_ALL,
-        logging.ERROR: Fore.RED + format + Style.RESET_ALL,
-        logging.CRITICAL: Fore.LIGHTRED_EX + format + Style.RESET_ALL,
+        logging.DEBUG: Fore.CYAN + format_string + Style.RESET_ALL,
+        logging.INFO: Fore.BLUE + format_string + Style.RESET_ALL,
+        logging.WARNING: Fore.YELLOW + format_string + Style.RESET_ALL,
+        logging.ERROR: Fore.RED + format_string + Style.RESET_ALL,
+        logging.CRITICAL: Fore.LIGHTRED_EX + format_string + Style.RESET_ALL,
     }
 
     def format(self, record):

@@ -172,7 +172,7 @@ class Soundpad(disnake.ui.View):
         row=1,
     )
     @check_player_btn_decorator()
-    async def stop(self, button, interaction):
+    async def _stop(self, button, interaction):
         await self.player.destroy()
 
     @disnake.ui.button(
