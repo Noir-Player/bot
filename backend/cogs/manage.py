@@ -203,7 +203,7 @@ class ManageCog(commands.Cog):
             logger.debug(f"player on {player.guild.name} deleted")
 
             try:
-                await player.controller.delete()
+                await player.controller.delete()  # type: ignore
             except BaseException:
                 pass
 
@@ -225,4 +225,5 @@ class ManageCog(commands.Cog):
 
 
 def setup(bot: NoirBot):
-    bot.add_cog(ManageCog(bot))
+    if config.support_server_id:
+        bot.add_cog(ManageCog(bot))
