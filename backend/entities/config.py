@@ -37,8 +37,8 @@ class BotConfig(BaseSettings):
     mongodb_port: int = 27017
     """MongoDB port"""
 
-    lavalink_host: str
-    """Lavalink host""" = "lavalink"
+    lavalink_host: str = "lavalink"
+    """Lavalink host"""
     lavalink_port: int = 2333
     """Lavalink port"""
     lavalink_password: str = "youshallnotpass"
