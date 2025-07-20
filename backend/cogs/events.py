@@ -2,7 +2,9 @@ from _logging import get_logger
 from disnake.ext import commands
 from entities.bot import NoirBot
 from entities.node import create_node
+from entities.database import init as create_database
 from entities.player import NoirPlayer
+from components.embeds import PrimaryEmbed
 from services import persiktunes
 
 log = get_logger("events")
@@ -60,11 +62,7 @@ class EventsCog(commands.Cog):
         await player.queue.clear()
 
         await player.edit_controller(
-            embed=self.bot.embedding.get(
-                image="https://noirplayer.su/cdn/ambient.gif",
-                color="secondary",
-                use_light_color=True,
-            ),
+            embed=PrimaryEmbed(description="Queue is empty 👾")
         )
 
     @commands.Cog.listener()
@@ -77,6 +75,13 @@ class EventsCog(commands.Cog):
     @commands.Cog.listener()
     async def on_shard_connect(self, id):
         log.debug(f"Player connected | {id}")
+
+    @commands.Cog.listener()
+    async def on_connect(self):
+        log.info("on_connect was called, creating database")
+        await create_database()
+
+        log.info("Database ininted")
 
 
 def setup(bot: NoirBot):
