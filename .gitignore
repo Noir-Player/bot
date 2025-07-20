@@ -166,3 +166,4 @@ app/static/css/static
 setup_ytm.py
 privkey.pem
 legacy/
+application.yml

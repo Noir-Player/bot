@@ -1,0 +1,96 @@
+plugins:
+  youtube:
+    enabled: true
+    allowSearch: true
+    allowDirectVideoIds: true
+    allowDirectPlaylistIds: true
+    clients:
+      - MUSIC
+      - ANDROID_VR
+      - WEB
+      - WEBEMBEDDED
+
+  lavalyrics:
+    sources:
+      - spotify
+      - youtube
+      - yandexMusic
+
+  lavasrc:
+    providers:
+      - 'ytsearch:"%ISRC%"' # Will be ignored if track does not have an ISRC. See https://en.wikipedia.org/wiki/International_Standard_Recording_Code
+      - "ytsearch:%QUERY%" # Will be used if track has no ISRC or no track could be found for the ISRC
+    sources:
+      spotify: true # Enable Spotify source
+      applemusic: false # Enable Apple Music source
+      deezer: false # Enable Deezer source
+      yandexmusic: true # Enable Yandex Music source
+      flowerytts: false # Enable Flowery TTS source
+      youtube: true # Enable YouTube search source (https://github.com/topi314/LavaSearch)
+      vkmusic: false # Enable Vk Music source
+      tidal: false # Enable Tidal source
+      qobuz: false # Enabled qobuz source
+      ytdlp: false # Enable yt-dlp source
+    lyrics-sources:
+      spotify: true # Enable Spotify lyrics source
+      deezer: false # Enable Deezer lyrics source
+      youtube: true # Enable YouTube lyrics source
+      yandexmusic: true # Enable Yandex Music lyrics source
+      vkmusic: false # Enable Vk Music lyrics source
+    spotify:
+      # clientId & clientSecret are required for using spsearch
+      clientId: "your client id"
+      clientSecret: "your client secret"
+      # spDc: "your sp dc cookie" # the sp dc cookie used for accessing the spotify lyrics api
+      countryCode: "US" # the country code you want to use for filtering the artists top tracks. See https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+      playlistLoadLimit: 6 # The number of pages at 100 tracks each
+      albumLoadLimit: 6 # The number of pages at 50 tracks each
+      resolveArtistsInSearch: true
+      localFiles: false
+      preferAnonymousToken: false
+    yandexmusic:
+      accessToken: "your access token" # the token used for accessing the yandex music api. See https://github.com/topi314/LavaSrc#yandex-music
+      playlistLoadLimit: 1 # The number of pages at 100 tracks each
+      albumLoadLimit: 1 # The number of pages at 50 tracks each
+      artistLoadLimit: 1 # The number of pages at 10 tracks each
+    youtube:
+      countryCode: "US" # the country code you want to use for searching & lyrics. See https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+      language: "en" # the language code you want to use for searching & lyrics. See https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
+
+lavalink:
+  plugins:
+    - dependency: "com.github.topi314.lavasrc:lavasrc-plugin:4.7.3"
+      repository: "https://maven.lavalink.dev/releases"
+
+    - dependency: "com.github.topi314.lavasearch:lavasearch-plugin:1.0.0"
+      repository: "https://maven.lavalink.dev/releases"
+
+    - dependency: "com.github.topi314.lavalyrics:lavalyrics-plugin:1.0.0"
+
+    - dependency: "dev.lavalink.youtube:youtube-plugin:1.13.3"
+      snapshot: false
+
+  server:
+    password: "youshallnotpass"
+    sources:
+      youtube: false
+      bandcamp: true
+      soundcloud: true
+      twitch: true
+      vimeo: true
+      nico: true
+      http: true
+      local: false
+
+    nonAllocatingFrameBuffer: false # Setting to true reduces the number of allocations made by each player at the expense of frame rebuilding (e.g. non-instantaneous volume changes)
+    bufferDurationMs: 400 # The duration of the NAS buffer. Higher values fare better against longer GC pauses. Duration <= 0 to disable JDA-NAS. Minimum of 40ms, lower values may introduce pauses.
+    frameBufferDurationMs: 5000 # How many milliseconds of audio to keep buffered
+    opusEncodingQuality: 10 # Opus encoder quality. Valid values range from 0 to 10, where 10 is best quality but is the most expensive on the CPU.
+    resamplingQuality: LOW # Quality of resampling operations. Valid values are LOW, MEDIUM and HIGH, where HIGH uses the most CPU.
+    trackStuckThresholdMs: 10000 # The threshold for how long a track can be stuck. A track is stuck if does not return any audio data.
+    useSeekGhosting: true # Seek ghosting is the effect where whilst a seek is in progress, the audio buffer is read from until empty, or until seek is ready.
+    youtubePlaylistLoadLimit: 6 # Number of pages at 100 each
+    playerUpdateInterval: 5 # How frequently to send player updates to clients, in seconds
+    youtubeSearchEnabled: true
+    soundcloudSearchEnabled: true
+    gc-warnings: true

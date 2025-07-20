@@ -20,6 +20,9 @@ services:
     restart: always
     networks:
       - app-network
+    volumes:
+      - ./lavalink/application.yml:/opt/Lavalink/application.yml
+      - ./lavalink/plugins/:/opt/Lavalink/plugins/
     expose:
       - 2333
 
