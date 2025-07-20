@@ -131,7 +131,7 @@ class ManageCog(commands.Cog):
                     bot name:   {self.bot.user}  | id: {self.bot.user.id}
                     owner:      {self.bot.owner} | id: {self.bot.owner_id}
                     status:     {self.bot.status}
-                    limit:      {self.bot.session_start_limit.total}
+                    limit:      {self.bot.session_start_limit.total if self.bot.session_start_limit else 'unknown'}
                     ============================================
                     guilds:     {len(self.bot.guilds)}
                     users:      {len(self.bot.users)}
