@@ -46,8 +46,8 @@ class QueueCog(commands.Cog):
         self,
         inter: disnake.ApplicationCommandInteraction,
     ):
-        player = self.node.get_player(inter.guild_id)
-        await player.queue.clear()
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
+        player.queue.clear()
         await inter.delete_original_message()
 
     @check_player_decorator()
@@ -57,7 +57,7 @@ class QueueCog(commands.Cog):
         inter: disnake.ApplicationCommandInteraction,
         position: int = commands.Param(description="Position of track to remove"),
     ):
-        player: NoirPlayer = self.node.get_player(inter.guild_id)
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
 
         try:
             await player.queue.remove(position - 1)
@@ -73,8 +73,8 @@ class QueueCog(commands.Cog):
         self,
         inter: disnake.ApplicationCommandInteraction,
     ):
-        player = self.node.get_player(inter.guild_id)
-        await player.queue.shuffle()
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
+        player.queue.shuffle()
         await inter.delete_original_message()
 
     @check_player_decorator()
@@ -84,8 +84,8 @@ class QueueCog(commands.Cog):
         inter: disnake.ApplicationCommandInteraction,
         count: int = commands.Param(default=1, description="Count of tracks to skip"),
     ):
-        player = self.node.get_player(inter.guild_id)
-        track = player.queue.jump(player.queue.find_position(player.current) + count)
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
+        track = player.queue.jump(player.queue.find_position(player.current) + count)  # type: ignore
         if track:
             await player.play(track)
         await inter.delete_original_message()
@@ -98,7 +98,7 @@ class QueueCog(commands.Cog):
         old: int = commands.Param(description="Old position of track"),
         new: int = commands.Param(description="New position of track"),
     ):
-        player: NoirPlayer = self.node.get_player(inter.guild_id)
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
         try:
             player.queue._insert(new - 1, player.queue._queue.pop(old - 1))
         except BaseException:
@@ -114,9 +114,9 @@ class QueueCog(commands.Cog):
         inter: disnake.ApplicationCommandInteraction,
         position: int = commands.Param(description="Position of track to play"),
     ):
-        player: NoirPlayer = self.node.get_player(inter.guild_id)
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
         if position - 1 >= 0 and position <= player.queue.count:
-            await player.play(player.queue.jump(position - 1))
+            await player.play(player.queue.jump(position - 1))  # type: ignore
         await inter.delete_original_message()
 
 

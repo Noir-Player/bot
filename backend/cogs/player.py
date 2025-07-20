@@ -58,7 +58,7 @@ class PlayerCog(commands.Cog):
         ),
     ):
         await inter.response.defer(ephemeral=bool(hidden))
-        player = self.node.get_player(inter.guild_id)
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
         await inter.send(embed=state(player), ephemeral=True)
 
     @check_player_decorator(with_defer=False)
@@ -67,11 +67,11 @@ class PlayerCog(commands.Cog):
         self,
         inter: disnake.ApplicationCommandInteraction,
         hidden: int = commands.Param(
-            default=1,
-            description="Видимость всем",
+            default=0,
+            description="Must I show it to you only?",
             choices=[
-                disnake.OptionChoice(name="Скрыть", value=1),
-                disnake.OptionChoice(name="Показать", value=0),
+                disnake.OptionChoice(name="Yes", value=1),
+                disnake.OptionChoice(name="No", value=0),
             ],
         ),
     ):
@@ -87,7 +87,7 @@ class PlayerCog(commands.Cog):
             description="Percentage", min_value=0, max_value=500
         ),
     ):
-        player = self.node.get_player(inter.guild_id)
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
         await player.set_volume(volume)
         await inter.delete_original_message()
 
@@ -97,7 +97,7 @@ class PlayerCog(commands.Cog):
         self,
         inter: disnake.ApplicationCommandInteraction,
     ):
-        player = self.node.get_player(inter.guild_id)
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
         if player.is_playing or player.is_paused:
             await player.set_pause()
 
@@ -112,23 +112,23 @@ class PlayerCog(commands.Cog):
             description="Timecode mm:ss or hh:mm:ss", min_length=5, max_length=8
         ),
     ):
-        player = self.node.get_player(inter.guild_id)
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
         mseconnds = self._calculate_seconds(timecode)
 
         if mseconnds:
-            await player.seek(mseconnds * 1000)
+            await player.seek(int(mseconnds * 1000))
             await player.update_controller_once()
         await inter.delete_original_message()
 
     @check_player_decorator()
-    @_player.sub_command(description="✨ | rewind in seconds")
+    @_player.sub_command(description="✨ | Rewind in seconds")
     async def rewind(
         self,
         inter: disnake.ApplicationCommandInteraction,
         seconds: int = commands.Param(description="Count of seconds, can be negative"),
     ):
-        player = self.node.get_player(inter.guild_id)
-        await player.seek(player.position + float(seconds * 1000))
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
+        await player.seek(int(player.position + float(seconds * 1000)))
         await player.update_controller_once()
         await inter.delete_original_message()
 
@@ -138,7 +138,6 @@ class PlayerCog(commands.Cog):
         self,
         inter: disnake.ApplicationCommandInteraction,
     ):
-        self.node.get_player(inter.guild_id)
         try:
             await inter.guild.voice_client.disconnect(force=True)  # type: ignore (decorator has warranty about voice client)
         except BaseException:
@@ -181,7 +180,7 @@ class PlayerCog(commands.Cog):
         self,
         inter: disnake.ApplicationCommandInteraction,
     ):
-        player: NoirPlayer = self.node.get_player(inter.guild_id)
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
         await player.reset_filters()
         await inter.delete_original_message()
 
@@ -198,12 +197,12 @@ class PlayerCog(commands.Cog):
         self,
         inter: disnake.ApplicationCommandInteraction,
     ):
-        player: NoirPlayer = self.node.get_player(inter.guild_id)
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
 
         try:
             return await inter.send(
                 embed=PrimaryEmbed(
-                    title="✨ | Jump to controller", url=player.controller.jump_url
+                    title="✨ | Jump to controller", url=player.controller.jump_url  # type: ignore
                 ),
                 ephemeral=True,
             )
@@ -222,7 +221,7 @@ class PlayerCog(commands.Cog):
         self,
         inter: disnake.ApplicationCommandInteraction,
     ):
-        player: NoirPlayer = self.node.get_player(inter.guild_id)
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
 
         if player:
             await player.update_controller_once(True, inter)
