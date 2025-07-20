@@ -63,12 +63,12 @@ class NoirBot(commands.AutoShardedInteractionBot):
     @staticmethod
     def provide_cogs(directory: str = "./cogs"):
         def decorator(function: Callable):
-            def wrapper(*args, **kwargs):
+            def wrapper(self, *args, **kwargs):
                 curr, total = 1, len(listdir(directory)) - 1
 
                 for filename in listdir(directory):
                     if filename.endswith(".py"):
-                        function(filename, curr, total)
+                        function(self, filename, curr, total)
 
                     curr += 1
 
