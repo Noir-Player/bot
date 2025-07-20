@@ -39,10 +39,8 @@ class HelpCog(commands.Cog):
 
         await log.send(embed=GuildLeaveLogEmbed(guild))  # type: ignore
 
-        try:
-            await self.node.get_player(guild.id).destroy()
-        except BaseException:
-            pass
+        if player := self.node.get_player(guild.id):
+            await player.destroy()
 
     # ---------------------------------------------------------------------------------------------------------
 
