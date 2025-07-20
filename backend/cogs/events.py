@@ -18,7 +18,7 @@ class EventsCog(commands.Cog):
     async def on_persiktunes_track_start(
         self, player: NoirPlayer, track: persiktunes.Track
     ):
-        await player.edit_controller(player.current.ctx)
+        await player.edit_controller(player.current.ctx)  # type: ignore
 
         if player.update_controller.is_running():
             player.update_controller.restart()
@@ -46,20 +46,18 @@ class EventsCog(commands.Cog):
 
         log.debug(f"{track} ended. Reason: {reason}")
 
-        if not player.queue.is_empty and reason in (
+        if reason in (
             "finished",
             "stopped",
         ):
 
-            try:
-                return await player.play(player.queue.get())
-            except:
-                pass
+            if item := player.queue.get():
+                return await player.play(item)
 
         elif reason == "replaced":
             return
 
-        await player.queue.clear()
+        player.queue.clear()
 
         await player.edit_controller(
             embed=PrimaryEmbed(description="Queue is empty 👾")
