@@ -56,6 +56,8 @@ class SetupModel(BaseModel):
         None, description="Configuration for the webhook associated with this setup."
     )
 
+    radio: bool = Field(False)
+
 
 class SetupDocument(SetupModel, Document):
     guild_id: Annotated[int, Indexed(int, unique=True)] = Field(
