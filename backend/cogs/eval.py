@@ -16,7 +16,7 @@ class EvalCog(commands.Cog):
         if interaction.author.id == self.bot.owner_id:
             await interaction.response.send_modal(EvalModal())
         else:
-            raise commands.NotOwner("Вы не можете пользоваться этой командой")
+            raise commands.NotOwner("You cant use this command 👾👾")
 
 
 def setup(bot: NoirBot):
