@@ -6,7 +6,7 @@ print("loading...")
 
 import asyncio
 
-import disnake
+
 from _logging import get_logger
 from colorama import Fore, Style
 from entities.bot import get_instance as get_bot
@@ -15,8 +15,6 @@ from pyfiglet import Figlet
 logo = Figlet(font="5lineoblique", width=250)
 
 print("libs & properties imported")
-print("-----------------------")
-print(f"Powered on {disnake.__name__} | version {disnake.__version__}")
 print("-----------------------" + Fore.MAGENTA)
 print(f'{Fore.LIGHTCYAN_EX}{logo.renderText("Noir Player")}{Style.RESET_ALL}\n')
 print("-----------------------")
