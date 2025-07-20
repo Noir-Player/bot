@@ -37,15 +37,15 @@ class MusicCog(commands.Cog):
         search: str = commands.Param(description="Type name of track... 🔍"),
     ):
 
-        player: NoirPlayer = self.node.get_player(inter.guild_id)
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
 
-        query = await player.node.rest.abstract_search.search(
+        query = await player.node.rest.abstract_search.search_songs(
             search,
             ctx=inter,
             requester=inter.author.display_name,
         )
 
-        if await player.queue.put_auto(query) == False:
+        if await player.queue.put_auto(query[0]) == False or query is None:  # type: ignore
             return await inter.edit_original_response(
                 embed=WarningEmbed(
                     title="💔 | I cant find this track...",
@@ -54,7 +54,8 @@ class MusicCog(commands.Cog):
             )
 
         if not player.current:
-            await player.play(player.queue.get())
+            if item := player.queue.get():
+                await player.play(item)
 
         await inter.delete_original_message()  # Clean up after @check_player_decorator
 
@@ -189,7 +190,7 @@ class MusicCog(commands.Cog):
         self,
         inter: disnake.ApplicationCommandInteraction,
     ):
-        player: NoirPlayer = self.node.get_player(inter.guild_id)
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
 
         await inter.response.send_modal(AddMultipleModal(player))
 
