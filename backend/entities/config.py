@@ -71,5 +71,5 @@ def get_instance():
     """Singleton getter"""
     global instance
     if instance is None:
-        instance = BotConfig()
+        instance = BotConfig()  # type: ignore
     return instance
