@@ -29,9 +29,15 @@ class NoirBot(commands.AutoShardedInteractionBot):
         intents.members = True
 
         command_sync_flag = (
-            commands.CommandSyncFlags.all()
+            commands.CommandSyncFlags.default()
             if self._config.sync_commands
             else commands.CommandSyncFlags.none()
+        )
+
+        test_guilds = (
+            [self._config.support_server_id]
+            if self._config.mode == "dev" and self._config.support_server_id
+            else None
         )
 
         super().__init__(
@@ -43,6 +49,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
                 type=self._config.activity_status,
             ),
             owner_id=self._config.owner_id,
+            test_guilds=test_guilds,
         )
 
     # ----------------------------------------------------------------------------
@@ -116,6 +123,11 @@ class NoirBot(commands.AutoShardedInteractionBot):
         self._log.info("Calling load_extensions...")
 
         self.load_extensions()
+
+        if self._config.sync_commands:
+            self._log.info("Syncing commands...")
+            await self._sync_application_commands()
+            self._log.info("Commands synced")
 
     # ----------------------------------------------------------------------------
 
