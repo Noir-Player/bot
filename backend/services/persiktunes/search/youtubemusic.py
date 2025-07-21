@@ -1,6 +1,7 @@
 from typing import Any, AsyncGenerator, List, Union
 
 import ytmusicapi
+from _logging import get_logger
 
 from ..models import (
     Album,
@@ -12,6 +13,8 @@ from ..models import (
     Track,
 )
 from .template import BaseSearch
+
+log = get_logger("youtube_music_search")
 
 
 class YoutubeMusicSearch(BaseSearch):
@@ -35,7 +38,9 @@ class YoutubeMusicSearch(BaseSearch):
 
     def __init__(self, node: Any, **kwargs) -> None:
         """Pass a `Node` instance and get started.\nYou can pass any additional kwarg: `language`"""
-        self.client = ytmusicapi.YTMusic(language=kwargs.get("language", "ru"))
+        self.client = ytmusicapi.YTMusic(
+            auth="configs/ytm-auth.json", language=kwargs.get("language", "ru")
+        )
         self.node = node
 
     async def song(self, id: str, **kwargs) -> Track | None:
@@ -222,6 +227,8 @@ class YoutubeMusicSearch(BaseSearch):
         self, query: str, limit: int = 10, **kwargs
     ) -> List[Track] | None:
         raw = self.client.search(query, filter="songs", limit=limit)
+
+        log.debug(f"search_songs raw: {raw}")
 
         if not raw:
             return None
