@@ -8,6 +8,8 @@ services:
     restart: always
     env_file:
       - ./backend/.env
+    volumes:
+      - ./configs/ytm-auth.json:/backend/configs/ytm-auth.json
     depends_on:
       - database
       - lavalink
