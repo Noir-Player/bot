@@ -26,7 +26,7 @@ class MusicCog(commands.Cog):
     # Group play
 
     @commands.slash_command(name="play")
-    @commands.contexts(guild=True)
+    @commands.contexts(guild=True, private_channel=True)
     async def add(self, _):
         pass
 
@@ -40,16 +40,17 @@ class MusicCog(commands.Cog):
 
         player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
 
-        query = await player.node.rest.abstract_search.search_songs(
+        query = await self.node.rest.abstract_search.search_songs(
             search,
+            limit=1,
             ctx=inter,
             requester=inter.author.display_name,
         )
 
-        if await player.queue.put_auto(query[0]) == False or query is None:  # type: ignore
+        if query is None or await player.queue.put_auto(query[0]) == False:
             return await inter.edit_original_response(
                 embed=WarningEmbed(
-                    title="💔 | I cant find this track...",
+                    title="I cant find this track...",
                     description="Try another keywords or provide a link to the track.",
                 )
             )
