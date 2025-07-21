@@ -34,7 +34,7 @@ async def connect(bot) -> Node | None:
             port=get_config().lavalink_port,
             password=get_config().lavalink_password,
             identifier="Noir_Main",
-            log_level=logging.DEBUG,  # type: ignore
+            log_level=logging._nameToLevel[get_config().loglevel],  # type: ignore
             spotify_credentials=SpotifyClientCredentials(
                 client_id=get_config().spotify_client_id,
                 client_secret=get_config().spotify_client_secret,
