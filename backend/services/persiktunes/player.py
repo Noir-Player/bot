@@ -433,11 +433,13 @@ class Player(VoiceProtocol):
         # If it isnt zero, it'll be set to None.
         # Otherwise, it'll be set here:
 
-        await self.rest.update_player(guild_id=self._guild.id, data=data)
+        response = await self.rest.update_player(guild_id=self._guild.id, data=data)
 
         self._log.debug(
             f"Playing {track.info.title} from uri {track.info.uri} with a length of {track.info.length}",
         )
+
+        self._log.debug(f"Response Lavaplayer: {response}")
 
         return self._current
 
