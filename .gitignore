@@ -168,3 +168,4 @@ setup_ytm.py
 privkey.pem
 legacy/
 application.yml
+lavalink/plugins/
