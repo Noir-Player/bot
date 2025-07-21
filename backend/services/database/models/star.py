@@ -1,9 +1,8 @@
-from services.persiktunes.models import Playlist, LavalinkPlaylistInfo
-from pydantic import Field
-
 from typing import Annotated
 
 from beanie import Document, Indexed
+from pydantic import Field
+from services.persiktunes.models import LavalinkPlaylistInfo, Playlist
 
 
 class StarInfo(LavalinkPlaylistInfo):
@@ -13,7 +12,7 @@ class StarInfo(LavalinkPlaylistInfo):
 class StarDocument(Playlist, Document):
     """Model for Star document in Beanie"""
 
-    info = StarInfo()
+    info: LavalinkPlaylistInfo = StarInfo()
 
     user_id: Annotated[int, Indexed(unique=True)] = Field(
         description="ID of the user who owns the unique playlist, called star"

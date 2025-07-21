@@ -4,11 +4,10 @@ Node entity `NoirNode`
 
 import traceback
 
+from _logging import get_logger, logging
 from services.persiktunes import Node
 from spotipy import SpotifyClientCredentials
 
-from .._logging import get_logger, logging
-from .bot import NoirBot
 from .config import get_instance as get_config
 from .pool import get_instance as get_pool
 
@@ -17,7 +16,7 @@ from .pool import get_instance as get_pool
 log = get_logger("node")
 
 
-async def connect(bot) -> Node:
+async def connect(bot) -> Node | None:
     """Connect to Lavalink Nodes."""
 
     log.info("Starting nodes")
@@ -35,7 +34,7 @@ async def connect(bot) -> Node:
             port=get_config().lavalink_port,
             password=get_config().lavalink_password,
             identifier="Noir_Main",
-            log_level=logging.DEBUG,
+            log_level=logging.DEBUG,  # type: ignore
             spotify_credentials=SpotifyClientCredentials(
                 client_id=get_config().spotify_client_id,
                 client_secret=get_config().spotify_client_secret,
@@ -55,16 +54,22 @@ async def connect(bot) -> Node:
 instance = None
 
 
-async def create_node(bot: NoirBot):
+async def create_node(bot) -> bool:
+    """
+    If successful, returns `True`
+    """
     global instance
     if instance is None:
         instance = await connect(bot)
+
+    return bool(instance)
 
 
 # =============================================================================
 
 
 def get_instance():
+    global instance
     if not instance:
         raise Exception("Node is not connected")
 

@@ -4,8 +4,8 @@ import sys
 
 import disnake
 from _logging import get_logger
-from disnake.ext import commands
 from components.embeds import SecondaryEmbed
+from disnake.ext import commands
 from disnake.utils import _assetbytes_to_base64_data
 from entities.bot import NoirBot
 from entities.config import BotConfig
@@ -35,6 +35,11 @@ class ManageCog(commands.Cog):
         inter: disnake.ApplicationCommandInteraction,
         image: disnake.Attachment = commands.Param(description="new avatar"),
     ):
+        if self.bot.owner_id != inter.author.id:
+            raise commands.NotOwner(
+                "You don't have permission to use this command", True
+            )
+
         await self.bot.user.edit(avatar=(await image.to_file()).fp.read())
 
         await inter.send(
@@ -49,6 +54,11 @@ class ManageCog(commands.Cog):
         inter: disnake.ApplicationCommandInteraction,
         image: disnake.Attachment = commands.Param(description="new banner"),
     ):
+        if self.bot.owner_id != inter.author.id:
+            raise commands.NotOwner(
+                "You don't have permission to use this command", True
+            )
+
         payload = {}
         payload["banner"] = await _assetbytes_to_base64_data(image)  # type: ignore
 
@@ -76,6 +86,11 @@ class ManageCog(commands.Cog):
             choices=["playing", "streaming", "listening", "watching", "custom"],
         ),
     ):
+        if self.bot.owner_id != inter.author.id:
+            raise commands.NotOwner(
+                "You don't have permission to use this command", True
+            )
+
         await self.bot.change_presence(
             status=disnake.Status[status],
             activity=disnake.Activity(name=name, type=disnake.ActivityType[type]),

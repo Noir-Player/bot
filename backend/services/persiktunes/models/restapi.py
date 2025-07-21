@@ -320,10 +320,6 @@ class UpdatePlayerTrack(BaseModel):
     userData: Optional[Track] = None
 
 
-class BaseRestRequest(BaseModel):
-    method: Literal["GET", "POST", "PUT", "DELETE", "PATCH"]
-
-
 class BaseRestResponse(BaseModel):
     pass
 
@@ -340,8 +336,8 @@ class UpdatePlayerResponse(BaseRestResponse):
     player: LavalinkPlayer
 
 
-class UpdatePlayerRequest(BaseRestRequest):
-    method = "PATCH"
+class UpdatePlayerRequest(BaseModel):
+    method: Literal["GET", "POST", "PUT", "DELETE", "PATCH"] = "PATCH"
     noReplase: bool = False
     track: Optional[UpdatePlayerTrack] = None
     position: int = 0
@@ -352,32 +348,32 @@ class UpdatePlayerRequest(BaseRestRequest):
     voice: Optional[VoiceState] = None
 
 
-class DeletePlayerRequest(BaseRestRequest):
-    method = "DELETE"
+class DeletePlayerRequest(BaseModel):
+    method: Literal["GET", "POST", "PUT", "DELETE", "PATCH"] = "DELETE"
 
 
-class UpdateSessionRequest(BaseRestRequest):
-    method = "PATCH"
+class UpdateSessionRequest(BaseModel):
+    method: Literal["GET", "POST", "PUT", "DELETE", "PATCH"] = "PATCH"
     resuming: Optional[bool] = False
     timeout: Optional[int] = 60
 
 
-class UpdateSessionResponse(BaseRestResponse):
-    resuming: bool
-    timeout: int
+class GetLavalinkVersionRequest(BaseModel):
+    method: Literal["GET", "POST", "PUT", "DELETE", "PATCH"] = "GET"
 
 
-class GetLavalinkVersionRequest(BaseRestRequest):
-    method = "GET"
+class GetTracksRequest(BaseModel):
+    method: Literal["GET", "POST", "PUT", "DELETE", "PATCH"] = "GET"
 
 
-class GetTracksRequest(BaseRestRequest):
-    method = "GET"
+class GetLavalinkStatsRequest(BaseModel):
+    method: Literal["GET", "POST", "PUT", "DELETE", "PATCH"] = "GET"
 
 
 class GetLavalinkVersionResponse(BaseRestResponse):
     pass
 
 
-class GetLavalinkStatsRequest(BaseRestRequest):
-    method = "GET"
+class UpdateSessionResponse(BaseRestResponse):
+    resuming: bool
+    timeout: int

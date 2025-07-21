@@ -2,12 +2,12 @@ from typing import Any, AsyncGenerator, List, Union
 
 import ytmusicapi
 
-from models import Album, LavalinkTrackLoadingResponse, Mood
-
 from ..models import (
+    Album,
     LavalinkPlaylistInfo,
     LavalinkTrackInfo,
     LavalinkTrackLoadingResponse,
+    Mood,
     Playlist,
     Track,
 )
@@ -35,9 +35,7 @@ class YoutubeMusicSearch(BaseSearch):
 
     def __init__(self, node: Any, **kwargs) -> None:
         """Pass a `Node` instance and get started.\nYou can pass any additional kwarg: `language`"""
-        self.client = ytmusicapi.YTMusic(
-            auth="data/oauth/oauth.json", language=kwargs.get("language", "ru")
-        )
+        self.client = ytmusicapi.YTMusic(language=kwargs.get("language", "ru"))
         self.node = node
 
     async def song(self, id: str, **kwargs) -> Track | None:
@@ -301,9 +299,10 @@ class YoutubeMusicSearch(BaseSearch):
             song.info.identifier, radio=True, limit=limit
         )
 
-        for rawtrack in raw["tracks"][1:]:
+        if raw and raw.get("tracks"):
+            for rawtrack in raw["tracks"][1:]:  # type: ignore
 
-            yield await self.song(rawtrack["videoId"], **kwargs)  # type: ignore
+                yield await self.song(rawtrack["videoId"], **kwargs)  # type: ignore
 
         return
 

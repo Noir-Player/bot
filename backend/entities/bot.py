@@ -2,6 +2,7 @@
 Bot entity `commands.AutoShardedInteractionBot`
 """
 
+import traceback
 from os import listdir
 from typing import Callable
 
@@ -10,6 +11,8 @@ from _logging import get_logger
 from disnake.ext import commands
 
 from .config import get_instance as get_config
+from .database import init as create_database
+from .node import create_node
 
 
 class NoirBot(commands.AutoShardedInteractionBot):
@@ -39,6 +42,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
                 name=self._config.activity_name,
                 type=self._config.activity_status,
             ),
+            owner_id=self._config.owner_id,
         )
 
     # ----------------------------------------------------------------------------
@@ -64,7 +68,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
     def provide_cogs(directory: str = "./cogs"):
         def decorator(function: Callable):
             def wrapper(self, *args, **kwargs):
-                curr, total = 1, len(listdir(directory)) - 1
+                curr, total = 1, len(listdir(directory))
 
                 for filename in listdir(directory):
                     if filename.endswith(".py"):
@@ -77,7 +81,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
         return decorator
 
     @provide_cogs()
-    def load_extensions(self, filename: str, curr: int, total: int):  # type: ignore
+    def load_extensions(self, filename: str = ..., curr: int = ..., total: int = ...):  # type: ignore
         """Load cogs from `./cogs` directory"""
         try:
             self.load_extension(f"cogs.{filename[:-3]}")
@@ -85,9 +89,11 @@ class NoirBot(commands.AutoShardedInteractionBot):
 
         except Exception as error:  # something in cog wrong
             self._log.error(f"error in cog {filename}, {curr}/{total} | {error}")
+            if self._config.mode == "dev":
+                traceback.print_exc()
 
     @provide_cogs()
-    def reload_extensions(self, filename: str, curr: int, total: int):
+    def reload_extensions(self, filename: str = ..., curr: int = ..., total: int = ...):  # type: ignore
         """Reload cogs from `./cogs` directory"""
         try:
             self.reload_extension(f"cogs.{filename[:-3]}")
@@ -95,6 +101,41 @@ class NoirBot(commands.AutoShardedInteractionBot):
 
         except Exception as error:  # something in cog wrong
             self._log.error(f"error in cog {filename}, {curr}/{total} | {error}")
+
+    # ----------------------------------------------------------------------------
+
+    async def on_ready(self):
+        self._log.info(f"Starting as {self.user} (ID: {self.user.id})")
+        self._log.info("on_ready was called, creating node...")
+
+        create_node_state = await create_node(self)
+
+        if not create_node_state:
+            return self._log.error("Node was not created 💔")
+
+        if self._config.sync_commands:
+
+            self._log.info("Removing commands...")
+
+            for command in self.global_application_commands:
+                await self.http.delete_global_command(self.application_id, command.id)
+
+        self._log.info("Calling load_extensions...")
+
+        self.load_extensions()
+
+    # ----------------------------------------------------------------------------
+
+    async def on_shard_connect(self, id):
+        self._log.debug(f"Shard connected | {id}")
+
+    # ----------------------------------------------------------------------------
+
+    async def on_connect(self):
+        self._log.info("on_connect was called, creating database")
+        await create_database()
+
+        self._log.info("Database ininted")
 
 
 # =============================================================================

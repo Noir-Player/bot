@@ -3,8 +3,6 @@ import time
 import disnake
 from components.embeds import *
 from disnake.ext.commands import Paginator
-from entities.bot import NoirBot
-from entities.player import NoirPlayer
 from services.persiktunes import Node
 from validators.player import check_player_btn_decorator
 
@@ -13,7 +11,6 @@ class QueueButtons(disnake.ui.View):
 
     def __init__(self, node: Node, message: disnake.Message, embed_queue: "EmbedQueue"):
         self.node = node
-        self.bot: NoirBot = node.bot
 
         self.embed_queue = embed_queue
 
@@ -71,7 +68,7 @@ class QueueButtons(disnake.ui.View):
     )
     @check_player_btn_decorator()
     async def start_autoplay(self, button, interaction):
-        player: NoirPlayer = self.node.get_player(interaction.guild_id)
+        player = self.node.get_player(interaction.guild_id)
         if not player.current:
             return
 
@@ -119,7 +116,6 @@ class EmbedQueue:
 
     def __init__(self, node: Node):
         self.node = node
-        self.bot: NoirBot = node.bot
 
         self.message: disnake.Message
 

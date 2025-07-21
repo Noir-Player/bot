@@ -33,9 +33,7 @@ class AbstractSearch(BaseSearch):
     def __init__(
         self,
         node: Any,
-        default: Union[
-            YandexMusicSearch, YoutubeMusicSearch, SpotifySearch
-        ] = YoutubeMusicSearch,
+        default: type[YoutubeMusicSearch] = YoutubeMusicSearch,
         **kwargs,
     ) -> None:
         """Pass a `Node` instance and get started.\nYou can pass any additional kwarg: `language`"""
@@ -258,9 +256,7 @@ class AbstractSearch(BaseSearch):
         """
         return await self._call_method("moods", *args, **kwargs)
 
-    async def get_mood_playlists(
-        self, mood: Mood, *args, **kwargs
-    ) -> Optional[Playlist]:
+    async def get_mood_playlists(self, mood: Mood, *args, **kwargs) -> List[Playlist]:
         """
         Get mood playlists from default service.
 

@@ -12,6 +12,7 @@ class EvalCog(commands.Cog):
         self.bot = bot
 
     @commands.slash_command(name="eval_multiple", guild_ids=[config.support_server_id])  # type: ignore
+    @commands.contexts(guild=True)
     async def eval_multiple(self, interaction: ApplicationCommandInteraction):
         if interaction.author.id == self.bot.owner_id:
             await interaction.response.send_modal(EvalModal())

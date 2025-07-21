@@ -2,10 +2,12 @@
 
 import datetime
 
+# from entities.player import NoirPlayer
+from typing import Any
+
 import disnake
 from components.modals.multiple import AddMultipleModal
 from disnake import Embed
-from entities.player import NoirPlayer
 from exceptions import *
 from services.persiktunes import LoopMode
 from validators.player import check_player_btn_decorator
@@ -36,7 +38,7 @@ def progress_slider(start, end, length=24):
     return bar
 
 
-def state(player: NoirPlayer):
+def state(player: Any):
     times = ""
 
     if not player.current.info.isStream:
@@ -99,7 +101,7 @@ class Soundpad(disnake.ui.View):
     def __init__(self, player, *, timeout: float | None = None) -> None:
         super().__init__(timeout=timeout)
 
-        self.player: NoirPlayer = player
+        self.player: Any = player
 
     @disnake.ui.button(
         emoji="<:skip_previous_primary:1239113698623225908>",

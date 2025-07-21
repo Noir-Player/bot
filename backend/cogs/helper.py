@@ -1,5 +1,5 @@
 import disnake
-from components import PrimaryEmbed
+from components.embeds import PrimaryEmbed
 from components.embeds.logs import GuildJoinLogEmbed, GuildLeaveLogEmbed
 from disnake.ext import commands
 from entities.bot import NoirBot

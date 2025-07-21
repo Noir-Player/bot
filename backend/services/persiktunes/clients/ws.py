@@ -1,11 +1,9 @@
 import asyncio
 import json
-import logging
 import random
-from typing import Any, Callable, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 from disnake.ext import commands
-import disnake
 from websockets import client, exceptions
 
 from .. import __version__
@@ -14,7 +12,7 @@ from ..models import ws as wsmodels
 from ..models.ws import *
 from ..utils import ExponentialBackoff, LavalinkVersion
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # circular import
     from ..pool import Node
 
 
@@ -26,7 +24,7 @@ class LavalinkWebsocket:
 
     def __init__(
         self,
-        node: Node,
+        node: Any,
         host: str,
         port: int,
         password: str,

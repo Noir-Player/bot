@@ -13,20 +13,22 @@ class BaseEmbed(Embed):
         title: str | None = None,
         description: str | None = None,
         url: str | None = None,
-        colour: str | None = None,
+        colour: str | int | None = None,
     ):
 
         type = "rich"
-        timestamp = datetime.timestamp(datetime.now())
-        colour_int = int(colour.replace("#", ""), base=16) if colour else None
+        timestamp = datetime.now()
+
+        if isinstance(colour, str):
+            colour = int(colour.replace("#", ""), base=16) if colour else None
 
         super().__init__(
             title=title,
             type=type,
             description=description,
             url=url,
-            timestamp=timestamp,  # type: ignore
-            colour=colour_int,
+            timestamp=timestamp,
+            colour=colour,
         )
 
 

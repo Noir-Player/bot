@@ -1,6 +1,5 @@
 import disnake
 from components.embeds import *
-from entities.bot import NoirBot
 from services.persiktunes import Node
 from services.persiktunes.filters import *
 from validators.player import check_player_btn_decorator
@@ -12,7 +11,6 @@ class ContextView(disnake.ui.View):
 
     def __init__(self, node: Node):
         self.node = node
-        self.bot: NoirBot = node.bot
 
         super().__init__(timeout=600)
 
@@ -89,7 +87,6 @@ class EmbedContext:
 
     def __init__(self, node: Node):
         self.node = node
-        self.bot: NoirBot = node.bot
 
     @property
     def view(self) -> disnake.ui.View:

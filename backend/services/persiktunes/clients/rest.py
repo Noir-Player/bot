@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Literal, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Union
 
 import aiohttp
 from disnake import Interaction, Member, User
@@ -13,14 +13,14 @@ from ..models.ws import *
 from ..search import YoutubeMusicSearch
 from ..utils import LavalinkVersion
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # circular import
     from ..pool import Node
 
 
 class LavalinkRest:
     def __init__(
         self,
-        node: Node,
+        node: Any,
         host: str,
         port: int,
         password: str,
@@ -40,7 +40,7 @@ class LavalinkRest:
 
         self._secure = secure
 
-        self.node: Node = node
+        self.node: Any = node
 
         self._session: aiohttp.ClientSession = session  # type: ignore
 

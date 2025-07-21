@@ -3,7 +3,6 @@
 from typing import List, Union
 
 import disnake
-from entities.bot import NoirBot
 from services.persiktunes import Album, Artist, Node, Playlist, Track
 from validators.player import check_player_btn_decorator
 
@@ -21,7 +20,6 @@ class SearchView(disnake.ui.View):
     ):
         self.results = results
         self.node = node
-        self.bot: NoirBot = node.bot
 
         self.message = message
 
@@ -120,7 +118,6 @@ class EmbedSearch:
     def __init__(self, track: Track, node: Node):
         self.track = track
         self.node = node
-        self.bot: NoirBot = node.bot
 
     def embed(self) -> None:
         """Return embed with track info"""
