@@ -282,9 +282,9 @@ LAVALINK PLAYER ALI MODELS
 
 
 class VoiceState(BaseModel):
-    token: str
-    endpoint: str
-    sessionId: str
+    token: Optional[str] = None
+    endpoint: Optional[str] = None
+    sessionId: Optional[str] = None
 
 
 class PlayerState(BaseModel):
