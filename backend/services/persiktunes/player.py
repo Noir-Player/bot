@@ -14,13 +14,19 @@ from disnake import Client, Guild, VoiceChannel, VoiceProtocol
 from . import events
 from .exceptions import TrackInvalidPosition
 from .filters import Filter, Filters, Timescale
-
-# from .objects import Playlist, Track
-from .models import PlayerUpdateOP, Track, UpdatePlayerRequest, UpdatePlayerTrack
+from .models import (
+    PlayerUpdateOP,
+    Track,
+    UpdatePlayerRequest,
+    UpdatePlayerTrack,
+    VoiceState,
+)
 from .models.restapi import LavalinkPlayer
 from .models.ws import *
 from .pool import Node, NodePool
 from .utils import LavalinkVersion
+
+# from disnake.types.gateway import VoiceServerUpdateEvent, VoiceStateUpdateEvent
 
 
 class Player(VoiceProtocol):
@@ -75,7 +81,7 @@ class Player(VoiceProtocol):
         self._last_update: float = 0
         self._log = self._node._log
 
-        self._voice_state: dict = {}
+        self._voice_state: VoiceState | None = None
 
         self._player_endpoint_uri: str = f"sessions/{self._node._session_id}/players"
 
@@ -97,10 +103,11 @@ class Player(VoiceProtocol):
 
         self._guild_id = model.guildId
 
-        self._voice_state = {
-            "event": {"token": model.voice.token, "endpoint": model.voice.endpoint},
-            "sessionId": model.voice.sessionId,
-        }
+        self._voice_state = VoiceState(
+            token=model.voice.token,
+            endpoint=model.voice.endpoint,
+            sessionId=model.voice.sessionId,
+        )
 
         self._log.debug(
             f"Created player from LavalinkPlayer model {model.model_dump()}, connecting..."
@@ -225,53 +232,64 @@ class Player(VoiceProtocol):
         )
 
     async def _dispatch_voice_update(
-        self, voice_data: Optional[Dict[str, Any]] = None
+        self, voice_data: Optional[VoiceState] = None
     ) -> None:
 
-        state = voice_data or self._voice_state
+        if voice_data == None or all(list(voice_data.model_dump().values())):
+            await self.rest.update_player(
+                guild_id=self._guild.id,
+                data=UpdatePlayerRequest(voice=voice_data),
+            )
 
-        data = (
-            {
-                "token": state["event"]["token"],
-                "endpoint": state["event"]["endpoint"],
-                "sessionId": state["sessionId"],
-            }
-            if state
-            else None
-        )
+            self._log.debug(
+                f"Dispatched voice update to {self._guild.id} with data {voice_data}"
+            )
 
-        await self.rest.update_player(
-            guild_id=self._guild.id,
-            data={"voice": data},
-        )
+    async def on_voice_server_update(
+        self, data
+    ) -> None:  # data: VoiceServerUpdateEvent
+        self._log.debug(f"Got voice server update with data: {data}")
 
-        self._log.debug(
-            f"Dispatched voice update to {state['event']['endpoint']} with data {data}"
-        )
+        if not self._voice_state:
+            self._voice_state = VoiceState(
+                token=data.get("token"),
+                endpoint=data.get("endpoint"),
+            )
+        else:
+            self._voice_state = self._voice_state.model_copy(
+                update={
+                    "token": data.get("token"),
+                    "endpoint": data.get("endpoint"),
+                }
+            )
 
-    async def on_voice_server_update(self, data: VoiceServerUpdate) -> None:  # type: ignore
-        self._voice_state.update({"event": data.model_dump()})
+        self._log.debug(f"Updated voice state to {self._voice_state}")
+
         await self._dispatch_voice_update(self._voice_state)
 
-    async def on_voice_state_update(self, data: VoiceStateUpdate) -> None:  # type: ignore
-        self._voice_state.update({"sessionId": data.session_id})
+    async def on_voice_state_update(self, data) -> None:  # data: VoiceStateUpdateEvent
+        self._log.debug(f"Got voice state update with data: {data}")
 
-        channel_id = data.channel_id
+        channel_id = data.get("channel_id")
 
         if not channel_id:
             await self.disconnect()
-            self._voice_state.clear()
-            return
+            self._voice_state = None
+            return await self._dispatch_voice_update(self._voice_state)
 
-        channel = self.guild.get_channel(int(channel_id))
-        if not channel:
-            await self.disconnect()
-            self._voice_state.clear()
-            return
+        if not self._voice_state:
+            self._voice_state = VoiceState(
+                sessionId=data.get("session_id"),
+            )
 
-        await self._dispatch_voice_update(
-            {**self._voice_state, "event": data.model_dump()}
-        )
+        else:
+            self._voice_state = self._voice_state.model_copy(
+                update={"sessionId": data.get("session_id")}
+            )
+
+        self._log.debug(f"Updated voice state to {self._voice_state}")
+
+        await self._dispatch_voice_update(self._voice_state)
 
     async def _dispatch_event(
         self,
@@ -402,6 +420,7 @@ class Player(VoiceProtocol):
             endTime=end or None,
             volume=volume or self.volume,
             paused=self.is_paused,
+            voice=self._voice_state,
         )
 
         self._paused = False
@@ -489,8 +508,6 @@ class Player(VoiceProtocol):
         """Moves the player to a new voice channel."""
 
         await self.guild.change_voice_state(channel=channel)
-
-        self._voice_state["channel_id"] = channel.id
 
         self.channel = channel  # type: ignore
 
@@ -584,5 +601,7 @@ class Player(VoiceProtocol):
         await self.rest.update_player(guild_id=self._guild.id, data={"filters": {}})
 
         await self.seek(self.position)  # type: ignore # TODO: Find a better way to do this
+
+        self._log.debug(f"All filters have been removed from player.")
 
         self._log.debug(f"All filters have been removed from player.")
