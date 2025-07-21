@@ -113,13 +113,6 @@ class NoirBot(commands.AutoShardedInteractionBot):
         if not create_node_state:
             return self._log.error("Node was not created 💔")
 
-        if self._config.sync_commands:
-
-            self._log.info("Removing commands...")
-
-            for command in self.global_application_commands:
-                await self.http.delete_global_command(self.application_id, command.id)
-
         self._log.info("Calling load_extensions...")
 
         self.load_extensions()

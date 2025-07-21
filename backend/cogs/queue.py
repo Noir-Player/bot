@@ -19,7 +19,8 @@ class QueueCog(commands.Cog):
 
     # TODO: Database
 
-    @commands.slash_command(dm_permission=False)
+    @commands.slash_command()
+    @commands.contexts(guild=True)
     async def queue(self, _):
         pass
 

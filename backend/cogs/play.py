@@ -25,7 +25,8 @@ class MusicCog(commands.Cog):
     # COMMANDS
     # Group play
 
-    @commands.slash_command(name="play", dm_permission=False)
+    @commands.slash_command(name="play")
+    @commands.contexts(guild=True)
     async def add(self, _):
         pass
 

@@ -39,7 +39,8 @@ class PlayerCog(commands.Cog):
 
     # TODO: Database
 
-    @commands.slash_command(name="player", dm_permission=False)
+    @commands.slash_command(name="player")
+    @commands.contexts(guild=True)
     async def _player(self, _):
         pass
 
