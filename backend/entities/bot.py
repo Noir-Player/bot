@@ -26,7 +26,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
         self._log = get_logger("bot")
 
         intents = disnake.Intents.default()
-        intents.members = True
+        intents.presences = True
 
         command_sync_flag = (
             commands.CommandSyncFlags.default()
