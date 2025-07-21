@@ -1,6 +1,6 @@
 """Config entity `BaseSettings`"""
 
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -24,7 +24,7 @@ class BotConfig(BaseSettings):
 
     activity_name: str = "noirplayer.su"
     """Activity name"""
-    activity_status: Literal[-1, 0, 1, 2, 3, 4, 5] = 2
+    activity_status: Annotated[int, Literal[-1, 0, 1, 2, 3, 4, 5]] = 2
     """Activity status"""
 
     redis_host: str = "redis"
