@@ -9,6 +9,7 @@ from entities.bot import NoirBot
 from entities.node import Node
 from entities.node import get_instance as get_node
 from entities.player import NoirPlayer
+from services.persiktunes.enums import URLRegex
 from validators.player import check_player_decorator
 
 log = get_logger("play")
@@ -40,14 +41,22 @@ class MusicCog(commands.Cog):
 
         player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
 
-        query = await self.node.rest.abstract_search.search_songs(
-            search,
-            limit=1,
-            ctx=inter,
-            requester=inter.author.display_name,
+        query = (
+            await self.node.rest.abstract_search.search_songs(
+                search,
+                limit=1,
+                ctx=inter,
+                requester=inter.author,
+            )
+            if not URLRegex.BASE_URL.match(search)
+            else await self.node.search(
+                search,
+                ctx=inter,
+                requester=inter.author,
+            )
         )
 
-        if query is None or await player.queue.put_auto(query[0]) == False:
+        if query is None or await player.queue.put_auto(query) == False:
             return await inter.edit_original_response(
                 embed=WarningEmbed(
                     title="I cant find this track...",
