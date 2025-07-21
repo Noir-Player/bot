@@ -41,7 +41,7 @@ from .enums import *
 from .enums import LogLevel
 from .exceptions import *
 from .filters import Filter
-from .models.restapi import Playlist, Track, LavalinkTrackInfo
+from .models.restapi import LavalinkTrackInfo, Playlist, Track
 from .routeplanner import RoutePlanner
 from .utils import LavalinkVersion, NodeStats, Ping
 
@@ -331,14 +331,23 @@ class Node:
                 f"Version check from Node {self._identifier} successful. Returned version {version}",
             )
 
+            extra_headers = {  # type: ignore
+                "Authorization": self._password,
+                "User-Id": self._bot_user.id,
+                "Client-Name": f"PersikTunes/{__version__}",
+                "Session-Id": self._session_id,
+            }
+
+            if self._session_id is None:
+                self._log.debug(
+                    f"Trying to connect to Node {self._identifier} with no session id"
+                )
+
+                del extra_headers["Session-Id"]
+
             self._websocket._websocket = await client.connect(
                 f"{self._websocket._websocket_uri}/v{self._version.major}/websocket",
-                extra_headers={  # type: ignore
-                    "Authorization": self._password,
-                    "User-Id": self._bot_user.id,
-                    "Client-Name": f"PersikTunes/{__version__}",
-                    "Session-Id": self._session_id,
-                },
+                extra_headers=extra_headers,
                 ping_interval=self._heartbeat,
             )
 
@@ -351,8 +360,9 @@ class Node:
 
             self._available = True
 
-            if self.get_resume_key and self._version.major == 4:
-                self._session_id = await self.get_resume_key()
+            if self._version.major == 4:
+                if session_id := await self.get_resume_key():
+                    self._session_id = session_id
 
                 self._log.debug(f"Trying to reconnect to Node {self._identifier}...")
 
