@@ -1,15 +1,13 @@
 from typing import Any, List, Optional
 
 import disnake
-from disnake.ext import tasks
-
-from services.database.models.setup import SetupDocument
-
-from components.views import Soundpad, state
-from components.embeds import *
 from components.colors import PRIMARY
+from components.embeds import *
+from components.views import Soundpad, state
+from disnake.ext import tasks
 from entities.queue import NoirQueue
 from services import persiktunes
+from services.database.models.setup import SetupDocument
 
 
 class NoirPlayer(persiktunes.Player):
