@@ -576,17 +576,9 @@ class Node:
             )
 
             track: dict = data["tracks"][0]
+            track.update({"ctx": ctx, "requester": requester})
 
-            return [
-                Track.model_validate(
-                    track,
-                    context={
-                        "ctx": ctx,
-                        # "filters": filters,
-                        "requester": requester,
-                    },
-                ),
-            ]
+            return [Track.model_validate(track)]
 
         elif path.exists(path.dirname(query)):
             local_file = Path(query)
@@ -597,17 +589,9 @@ class Node:
             )
 
             track: dict = data["tracks"][0]  # type: ignore
+            track.update({"ctx": ctx, "requester": requester})
 
-            return [
-                Track.model_validate(
-                    track,
-                    context={
-                        "ctx": ctx,
-                        # "filters": filters,
-                        "requester": requester,
-                    },
-                )
-            ]
+            return [Track.model_validate(track)]
 
         else:
             if (
@@ -622,7 +606,7 @@ class Node:
             if match := URLRegex.YOUTUBE_TIMESTAMP.match(query):
                 timestamp = float(match.group("time"))
 
-            data = await self.send(
+            data = await self.rest.send(
                 method="GET",
                 path="loadtracks",
                 query=f"identifier={quote(query)}",
@@ -656,17 +640,12 @@ class Node:
                 track_list = data[data_type]
                 playlist_info = data["playlistInfo"]
 
-            tracks = [
-                Track.model_validate(
-                    track,
-                    context={
-                        "ctx": ctx,
-                        # "filters": filters,
-                        "requester": requester,
-                    },
-                )
-                for track in track_list
-            ]
+            tracks = []
+
+            for track in track_list:
+                track.update({"ctx": ctx, "requester": requester})
+                tracks.append(Track.model_validate(track))
+
             return Playlist(
                 info=playlist_info,
                 tracks=tracks,
@@ -679,17 +658,14 @@ class Node:
         elif load_type in ("SEARCH_RESULT", "TRACK_LOADED", "track", "search"):
             if self._version.major >= 4 and isinstance(data[data_type], dict):
                 data[data_type] = [data[data_type]]
-            return [
-                Track.model_validate(
-                    track,
-                    context={
-                        "ctx": ctx,
-                        # "filters": filters,
-                        "requester": requester,
-                    },
-                )
-                for track in data[data_type]
-            ]
+
+            tracks = []
+
+            for track in data[data_type]:
+                track.update({"ctx": ctx, "requester": requester})
+                tracks.append(Track.model_validate(track))
+
+            return tracks
 
         else:
             raise TrackLoadError(
