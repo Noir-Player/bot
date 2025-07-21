@@ -140,13 +140,27 @@ class Queue(Iterable[Track]):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Private methods
 
-    def _get(self) -> Track:
+    def _get(self) -> Track | None:
         """Get the next (or first if index lost) item in the queue."""
         if self._loose_mode:
-            return self._queue.pop(0)
+            if self._return_exceptions:
+                return self._queue.pop(0)
+
+            else:
+                try:
+                    return self._queue.pop(0)
+                except IndexError:
+                    return
 
         if self._current_item and self._current_item in self._queue:
-            return self._queue[self._index(self._current_item) + 1]
+            if self._return_exceptions:
+                return self._queue[self._index(self._current_item) + 1]
+
+            else:
+                try:
+                    return self._queue[self._index(self._current_item) + 1]
+                except IndexError:
+                    return
 
         return self._queue[0]
 
@@ -270,7 +284,8 @@ class Queue(Iterable[Track]):
         return self.next()
 
     def next(self):
-        """Return next immediately available item in queue if any.
+        """
+        Return next immediately available item in queue if any.
         Raises QueueEmpty if no items in queue.
         """
         if self.is_empty:

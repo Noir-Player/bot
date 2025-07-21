@@ -32,8 +32,7 @@ class NoirQueue(Queue):
     def _get(self) -> Track | None:
         if self.loose_mode and self.count <= 1:
             self.player.bot.loop.create_task(self.put_relayted(self._current_item))
-        if not self.count:
-            return
+
         return super()._get()
 
     async def put(self, item: Track) -> None:
@@ -49,11 +48,18 @@ class NoirQueue(Queue):
     async def put_auto(
         self,
         item: (
-            LavalinkTrackLoadingResponse | LavaSearchLoadingResponse | Track | Playlist
+            LavalinkTrackLoadingResponse
+            | LavaSearchLoadingResponse
+            | Track
+            | Playlist
+            | List[Track]
         ),
         put_type: Literal["auto", "once", "tracks", "playlists", "mixes"] = "auto",
     ) -> None:
+
         if put_type == "auto":
+            if isinstance(item, list):
+                return await self.put_auto(item[0])
             if isinstance(item, LavalinkTrackLoadingResponse):
                 if item.loadType == "track":
                     await self.put(item.data)
