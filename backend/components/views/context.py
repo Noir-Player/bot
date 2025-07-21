@@ -16,18 +16,18 @@ class ContextView(disnake.ui.View):
 
         self.api = node.rest.abstract_search
 
-    @disnake.ui.button(emoji="<:volume_down_primary:1239113694856876076>", row=0)
+    @disnake.ui.button(emoji="<:volume_down:1396929533776498739>", row=0)
     @check_player_btn_decorator()
     async def volume_down(self, button, interaction):
         await self.node.get_player(interaction.guild_id).volume_down()
 
-    @disnake.ui.button(emoji="<:volume_up_primary:1239113696337199165>", row=0)
+    @disnake.ui.button(emoji="<:volume_up:1396929535911661648>", row=0)
     @check_player_btn_decorator()
     async def volume_up(self, button, interaction):
         await self.node.get_player(interaction.guild_id).volume_up()
 
     @disnake.ui.button(
-        emoji="<:bookmark_primary:1242557997624983592>",
+        emoji="<:thumb_up:1396929532384247939>",
         row=1,
         disabled=True,
     )
@@ -37,7 +37,7 @@ class ContextView(disnake.ui.View):
         # TODO: write a db models first
 
     @disnake.ui.button(
-        emoji="<:alt_route_primary:1239113857461387264>",
+        emoji="<:replace_audio:1396929530341622002>",
         row=1,
         style=disnake.ButtonStyle.gray,
     )
@@ -47,7 +47,7 @@ class ContextView(disnake.ui.View):
         # TODO: write an Album object first
 
     @disnake.ui.button(
-        emoji="<:equalizer_primary:1239113717656977439>",
+        emoji="<:tune:1396929527883501640>",
         row=2,
     )
     @check_player_btn_decorator(with_message=True)
@@ -55,7 +55,7 @@ class ContextView(disnake.ui.View):
         await EmbedEffects(self.node).send(interaction)
 
     @disnake.ui.button(
-        emoji="<:lyrics_primary:1239113708203020368>",
+        emoji="<:lyrics:1396929525287354410>",
         row=2,
     )
     @check_player_btn_decorator()
