@@ -3,13 +3,13 @@ Bot entity `commands.AutoShardedInteractionBot`
 """
 
 from os import listdir
-
-import disnake
-from config import get_instance as get_config
-from disnake.ext import commands
 from typing import Callable
 
+import disnake
 from _logging import get_logger
+from disnake.ext import commands
+
+from .config import get_instance as get_config
 
 
 class NoirBot(commands.AutoShardedInteractionBot):
