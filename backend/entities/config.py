@@ -7,7 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class BotConfig(BaseSettings):
 
-    version: str = "0.1.0"
+    version: str = "0-1-0"
     """Version (for database)"""
 
     mode: Literal["dev", "prod"] = "dev"
@@ -39,7 +39,7 @@ class BotConfig(BaseSettings):
 
     lavalink_host: str = "lavalink"
     """Lavalink host"""
-    lavalink_port: int = 2333
+    lavalink_port: int = 8080
     """Lavalink port"""
     lavalink_password: str = "youshallnotpass"
     """Lavalink password"""
@@ -58,6 +58,9 @@ class BotConfig(BaseSettings):
     """Support server invite url"""
     logs_channel_id: int | None = None
     """Logs channel id"""
+
+    owner_id: int | None = None
+    """Owner id"""
 
     model_config = SettingsConfigDict(env_file=".env")
 

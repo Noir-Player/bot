@@ -24,7 +24,7 @@ services:
       - ./lavalink/application.yml:/opt/Lavalink/application.yml
       - ./lavalink/plugins/:/opt/Lavalink/plugins/
     expose:
-      - 2333
+      - 8080
 
   # ============================ NGINX + SSL ===========================
 
