@@ -8,7 +8,7 @@ from . import *
 class GuildLeaveLogEmbed(ErrorEmbed):
     def __init__(self, guild: Guild):
 
-        title = f"Leave from `{guild.name}`"
+        super().__init__(f"Leave from `{guild.name}`")
 
         self.add_field(
             name="Owner",
@@ -24,14 +24,12 @@ class GuildLeaveLogEmbed(ErrorEmbed):
             self.set_thumbnail(url=guild.icon.url)
 
         self.set_footer(text=guild.id)
-
-        super().__init__(title)
 
 
 class GuildJoinLogEmbed(SuccessEmbed):
     def __init__(self, guild: Guild):
 
-        title = f"Join on `{guild.name}`"
+        super().__init__(f"Join on `{guild.name}`")
 
         self.add_field(
             name="Owner",
@@ -47,5 +45,3 @@ class GuildJoinLogEmbed(SuccessEmbed):
             self.set_thumbnail(url=guild.icon.url)
 
         self.set_footer(text=guild.id)
-
-        super().__init__(title)
