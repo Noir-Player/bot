@@ -1,9 +1,11 @@
 from _logging import get_logger
-from components.embeds import PrimaryEmbed
+from components.embeds import ErrorEmbed, PrimaryEmbed
+from disnake import ApplicationCommandInteraction
 from disnake.ext import commands
 from entities.bot import NoirBot
 from entities.node import get_instance as get_node
 from entities.player import NoirPlayer
+from exceptions import on_error
 from services import persiktunes
 
 log = get_logger("events")
@@ -13,6 +15,10 @@ class EventsCog(commands.Cog):
     def __init__(self, bot: NoirBot):
         self.bot = bot
         self.node = get_node()
+
+        self.bot.add_listener(on_error, "on_slash_command_error")
+        self.bot.add_listener(on_error, "on_user_command_error")
+        self.bot.add_listener(on_error, "on_message_command_error")
 
     @commands.Cog.listener()
     async def on_persik_track_start(self, player: NoirPlayer, track: persiktunes.Track):
@@ -67,9 +73,13 @@ class EventsCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
+        player = self.node.get_player(member.guild.id)
+
+        if not player:
+            return
+
         if member.id == self.bot.user.id and before.channel and not after.channel:
-            if player := self.node.get_player(before.channel.guild.id):
-                await player.destroy()
+            await player.destroy()
 
 
 def setup(bot: NoirBot):
