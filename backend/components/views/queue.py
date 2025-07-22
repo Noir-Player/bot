@@ -2,6 +2,7 @@ import time
 
 import disnake
 from components.embeds import *
+from components.modals.playlist import PlaylistInfoModal
 from disnake.ext.commands import Paginator
 from services.persiktunes import Node
 from validators.player import check_player_btn
@@ -60,7 +61,7 @@ class QueueButtons(disnake.ui.View):
         player = self.node.get_player(interaction.guild_id)
         if not player:
             return
-        await player.queue.shuffle()
+        player.queue.shuffle()
 
     @disnake.ui.button(
         emoji="<:autoplay_primary:1239113693690859564>",
@@ -99,16 +100,16 @@ class QueueButtons(disnake.ui.View):
     @check_player_btn()
     async def save(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
+
         if not player.queue.count:
             return
 
-        # TODO : save queue
-
-        await interaction.send(
-            embed=WarningEmbed(
-                description=f"This feature is coming soon 💔",
-            ),
-            ephemeral=True,
+        await interaction.send_modal(
+            PlaylistInfoModal(
+                node=self.node,
+                title="Save to library 💫",
+                tracks=player.queue.get_queue(),
+            )
         )
 
 
@@ -141,7 +142,9 @@ class EmbedQueue:
             else:
                 ind = f"{i + 1}" + (". " if not self.player.queue.loose_mode else f"* ")
 
-            self.paginator.add_line(ind + val.info.title)
+            self.paginator.add_line(
+                f"{ind}{val.info.title} - {val.info.author} ({val.requester.display_name or 'secret guest'})"
+            )
 
             total += (val.info.length) / 1000
 
@@ -149,11 +152,10 @@ class EmbedQueue:
 
         embed = (
             PrimaryEmbed(
-                title="Queue",
                 description=(
                     self.paginator.pages[self.index]
                     if self.paginator.pages
-                    else "```diff\nEmpty 💔\n```"
+                    else "Queue is empty now 👾"
                 ),
             )
             .add_field(
@@ -179,8 +181,6 @@ class EmbedQueue:
                 )
             )
         )
-
-        self.message = await inter.send(embed=embed)
 
         await self.message.edit(
             embed=embed,
