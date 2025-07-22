@@ -1,10 +1,7 @@
 import disnake
-from entities.bot import NoirBot
 from services.persiktunes import Node
 from services.persiktunes.filters import *
 from validators.player import check_player_btn_decorator
-
-# TODO move this to a separate file
 
 FILTERS = {
     "ChannelMix": ChannelMix(tag="mix"),
@@ -46,7 +43,7 @@ def options() -> list[disnake.SelectOption]:
             disnake.SelectOption(
                 label=list(FILTERS.keys())[i],
                 description=descriptions[i],
-                emoji="<:ev_shadow_add_primary:1239113713768861877>",
+                emoji="<:filter_alt:1397155364046241924>",
             )
         )
 
@@ -57,7 +54,6 @@ class EffectsView(disnake.ui.View):
 
     def __init__(self, node: Node):
         self.node = node
-        self.bot: NoirBot = node.bot
 
         super().__init__(timeout=600)
 
@@ -66,18 +62,18 @@ class EffectsView(disnake.ui.View):
     async def effects_open(self, _, inter):
         player = self.node.get_player(inter.guild_id)
 
-        await player.reset_filters()
+        await player.reset_filters()  # type: ignore
 
         for filter in inter.data.values:
             try:
-                await player.add_filter(
+                await player.add_filter(  # type: ignore
                     FILTERS[filter],
                 )
             except BaseException:
                 pass
 
     @disnake.ui.button(
-        emoji="<:ev_shadow_minus_primary:1239113854684893194>",
+        emoji="<:filter_alt_off:1397155362301411370>",
         label="clear",
         row=2,
         style=disnake.ButtonStyle.gray,
@@ -85,14 +81,13 @@ class EffectsView(disnake.ui.View):
     @check_player_btn_decorator()
     async def reset_filters(self, button, inter):
         player = self.node.get_player(inter.guild_id)
-        await player.reset_filters()
+        await player.reset_filters()  # type: ignore
 
 
 class EmbedEffects:
 
     def __init__(self, node: Node):
         self.node = node
-        self.bot: NoirBot = node.bot
 
     @property
     def view(self) -> disnake.ui.View:
