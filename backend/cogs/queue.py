@@ -6,7 +6,7 @@ from entities.node import Node
 from entities.node import get_instance as get_node
 from entities.player import NoirPlayer
 from exceptions import *
-from validators.player import check_player_decorator
+from validators.player import check_player
 
 
 class QueueCog(commands.Cog):
@@ -24,7 +24,7 @@ class QueueCog(commands.Cog):
     async def queue(self, _):
         pass
 
-    @check_player_decorator(with_defer=False)
+    @check_player(with_defer=False)
     @queue.sub_command(description="👾👾 | Queue")
     async def open(
         self,
@@ -41,7 +41,7 @@ class QueueCog(commands.Cog):
         await inter.response.defer(ephemeral=bool(hidden))
         await EmbedQueue(self.node).send(inter)
 
-    @check_player_decorator()
+    @check_player()
     @queue.sub_command(description="👾 | Clear queue")
     async def clear(
         self,
@@ -51,7 +51,7 @@ class QueueCog(commands.Cog):
         player.queue.clear()
         await inter.delete_original_message()
 
-    @check_player_decorator()
+    @check_player()
     @queue.sub_command(description="👾 | Remove track from queue")
     async def remove(
         self,
@@ -68,7 +68,7 @@ class QueueCog(commands.Cog):
 
         await inter.delete_original_message()
 
-    @check_player_decorator()
+    @check_player()
     @queue.sub_command(description="👾 | Shuffle queue")
     async def shuffle(
         self,
@@ -78,7 +78,7 @@ class QueueCog(commands.Cog):
         player.queue.shuffle()
         await inter.delete_original_message()
 
-    @check_player_decorator()
+    @check_player()
     @queue.sub_command(description="👾 | Skip track")
     async def skip(
         self,
@@ -91,7 +91,7 @@ class QueueCog(commands.Cog):
             await player.play(track)
         await inter.delete_original_message()
 
-    @check_player_decorator()
+    @check_player()
     @queue.sub_command(description="👾 | Move track")
     async def move(
         self,
@@ -108,7 +108,7 @@ class QueueCog(commands.Cog):
             )
         await inter.delete_original_message()
 
-    @check_player_decorator()
+    @check_player()
     @queue.sub_command(description="👾 | Skip to position")
     async def jump(
         self,

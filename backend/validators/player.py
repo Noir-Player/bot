@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 # Декораторы для slash-команд
 
 
-def check_player_decorator(with_connection=False, with_defer=True):
+def check_player(with_connection=False, with_defer=True):
     """
     ### Проверить, находится ли юзер в канале с Noir и имеет нужные права.
 
@@ -96,9 +96,7 @@ def check_player_decorator(with_connection=False, with_defer=True):
 # Декораторы для кнопок
 
 
-def check_player_btn_decorator(
-    with_message=False, with_connection=False, with_defer=True
-):
+def check_player_btn(with_message=False, with_connection=False, with_defer=True):
     def decorator(func):
         async def wrapper(*args, **kwargs):
             inter: disnake.CommandInteraction = args[2]

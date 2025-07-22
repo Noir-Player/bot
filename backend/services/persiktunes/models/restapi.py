@@ -166,7 +166,7 @@ class Track(ExtraModel):
         if not isinstance(other, Track):
             return False
 
-        return other.uuid == self.uuid
+        return other.encoded == self.encoded
 
     def __str__(self) -> str:
         return self.info.title

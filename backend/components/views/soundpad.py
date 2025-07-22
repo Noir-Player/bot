@@ -11,7 +11,7 @@ from components.modals.multiple import AddMultipleModal
 from disnake import Embed
 from exceptions import *
 from services.persiktunes import LoopMode
-from validators.player import check_player_btn_decorator
+from validators.player import check_player_btn
 
 from .context import EmbedContext
 from .queue import EmbedQueue
@@ -109,7 +109,7 @@ class Soundpad(disnake.ui.View):
         emoji="<:skip_previous:1396929556153372834>",
         row=0,
     )
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def prev(self, button, interaction):
         if self.player.current:
             if self.player.queue.loop_mode != LoopMode.TRACK:
@@ -123,7 +123,7 @@ class Soundpad(disnake.ui.View):
         emoji="<:play_pause:1396929553699704832>",
         row=0,
     )
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def play_pause(self, button, interaction):
         if self.player.current:
             await self.player.set_pause()
@@ -132,7 +132,7 @@ class Soundpad(disnake.ui.View):
         emoji="<:skip_next:1396929551745159280>",
         row=0,
     )
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def next(self, button, interaction):
         if self.player.queue.loop_mode != LoopMode.TRACK:
             try:
@@ -146,7 +146,7 @@ class Soundpad(disnake.ui.View):
         emoji="<:queue_music:1396929549500940328>",
         row=0,
     )
-    @check_player_btn_decorator(with_message=True)
+    @check_player_btn(with_message=True)
     async def queue(self, button, interaction: disnake.MessageInteraction):
         await EmbedQueue(self.player.node).send(interaction)
 
@@ -154,7 +154,7 @@ class Soundpad(disnake.ui.View):
         emoji="<:autorenew:1396929545202045109>",
         row=1,
     )
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def loop(self, button, interaction):
         if self.player.queue.loop_mode == LoopMode.QUEUE:
             await self.player.queue.set_loop_mode(LoopMode.TRACK)
@@ -167,7 +167,7 @@ class Soundpad(disnake.ui.View):
         emoji="<:music_note_add:1396929547659640922>",
         row=1,
     )
-    @check_player_btn_decorator(with_defer=False)
+    @check_player_btn(with_defer=False)
     async def add(self, button, interaction):
         await interaction.response.send_modal(AddMultipleModal(self.player))
 
@@ -175,7 +175,7 @@ class Soundpad(disnake.ui.View):
         emoji="<:stop:1396929542563692565>",
         row=1,
     )
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def _stop(self, button, interaction):
         await self.player.destroy()
 
@@ -183,6 +183,6 @@ class Soundpad(disnake.ui.View):
         emoji="<:pending:1396929537870401758>",
         row=1,
     )
-    @check_player_btn_decorator(with_message=True)
+    @check_player_btn(with_message=True)
     async def action(self, button, interaction):
         await EmbedContext(self.player.node).send(interaction)

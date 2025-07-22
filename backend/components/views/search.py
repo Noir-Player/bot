@@ -4,7 +4,7 @@ from typing import List, Union
 
 import disnake
 from services.persiktunes import Album, Artist, Node, Playlist, Track
-from validators.player import check_player_btn_decorator
+from validators.player import check_player_btn
 
 from .playlist import EmbedPlaylist
 from .track import EmbedTrack
@@ -66,7 +66,7 @@ class SearchView(disnake.ui.View):
         emoji="<:autoplay_primary:1239113693690859564>",
         row=1,
     )
-    @check_player_btn_decorator(with_connection=True)
+    @check_player_btn(with_connection=True)
     async def start_autoplay(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
         await player.queue.start_autoplay(self.results[0])
@@ -75,7 +75,7 @@ class SearchView(disnake.ui.View):
         emoji="<:playlist_add_primary:1239115838557126678>",
         row=1,
     )
-    @check_player_btn_decorator(with_connection=True)
+    @check_player_btn(with_connection=True)
     async def add(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
         await player.queue.put(self.results[0])
@@ -87,7 +87,7 @@ class SearchView(disnake.ui.View):
         row=1,
         disabled=True,
     )
-    @check_player_btn_decorator(with_connection=True)
+    @check_player_btn(with_connection=True)
     async def research_tracks(self, button, interaction):
         pass
 
@@ -96,7 +96,7 @@ class SearchView(disnake.ui.View):
         row=1,
         disabled=True,
     )
-    @check_player_btn_decorator(with_connection=True)
+    @check_player_btn(with_connection=True)
     async def research_playlists(self, button, interaction):
         pass
 
@@ -105,7 +105,7 @@ class SearchView(disnake.ui.View):
         row=1,
         disabled=True,
     )
-    @check_player_btn_decorator(with_connection=True)
+    @check_player_btn(with_connection=True)
     async def research_artists(self, button, interaction):
         pass
 

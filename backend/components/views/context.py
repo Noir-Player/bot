@@ -1,8 +1,9 @@
 import disnake
 from components.embeds import *
+from services.database.models.star import StarDocument
 from services.persiktunes import Node
 from services.persiktunes.filters import *
-from validators.player import check_player_btn_decorator
+from validators.player import check_player_btn
 
 from .effects import EmbedEffects
 
@@ -17,40 +18,62 @@ class ContextView(disnake.ui.View):
         self.api = node.rest.abstract_search
 
     @disnake.ui.button(emoji="<:volume_down:1396929533776498739>", row=0)
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def volume_down(self, button, interaction):
         await self.node.get_player(interaction.guild_id).volume_down()
 
     @disnake.ui.button(emoji="<:volume_up:1396929535911661648>", row=0)
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def volume_up(self, button, interaction):
         await self.node.get_player(interaction.guild_id).volume_up()
 
     @disnake.ui.button(
         emoji="<:thumb_up:1396929532384247939>",
         row=1,
-        disabled=True,
     )
-    @check_player_btn_decorator(with_message=True)
+    @check_player_btn(with_message=True)
     async def add_to_stars(self, button, interaction):
-        await interaction.response.defer(ephemeral=True)
-        # TODO: write a db models first
+        player = self.node.get_player(interaction.guild_id)
+
+        if not player.current:  # type: ignore
+            return await interaction.delete_original_response()
+
+        doc = await StarDocument.find_one(StarDocument.user_id == interaction.author.id)
+        if not doc:
+            doc = StarDocument(user_id=interaction.author.id)
+
+        if player.current in doc.tracks:
+            return await interaction.edit_original_response(
+                embed=PrimaryEmbed(description="Track already in stars! 👾")
+            )
+
+        doc.tracks.append(player.current)
+
+        await doc.save()
+
+        await interaction.edit_original_response(
+            embed=PrimaryEmbed(description="Added to stars! 👾")
+        )
 
     @disnake.ui.button(
         emoji="<:replace_audio:1396929530341622002>",
         row=1,
         style=disnake.ButtonStyle.gray,
     )
-    @check_player_btn_decorator(with_message=True)
+    @check_player_btn(with_message=True)
     async def alternative(self, button, interaction):
-        await interaction.response.defer(ephemeral=True)
-        # TODO: write an Album object first
+        player = self.node.get_player(interaction.guild_id)
+
+        if not player.current:  # type: ignore
+            return await interaction.delete_original_response()
+
+        recs = await self.node.get_recommendations(track=player.current)
 
     @disnake.ui.button(
         emoji="<:tune:1396929527883501640>",
         row=2,
     )
-    @check_player_btn_decorator(with_message=True)
+    @check_player_btn(with_message=True)
     async def effects_open(self, button, interaction):
         await EmbedEffects(self.node).send(interaction)
 
@@ -58,7 +81,7 @@ class ContextView(disnake.ui.View):
         emoji="<:lyrics:1396929525287354410>",
         row=2,
     )
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def lyrics(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
         if not player.current:

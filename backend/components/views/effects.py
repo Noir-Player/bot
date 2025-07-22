@@ -1,7 +1,7 @@
 import disnake
 from services.persiktunes import Node
 from services.persiktunes.filters import *
-from validators.player import check_player_btn_decorator
+from validators.player import check_player_btn
 
 FILTERS = {
     "ChannelMix": ChannelMix(tag="mix"),
@@ -58,7 +58,7 @@ class EffectsView(disnake.ui.View):
         super().__init__(timeout=600)
 
     @disnake.ui.select(placeholder="Add effects 💫", options=options(), max_values=7)
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def effects_open(self, _, inter):
         player = self.node.get_player(inter.guild_id)
 
@@ -78,7 +78,7 @@ class EffectsView(disnake.ui.View):
         row=2,
         style=disnake.ButtonStyle.gray,
     )
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def reset_filters(self, button, inter):
         player = self.node.get_player(inter.guild_id)
         await player.reset_filters()  # type: ignore

@@ -10,7 +10,7 @@ from entities.node import Node
 from entities.node import get_instance as get_node
 from entities.player import NoirPlayer
 from services.persiktunes.enums import URLRegex
-from validators.player import check_player_decorator
+from validators.player import check_player
 
 log = get_logger("play")
 
@@ -31,7 +31,7 @@ class MusicCog(commands.Cog):
     async def add(self, _):
         pass
 
-    @check_player_decorator(with_connection=True)
+    @check_player(with_connection=True)
     @add.sub_command(description="⭐⭐ | Play track")
     async def search(
         self,
@@ -68,7 +68,7 @@ class MusicCog(commands.Cog):
             if item := player.queue.get():
                 await player.play(item)
 
-        await inter.delete_original_message()  # Clean up after @check_player_decorator
+        await inter.delete_original_message()  # Clean up after @check_player
 
     @search.autocomplete("search")
     async def autosearch(self, _, user_input):
@@ -143,7 +143,7 @@ class MusicCog(commands.Cog):
 
     # TODO return radio
 
-    # @check_player_decorator(with_connection=True)
+    # @check_player(with_connection=True)
     # @add.sub_command(description="⭐ | radio")
     # async def radio(
     #     self, ctx, station: str = commands.Param(description="пишите для поиска... 🔍")
@@ -195,7 +195,7 @@ class MusicCog(commands.Cog):
 
     # TODO : Database
 
-    @check_player_decorator(with_connection=True)
+    @check_player(with_connection=True)
     @add.sub_command(description="⭐ | Add multiple tracks")
     async def multiple(
         self,
@@ -205,7 +205,7 @@ class MusicCog(commands.Cog):
 
         await inter.response.send_modal(AddMultipleModal(player))
 
-    @check_player_decorator(with_connection=True)
+    @check_player(with_connection=True)
     @add.sub_command(description="⭐ | Add playlist from noirplayer.su")
     async def playlist(
         self,

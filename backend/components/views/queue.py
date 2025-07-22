@@ -4,7 +4,7 @@ import disnake
 from components.embeds import *
 from disnake.ext.commands import Paginator
 from services.persiktunes import Node
-from validators.player import check_player_btn_decorator
+from validators.player import check_player_btn
 
 
 class QueueButtons(disnake.ui.View):
@@ -27,7 +27,7 @@ class QueueButtons(disnake.ui.View):
         emoji="<:skip_previous_primary:1239113698623225908>",
         row=0,
     )
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def prev(self, button, interaction):
         if self.embed_queue.index > 0:
             self.embed_queue.index -= 1
@@ -37,7 +37,7 @@ class QueueButtons(disnake.ui.View):
         emoji="<:skip_next_primary:1239113700594679838>",
         row=0,
     )
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def next(self, button, interaction):
         if (self.embed_queue.index + 1) < len(self.embed_queue.paginator.pages):
             self.embed_queue.index += 1
@@ -47,7 +47,7 @@ class QueueButtons(disnake.ui.View):
         emoji="<:refresh_primary:1243850637112774697>",
         row=1,
     )
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def refresh(self, button, interaction):  # type: ignore
         return await self.embed_queue.generate_pages(interaction)
 
@@ -55,7 +55,7 @@ class QueueButtons(disnake.ui.View):
         emoji="<:shuffle_primary:1239115175337001071>",
         row=1,
     )
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def shuffle(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
         if not player:
@@ -66,7 +66,7 @@ class QueueButtons(disnake.ui.View):
         emoji="<:autoplay_primary:1239113693690859564>",
         row=1,
     )
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def start_autoplay(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
         if not player.current:
@@ -96,7 +96,7 @@ class QueueButtons(disnake.ui.View):
         label="save",
         row=1,
     )
-    @check_player_btn_decorator()
+    @check_player_btn()
     async def save(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
         if not player.queue.count:

@@ -11,7 +11,7 @@ from entities.node import Node
 from entities.node import get_instance as get_node
 from entities.player import NoirPlayer
 from exceptions import *
-from validators.player import check_player_decorator
+from validators.player import check_player
 
 
 class PlayerCog(commands.Cog):
@@ -44,7 +44,7 @@ class PlayerCog(commands.Cog):
     async def _player(self, _):
         pass
 
-    @check_player_decorator(with_defer=False)
+    @check_player(with_defer=False)
     @_player.sub_command(description="✨✨ | Current track")
     async def now(
         self,
@@ -62,7 +62,7 @@ class PlayerCog(commands.Cog):
         player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
         await inter.send(embed=state(player), ephemeral=True)
 
-    @check_player_decorator(with_defer=False)
+    @check_player(with_defer=False)
     @_player.sub_command(description="✨ | Extra menu")
     async def menu(
         self,
@@ -79,7 +79,7 @@ class PlayerCog(commands.Cog):
         await inter.response.defer(ephemeral=bool(hidden))
         await EmbedContext(self.node).send(inter)
 
-    @check_player_decorator()
+    @check_player()
     @_player.sub_command(description="✨ | Set the volume")
     async def volume(
         self,
@@ -92,7 +92,7 @@ class PlayerCog(commands.Cog):
         await player.set_volume(volume)
         await inter.delete_original_message()
 
-    @check_player_decorator()
+    @check_player()
     @_player.sub_command(description="✨ | Pause or resume")
     async def pause(
         self,
@@ -104,7 +104,7 @@ class PlayerCog(commands.Cog):
 
         await inter.delete_original_message()
 
-    @check_player_decorator()
+    @check_player()
     @_player.sub_command(description="✨ | Seek to timecode")
     async def seek(
         self,
@@ -121,7 +121,7 @@ class PlayerCog(commands.Cog):
             await player.update_controller_once()
         await inter.delete_original_message()
 
-    @check_player_decorator()
+    @check_player()
     @_player.sub_command(description="✨ | Rewind in seconds")
     async def rewind(
         self,
@@ -133,7 +133,7 @@ class PlayerCog(commands.Cog):
         await player.update_controller_once()
         await inter.delete_original_message()
 
-    @check_player_decorator()
+    @check_player()
     @_player.sub_command(description="✨ | Destroy player")
     async def stop(
         self,
@@ -146,7 +146,7 @@ class PlayerCog(commands.Cog):
 
         await inter.delete_original_message()
 
-    @check_player_decorator(with_connection=True)
+    @check_player(with_connection=True)
     @_player.sub_command(description="✨ | Connect Noir to voice channel")
     async def join(self, ctx):
         await ctx.delete_original_message()
@@ -158,7 +158,7 @@ class PlayerCog(commands.Cog):
     async def effects(self, _):
         pass
 
-    @check_player_decorator()
+    @check_player(with_defer=False)
     @effects.sub_command(description="⭐⭐ | Effects menu")
     async def open(
         self,
@@ -175,7 +175,7 @@ class PlayerCog(commands.Cog):
         await inter.response.defer(ephemeral=bool(hidden))
         await EmbedEffects(self.node).send(inter)
 
-    @check_player_decorator()
+    @check_player()
     @effects.sub_command(description="⭐ | Remove all effects")
     async def reset(
         self,
@@ -192,7 +192,7 @@ class PlayerCog(commands.Cog):
     async def controller(self, _):
         pass
 
-    @check_player_decorator()
+    @check_player()
     @controller.sub_command(description="⭐⭐ | Where is the controller?")
     async def where(
         self,
@@ -211,12 +211,12 @@ class PlayerCog(commands.Cog):
             return await inter.send(
                 embed=WarningEmbed(
                     title="I can't find the controller",
-                    description="Try create one with any `/play` or `/embed resend` command ✨",
+                    description="Try create one with any `/play` or `/player controller resend` command ✨",
                 ),
                 ephemeral=True,
             )
 
-    @check_player_decorator()
+    @check_player()
     @controller.sub_command(description="⭐ | Try resend controller")
     async def resend(
         self,
