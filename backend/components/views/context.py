@@ -1,11 +1,14 @@
 import disnake
 from components.embeds import *
+from exceptions import on_view_error
 from services.database.models.star import StarDocument
 from services.persiktunes import Node
 from services.persiktunes.filters import *
+from services.persiktunes.models import LavalinkPlaylistInfo, Playlist
 from validators.player import check_player_btn
 
 from .effects import EmbedEffects
+from .playlist import EmbedPlaylist
 
 
 class ContextView(disnake.ui.View):
@@ -17,15 +20,17 @@ class ContextView(disnake.ui.View):
 
         self.api = node.rest.abstract_search
 
+        self.on_error = on_view_error  # type: ignore
+
     @disnake.ui.button(emoji="<:volume_down:1396929533776498739>", row=0)
     @check_player_btn()
     async def volume_down(self, button, interaction):
-        await self.node.get_player(interaction.guild_id).volume_down()
+        await self.node.get_player(interaction.guild_id).volume_down()  # type: ignore
 
     @disnake.ui.button(emoji="<:volume_up:1396929535911661648>", row=0)
     @check_player_btn()
     async def volume_up(self, button, interaction):
-        await self.node.get_player(interaction.guild_id).volume_up()
+        await self.node.get_player(interaction.guild_id).volume_up()  # type: ignore
 
     @disnake.ui.button(
         emoji="<:thumb_up:1396929532384247939>",
@@ -38,16 +43,20 @@ class ContextView(disnake.ui.View):
         if not player.current:  # type: ignore
             return await interaction.delete_original_response()
 
+        item = player.current  # type: ignore
+
         doc = await StarDocument.find_one(StarDocument.user_id == interaction.author.id)
         if not doc:
             doc = StarDocument(user_id=interaction.author.id)
 
-        if player.current in doc.tracks:
+        if next((obj for obj in doc.tracks if obj.info.uri == item.info.uri), None):
             return await interaction.edit_original_response(
                 embed=PrimaryEmbed(description="Track already in stars! 👾")
             )
 
-        doc.tracks.append(player.current)
+        item = item.model_copy(update={"ctx": None, "requester": None})
+
+        doc.tracks.append(item)
 
         await doc.save()
 
@@ -67,7 +76,26 @@ class ContextView(disnake.ui.View):
         if not player.current:  # type: ignore
             return await interaction.delete_original_response()
 
-        recs = await self.node.get_recommendations(track=player.current)
+        raw = await self.node.get_recommendations(track=player.current, ctx=interaction, requester=interaction.author)  # type: ignore
+
+        if not raw:
+            return
+
+        if isinstance(raw, list):
+            recs = Playlist(
+                tracks=raw,
+                info=LavalinkPlaylistInfo(
+                    name=f"Recomendations for {player.current.info.title}"  # type: ignore
+                ),
+                ctx=interaction,
+                requester=interaction.author,
+                thumbnail=player.current.info.artworkUrl,  # type: ignore
+            )
+
+        else:
+            recs = raw
+
+        await EmbedPlaylist(node=self.node, playlist=recs).send(interaction)
 
     @disnake.ui.button(
         emoji="<:tune:1396929527883501640>",
@@ -84,12 +112,12 @@ class ContextView(disnake.ui.View):
     @check_player_btn()
     async def lyrics(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
-        if not player.current:
+        if not player.current:  # type: ignore
             return
 
-        track = await self.api.lyrics(player.current)
+        track = await self.api.lyrics(player.current) or player.current  # type: ignore
 
-        if not track.lyrics:
+        if not track.lyrics or not isinstance(track.lyrics, str):
             return
 
         embed = SecondaryEmbed(
