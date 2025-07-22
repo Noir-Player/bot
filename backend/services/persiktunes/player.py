@@ -291,6 +291,9 @@ class Player(VoiceProtocol):
 
         await self._dispatch_voice_update(self._voice_state)
 
+        if self.channel.id != channel_id:
+            self.channel = await self._guild.fetch_channel(channel_id)  # type: ignore
+
     async def _dispatch_event(
         self,
         event: Union[
