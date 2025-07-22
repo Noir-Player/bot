@@ -1,6 +1,5 @@
 import disnake
 from components.embeds import *
-from entities.bot import NoirBot
 from services.persiktunes import Node, Track
 from validators.player import check_player_btn
 
@@ -10,7 +9,6 @@ class TrackButtons(disnake.ui.View):
     def __init__(self, track: Track, node: Node, message: disnake.Message):
         self.track = track
         self.node = node
-        self.bot: NoirBot = node.bot
 
         self.message = message
 
@@ -24,10 +22,13 @@ class TrackButtons(disnake.ui.View):
     )
     @check_player_btn(with_connection=True)
     async def add(self, button, interaction):
-        player = self.node.get_player(interaction.guild_id)
-        await player.queue.put(self.track)
-        if not player.current:
-            await player.play(player.queue.get())
+        player = self.node.get_player(interaction.guild_id)  # type: ignore
+
+        await player.queue.put_auto(self.track)  # type: ignore
+
+        if not player.current:  # type: ignore
+            if item := player.queue.get():  # type: ignore
+                await player.play(item)  # type: ignore
 
     @disnake.ui.button(
         emoji="<:autoplay_primary:1239113693690859564>",
@@ -35,25 +36,28 @@ class TrackButtons(disnake.ui.View):
     )
     @check_player_btn(with_connection=True)
     async def start_autoplay(self, button, interaction):
-        player = self.node.get_player(interaction.guild_id)
-        await player.queue.start_autoplay(self.track)
+        player = self.node.get_player(interaction.guild_id)  # type: ignore
+        await player.queue.start_autoplay(self.track)  # type: ignore
 
     @disnake.ui.button(
         emoji="<:lyrics_primary:1239113708203020368>",
         row=0,
     )
     async def lyrics(self, button, interaction):
-        self.track = await self.api.lyrics(self.track)
+        self.track = await self.api.lyrics(self.track) or self.track
 
-        embed = SecondaryEmbed(
-            title=self.track.info.title,
-            description="```fix\n" + self.track.lyrics + "\n```",
-        ).set_author(name=self.track.info.author, icon_url=self.track.info.artworkUrl)
+        if isinstance(self.track.lyrics, str):
+            embed = SecondaryEmbed(
+                title=self.track.info.title,
+                description="```fix\n" + self.track.lyrics + "\n```",
+            ).set_author(
+                name=self.track.info.author, icon_url=self.track.info.artworkUrl
+            )
 
-        if self.track.album:
-            embed.set_footer(text=f"Album: {self.track.album.name}")
+            if self.track.album:
+                embed.set_footer(text=f"Album: {self.track.album.name}")
 
-        await interaction.send(embed=embed, ephemeral=True)
+            await interaction.send(embed=embed, ephemeral=True)
 
     @disnake.ui.button(
         emoji="<:cancel_primary:1241734921454616629>",
@@ -71,7 +75,6 @@ class EmbedTrack:
     def __init__(self, track: Track, node: Node):
         self.track = track
         self.node = node
-        self.bot: NoirBot = node.bot
 
     def embed(self) -> disnake.Embed:
         image = (
