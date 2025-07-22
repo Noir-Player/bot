@@ -51,7 +51,7 @@ class ErrorEmbed(BaseEmbed):
         self, title: str, description: str | None = None, url: str | None = None
     ):
         super().__init__(
-            ("❌  " + title) if title else None, description, url, colour=DANGER
+            ("💔  " + title) if title else None, description, url, colour=DANGER
         )
 
 
