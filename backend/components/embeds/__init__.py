@@ -1,8 +1,7 @@
 from datetime import datetime
 
+from assets.colors import *
 from disnake import Embed
-
-from ..colors import *
 
 
 class BaseEmbed(Embed):

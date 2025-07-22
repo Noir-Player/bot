@@ -1,7 +1,7 @@
 from typing import Any, List, Optional
 
 import disnake
-from components.colors import PRIMARY
+from assets.colors import PRIMARY
 from components.embeds import *
 from components.views import Soundpad, state
 from disnake.ext import tasks
@@ -310,4 +310,5 @@ class NoirPlayer(persiktunes.Player):
 
     @property
     def volume_step(self) -> int:
+        return self._volume_step
         return self._volume_step
