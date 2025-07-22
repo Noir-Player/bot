@@ -55,12 +55,12 @@ class NoirQueue(Queue):
             | List[Track]
         ),
         put_type: Literal["auto", "once", "tracks", "playlists", "mixes"] = "auto",
-    ) -> None:
+    ) -> bool:
 
         if put_type == "auto":
             if isinstance(item, list):
-                return await self.put_auto(item[0])
-            if isinstance(item, LavalinkTrackLoadingResponse):
+                await self.put(item[0])
+            elif isinstance(item, LavalinkTrackLoadingResponse):
                 if item.loadType == "track":
                     await self.put(item.data)
                 elif item.loadType == "playlist":
@@ -76,9 +76,11 @@ class NoirQueue(Queue):
             elif isinstance(item, Track):
                 await self.put(item)
             elif isinstance(item, list):
-                return await self.put_auto(item[0])
+                await self.put(item[0])
             else:
                 return False
+
+        return True
 
     async def start_autoplay(self, item: Track) -> None:
         if item.info.sourceName != "youtube":
