@@ -271,7 +271,7 @@ class Queue(Iterable[Track]):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # public methods
 
-    def get_queue(self) -> List:
+    def get_queue(self) -> List[Track]:
         """Returns the queue as a List"""
         return self._queue
 
