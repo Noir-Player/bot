@@ -680,7 +680,7 @@ class Node:
         *,
         track: Track,
         playlist_id: Optional[str] = None,
-        seed_tracks: Optional[str] = None,
+        additional_seed_tracks: Optional[List[str]] = None,
         ctx: Optional[Union[commands.Context, Interaction]] = None,
         requester: Optional[Union[Member, User, ClientUser]] = None,
         **kwargs,
@@ -693,40 +693,29 @@ class Node:
         Context object on all tracks that get recommended.
         """
         if track.info.sourceName == TrackType.SPOTIFY.value:
-            if track and not seed_tracks:
-                seed_tracks = track.info.identifier
+
+            seed_tracks = (
+                track.info.identifier + ",".join(additional_seed_tracks)
+                if additional_seed_tracks
+                else ""
+            )
 
             query = f"sprec:seed_tracks={seed_tracks}"
 
             for param in kwargs:
                 query += f"&{param}={kwargs.get(param) if type(kwargs.get(param)) == str else ','.split(kwargs.get(param))}"
 
-            return await self.search(
-                query=query, ctx=ctx or track.ctx, requester=requester
-            )
+            return await self.search(query=query, ctx=ctx, requester=requester)
 
         elif track.info.sourceName == TrackType.YOUTUBE.value:
             if not playlist_id:
                 result = await self.rest.abstract_search.relayted(
-                    track.info.identifier, ctx=ctx, requester=requester
+                    track, ctx=ctx, requester=requester
                 )
             else:
                 result = await self.rest.abstract_search.relayted(
                     song_or_playlist_id=playlist_id, ctx=ctx, requester=requester
                 )
-
-            # tracks = []
-
-            # for song in query:
-            #     tracks.append(
-            #         (
-            #             await self.rest.search(
-            #                 f"https://music.youtube.com/watch?v={song['videoId']}",
-            #                 ctx=ctx,
-            #                 requester=requester,
-            #             )
-            #         )[0]
-            #     )
 
             return result[1:]
 
