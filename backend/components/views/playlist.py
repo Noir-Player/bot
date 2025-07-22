@@ -11,9 +11,9 @@ class PlaylistButtons(disnake.ui.View):
     def __init__(
         self,
         node: Node,
-        message: disnake.Message,
         embed_playlist: "EmbedPlaylist",
-        track: Track,
+        message: disnake.Message | None = None,
+        track: Track | None = None,
         local: bool = False,
     ):
         self.node = node
@@ -99,6 +99,10 @@ class PlaylistButtons(disnake.ui.View):
     )
     async def lyrics(self, button, interaction):
         await interaction.response.defer(ephemeral=True)
+
+        if not self.track:
+            return
+
         self.track = await self.api.lyrics(self.track) or self.track
 
         if isinstance(self.track.lyrics, str):
@@ -122,25 +126,22 @@ class PlaylistButtons(disnake.ui.View):
         row=0,
     )
     async def save(self, button, interaction):
-        player = self.node.get_player(interaction.guild_id)
+        player = self.node.get_player(interaction.guild_id)  # type: ignore
 
-        if player and player.queue.get_queue():  # type: ignore
-            tracks = [
-                track.model_dump(exclude=["ctx", "requester"])
-                for track in player.queue.get_queue()  # type: ignore
-            ]
+        if not player.queue.count:  # type: ignore
+            return
 
         # TODO: save to library
 
-        # from components.modals.playlist import PlaylistInfoModal
+        from components.modals.playlist import PlaylistInfoModal
 
-        # await interaction.response.send_modal(
-        #     PlaylistInfoModal(
-        #         node=self.node,
-        #         title="Save to library 💫",
-        #         tracks=tracks,
-        #     )
-        # )
+        await interaction.response.send_modal(
+            PlaylistInfoModal(
+                node=self.node,
+                title="Save to library 💫",
+                tracks=player.queue.get_queue(),  # type: ignore
+            )
+        )
 
 
 class EmbedPlaylist:
@@ -184,6 +185,12 @@ class EmbedPlaylist:
 
     def view(self) -> disnake.ui.View:
         """Return view of track (buttons)"""
+        return PlaylistButtons(
+            track=self.playlist.tracks[self.index - 1] if self.index else None,
+            node=self.node,
+            message=self.message,
+            embed_playlist=self,
+        )
 
     async def send(self, ctx: disnake.Interaction):
         """You can use this function with `response.defer()` first"""
