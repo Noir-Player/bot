@@ -1,4 +1,5 @@
 import disnake
+from services.persiktunes.enums import URLRegex
 
 
 class AddMultipleModal(disnake.ui.Modal):
@@ -31,10 +32,19 @@ class AddMultipleModal(disnake.ui.Modal):
         values = str(list(inter.text_values.values())[0])
 
         for query in values.split("\n"):
-            result = await self.player.node.rest.abstract_search.search(
-                query=query,
-                ctx=inter,
-                requester=inter.author.display_name,
+            result = (
+                await self.player.node.rest.abstract_search.search_songs(
+                    query=query,
+                    ctx=inter,
+                    requester=inter.author.display_name,
+                    limit=1,
+                )
+                if not URLRegex.BASE_URL.match(query)
+                else await self.player.node.search(
+                    query,
+                    ctx=inter,
+                    requester=inter.author,
+                )
             )
 
             success = await self.player.queue.put_auto(result)
