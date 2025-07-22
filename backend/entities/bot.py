@@ -29,7 +29,7 @@ class NoirBot(commands.AutoShardedInteractionBot):
         intents.presences = True
 
         command_sync_flag = (
-            commands.CommandSyncFlags.all()
+            commands.CommandSyncFlags.default()
             if self._config.sync_commands
             else commands.CommandSyncFlags.none()
         )
