@@ -129,11 +129,13 @@ class MusicCog(commands.Cog):
             user_input
         ):
             result.append(
-                disnake.OptionChoice(name=f"🔎 | {suggestion}", value=suggestion)
+                disnake.OptionChoice(name=f"🔎 | {suggestion[:95]}", value=suggestion)
             )
 
         if not result:
-            result = [disnake.OptionChoice(name=f"🔎 | {user_input}", value=user_input)]
+            result = [
+                disnake.OptionChoice(name=f"🔎 | {user_input[:95]}", value=user_input)
+            ]
 
         end = time.perf_counter()
 
@@ -195,7 +197,7 @@ class MusicCog(commands.Cog):
 
     # TODO : Database
 
-    @check_player(with_connection=True)
+    @check_player(with_connection=True, with_defer=False)
     @add.sub_command(description="⭐ | Add multiple tracks")
     async def multiple(
         self,
