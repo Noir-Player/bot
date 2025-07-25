@@ -3,6 +3,7 @@ Bot entity `commands.AutoShardedInteractionBot`
 """
 
 import traceback
+from asyncio import sleep
 from os import listdir
 from typing import Callable
 
@@ -115,9 +116,20 @@ class NoirBot(commands.AutoShardedInteractionBot):
         self._log.info(f"Starting as {self.user} (ID: {self.user.id})")
         self._log.info("on_ready was called, creating node...")
 
-        create_node_state = await create_node(self)
+        state = False
 
-        if not create_node_state:
+        for i in range(5):  # Lavalink in docker can take some time to start
+            self._log.debug(f"trying to create node, attempt {i + 1}/5")
+
+            state = await create_node(self)
+
+            if state:
+                self._log.info("Node created successfully")
+                break
+
+            await sleep(2)  # wait before next attempt
+
+        if not state:
             return self._log.error("Node was not created 💔")
 
         self._log.info("Calling load_extensions...")
