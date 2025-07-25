@@ -42,7 +42,7 @@ async def connect(bot) -> Node | None:
         )
 
     except Exception as e:
-        return log.error(f"Node was not created: {e}\n{traceback.format_exc()}")
+        return log.error(f"Node was not created: {e}")
 
     log.info("Node created")
 
