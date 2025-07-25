@@ -1,5 +1,6 @@
 import disnake
 from components.embeds import BaseEmbed, PrimaryEmbed, SecondaryEmbed
+from exceptions import on_view_error
 from services.persiktunes import Album, Node, Playlist, Track
 from validators.player import check_player_btn
 
@@ -28,6 +29,8 @@ class PlaylistButtons(disnake.ui.View):
         self.track = track
 
         super().__init__(timeout=600)
+
+        self.on_error = on_view_error  # type: ignore
 
         if not track:  # Main page
             self.prev.disabled = True

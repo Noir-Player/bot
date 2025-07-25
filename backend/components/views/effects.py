@@ -1,4 +1,5 @@
 import disnake
+from exceptions import on_view_error
 from services.persiktunes import Node
 from services.persiktunes.filters import *
 from validators.player import check_player_btn
@@ -56,6 +57,8 @@ class EffectsView(disnake.ui.View):
         self.node = node
 
         super().__init__(timeout=600)
+
+        self.on_error = on_view_error  # type: ignore
 
     @disnake.ui.select(placeholder="Add effects 💫", options=options(), max_values=7)
     @check_player_btn()

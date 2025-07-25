@@ -4,6 +4,7 @@ import disnake
 from components.embeds import *
 from components.modals.playlist import PlaylistInfoModal
 from disnake.ext.commands import Paginator
+from exceptions import on_view_error
 from services.persiktunes import Node
 from validators.player import check_player_btn
 
@@ -20,6 +21,8 @@ class QueueButtons(disnake.ui.View):
         self.api = node.rest.abstract_search
 
         super().__init__(timeout=600)
+
+        self.on_error = on_view_error  # type: ignore
 
         if embed_queue.paginator.pages.__len__() < 2:
             self.children = self.children[2:]

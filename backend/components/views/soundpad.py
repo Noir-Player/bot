@@ -10,6 +10,7 @@ import disnake
 from components.modals.multiple import AddMultipleModal
 from disnake import Embed
 from exceptions import *
+from exceptions import on_view_error
 from services.persiktunes import LoopMode
 from validators.player import check_player_btn
 
@@ -104,6 +105,8 @@ class Soundpad(disnake.ui.View):
         super().__init__(timeout=timeout)
 
         self.player: Any = player
+
+        self.on_error = on_view_error  # type: ignore
 
     @disnake.ui.button(
         emoji="<:skip_previous:1396929556153372834>",

@@ -1,5 +1,6 @@
 import disnake
 from components.embeds import *
+from exceptions import on_view_error
 from services.persiktunes import Node, Track
 from validators.player import check_player_btn
 
@@ -15,6 +16,8 @@ class TrackButtons(disnake.ui.View):
         super().__init__(timeout=600)
 
         self.api = node.rest.abstract_search
+
+        self.on_error = on_view_error  # type: ignore
 
     @disnake.ui.button(
         emoji="<:playlist_add_primary:1239115838557126678>",
