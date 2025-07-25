@@ -14,8 +14,6 @@ from validators.player import check_player
 
 log = get_logger("play")
 
-# radio = json.load(open("data/resources/radio.json", "r", encoding="utf-8"))["Record"]
-
 
 class MusicCog(commands.Cog):
     def __init__(self, bot: NoirBot):
@@ -144,58 +142,6 @@ class MusicCog(commands.Cog):
         return result
 
     # TODO return radio
-
-    # @check_player(with_connection=True)
-    # @add.sub_command(description="⭐ | radio")
-    # async def radio(
-    #     self, ctx, station: str = commands.Param(description="пишите для поиска... 🔍")
-    # ):
-
-    #     player: NoirPlayer = self.bot.node.get_player(ctx.guild_id)
-
-    #     query = (
-    #         await player.search(
-    #             query=station, ctx=ctx, requester=ctx.author.display_name
-    #         )
-    #     ).data
-
-    #     if not query.info.isStream:
-    #         return await ctx.edit_original_response(
-    #             embed=self.bot.embedding.get(
-    #                 title="🟠 | Не найдено",
-    #                 description=("Нет такой радиостанции."),
-    #                 color="warning",
-    #             ),
-    #         )
-
-    #     player.queue.set_primary(query)
-
-    #     await player.play(player.queue.primary)
-
-    #     await ctx.delete_original_message()
-
-    # @radio.autocomplete("station")
-    # async def autostation(self, inter, user_input):
-    #     list = []
-
-    #     i = 0
-    #     for name, url in radio.items():
-    #         if user_input.lower() in name.lower() or not user_input:
-    #             list.append(
-    #                 disnake.OptionChoice(
-    #                     name=f"📻 | {name}",
-    #                     value=url,
-    #                 )
-    #             )
-
-    #             i += 1
-
-    #             if i == 19:
-    #                 break
-
-    #     return list
-
-    # TODO : Database
 
     @check_player(with_connection=True, with_defer=False)
     @add.sub_command(description="⭐ | Add multiple tracks")
