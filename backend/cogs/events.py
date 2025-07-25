@@ -1,4 +1,5 @@
 from _logging import get_logger
+from assets.fallbacks import NO_TRACK_URL
 from components.embeds import PrimaryEmbed
 from disnake.ext import commands
 from entities.bot import NoirBot
@@ -45,7 +46,7 @@ class EventsCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_persik_track_end(
-        self, player: NoirPlayer, track: persiktunes.Track, reason
+        self, player: NoirPlayer, track: persiktunes.Track, reason: str
     ):
         player.update_controller.stop()
 
@@ -64,11 +65,7 @@ class EventsCog(commands.Cog):
 
         player.queue.clear()
 
-        await player.edit_controller(
-            embed=PrimaryEmbed(description="Queue is empty 👾").set_image(
-                url="https://i.pinimg.com/736x/4f/91/b0/4f91b000e3f40bcc52e318c2f0b1a3eb.jpg"
-            )
-        )
+        await player.edit_controller(embed=PrimaryEmbed().set_image(url=NO_TRACK_URL))
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):

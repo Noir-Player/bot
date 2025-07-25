@@ -1,4 +1,5 @@
 import disnake
+from assets.fallbacks import NO_COVER_URL
 from components.embeds import *
 from exceptions import on_view_error
 from services.persiktunes import Node, Track
@@ -80,11 +81,7 @@ class EmbedTrack:
         self.node = node
 
     def embed(self) -> disnake.Embed:
-        image = (
-            self.track.info.artworkUrl
-            if self.track.info.artworkUrl
-            else f"https://i.pinimg.com/originals/41/59/a2/4159a258b81478d2f288a5d675451321.gif"
-        )
+        image = self.track.info.artworkUrl or NO_COVER_URL
 
         embed = (
             PrimaryEmbed(

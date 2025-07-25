@@ -1,4 +1,5 @@
 import disnake
+from assets.fallbacks import NO_COVER_URL
 from components.embeds import BaseEmbed, PrimaryEmbed, SecondaryEmbed
 from exceptions import on_view_error
 from services.persiktunes import Album, Node, Playlist, Track
@@ -166,11 +167,7 @@ class EmbedPlaylist:
             embed = EmbedTrack(self.playlist.tracks[self.index - 1], self.node).embed()
 
         else:
-            image = (
-                self.playlist.thumbnail
-                if self.playlist.thumbnail
-                else f"https://mir-s3-cdn-cf.behance.net/project_modules/disp/a11a4893658133.5e98adbead405.gif"
-            )
+            image = self.playlist.thumbnail or NO_COVER_URL
 
             embed = (
                 BaseEmbed(
