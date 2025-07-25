@@ -1,6 +1,5 @@
 from _logging import get_logger
-from components.embeds import ErrorEmbed, PrimaryEmbed
-from disnake import ApplicationCommandInteraction
+from components.embeds import PrimaryEmbed
 from disnake.ext import commands
 from entities.bot import NoirBot
 from entities.node import get_instance as get_node
