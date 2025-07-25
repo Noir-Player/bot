@@ -7,6 +7,8 @@ if TYPE_CHECKING:
     from entities.player import NoirPlayer
 
 import disnake
+from assets.emojis import *
+from assets.fallbacks import NO_COVER_URL
 from components.modals.multiple import AddMultipleModal
 from disnake import Embed
 from exceptions import *
@@ -61,14 +63,11 @@ def state(player):  # player: NoirPlayer
 
         times = f"{curr} / {total}"
 
-    image = (
-        player.current.info.artworkUrl
-        or f"https://i.pinimg.com/736x/4f/91/b0/4f91b000e3f40bcc52e318c2f0b1a3eb.jpg"
-    )
+    image = player.current.info.artworkUrl or NO_COVER_URL
 
     embed = Embed(
         color=player.current.color or player.color,
-        description=f"<:artist:1396932220962345081> **{player.current.info.author}**",
+        description=f"{ARTIST} **{player.current.info.author}**",
     )
 
     embed.set_author(
@@ -87,6 +86,8 @@ def state(player):  # player: NoirPlayer
 
     infos = []
 
+    infos.append(times)
+
     if player.volume != 100:
         infos.append(f"volume: {player.volume}%")
 
@@ -94,7 +95,7 @@ def state(player):  # player: NoirPlayer
         infos.append(f"loop: {loop[player.queue.loop_mode]}")
 
     embed.set_footer(
-        text=f"{progress}\n{times}\n {' • '.join(infos)}",
+        text=f"{progress}\n {' • '.join(infos)}",
     )
 
     return embed
@@ -109,7 +110,7 @@ class Soundpad(disnake.ui.View):
         self.on_error = on_view_error  # type: ignore
 
     @disnake.ui.button(
-        emoji="<:skip_previous:1396929556153372834>",
+        emoji=PREVIOUS,
         row=0,
     )
     @check_player_btn()
@@ -120,10 +121,10 @@ class Soundpad(disnake.ui.View):
                 if track:
                     await self.player.play(track)
             else:
-                raise TrackIsLooping("Нельзя пропускать трек, когда он зациклен")
+                raise TrackIsLooping("You can't skip track, when it's looping")
 
     @disnake.ui.button(
-        emoji="<:play_pause:1396929553699704832>",
+        emoji=PLAYPAUSE,
         row=0,
     )
     @check_player_btn()
@@ -132,7 +133,7 @@ class Soundpad(disnake.ui.View):
             await self.player.set_pause()
 
     @disnake.ui.button(
-        emoji="<:skip_next:1396929551745159280>",
+        emoji=NEXT,
         row=0,
     )
     @check_player_btn()
@@ -146,7 +147,7 @@ class Soundpad(disnake.ui.View):
             raise TrackIsLooping("You can't skip track, when it's looping")
 
     @disnake.ui.button(
-        emoji="<:queue_music:1396929549500940328>",
+        emoji=QUEUE,
         row=0,
     )
     @check_player_btn(with_message=True)
@@ -154,7 +155,7 @@ class Soundpad(disnake.ui.View):
         await EmbedQueue(self.player.node).send(interaction)
 
     @disnake.ui.button(
-        emoji="<:autorenew:1396929545202045109>",
+        emoji=LOOP,
         row=1,
     )
     @check_player_btn()
@@ -167,7 +168,7 @@ class Soundpad(disnake.ui.View):
             await self.player.queue.set_loop_mode(LoopMode.QUEUE)
 
     @disnake.ui.button(
-        emoji="<:music_note_add:1396929547659640922>",
+        emoji=ADD,
         row=1,
     )
     @check_player_btn(with_defer=False)
@@ -175,7 +176,7 @@ class Soundpad(disnake.ui.View):
         await interaction.response.send_modal(AddMultipleModal(self.player))
 
     @disnake.ui.button(
-        emoji="<:stop:1396929542563692565>",
+        emoji=STOP,
         row=1,
     )
     @check_player_btn()
@@ -183,7 +184,7 @@ class Soundpad(disnake.ui.View):
         await self.player.destroy()
 
     @disnake.ui.button(
-        emoji="<:pending:1396929537870401758>",
+        emoji=ACTION,
         row=1,
     )
     @check_player_btn(with_message=True)

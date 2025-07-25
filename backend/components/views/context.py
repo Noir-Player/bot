@@ -1,4 +1,5 @@
 import disnake
+from assets.emojis import *
 from components.embeds import *
 from exceptions import on_view_error
 from services.database.models.star import StarDocument
@@ -22,20 +23,17 @@ class ContextView(disnake.ui.View):
 
         self.on_error = on_view_error  # type: ignore
 
-    @disnake.ui.button(emoji="<:volume_down:1396929533776498739>", row=0)
+    @disnake.ui.button(emoji=VOL_DOWN, row=0)
     @check_player_btn()
     async def volume_down(self, button, interaction):
         await self.node.get_player(interaction.guild_id).volume_down()  # type: ignore
 
-    @disnake.ui.button(emoji="<:volume_up:1396929535911661648>", row=0)
+    @disnake.ui.button(emoji=VOL_UP, row=0)
     @check_player_btn()
     async def volume_up(self, button, interaction):
         await self.node.get_player(interaction.guild_id).volume_up()  # type: ignore
 
-    @disnake.ui.button(
-        emoji="<:thumb_up:1396929532384247939>",
-        row=1,
-    )
+    @disnake.ui.button(emoji=ADD_STAR, row=1)
     @check_player_btn(with_message=True)
     async def add_to_stars(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
@@ -65,7 +63,7 @@ class ContextView(disnake.ui.View):
         )
 
     @disnake.ui.button(
-        emoji="<:replace_audio:1396929530341622002>",
+        emoji=SIMILAR,
         row=1,
         style=disnake.ButtonStyle.gray,
     )
@@ -98,7 +96,7 @@ class ContextView(disnake.ui.View):
         await EmbedPlaylist(node=self.node, playlist=recs).send(interaction)
 
     @disnake.ui.button(
-        emoji="<:tune:1396929527883501640>",
+        emoji=EFFECTS_OPEN,
         row=2,
     )
     @check_player_btn(with_message=True)

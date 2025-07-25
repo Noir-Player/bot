@@ -1,4 +1,5 @@
 import disnake
+from assets.emojis import FILTER, FILTER_OFF
 from exceptions import on_view_error
 from services.persiktunes import Node
 from services.persiktunes.filters import *
@@ -44,7 +45,7 @@ def options() -> list[disnake.SelectOption]:
             disnake.SelectOption(
                 label=list(FILTERS.keys())[i],
                 description=descriptions[i],
-                emoji="<:filter_alt:1397155364046241924>",
+                emoji=FILTER,
             )
         )
 
@@ -76,7 +77,7 @@ class EffectsView(disnake.ui.View):
                 pass
 
     @disnake.ui.button(
-        emoji="<:filter_alt_off:1397155362301411370>",
+        emoji=FILTER_OFF,
         label="clear",
         row=2,
         style=disnake.ButtonStyle.gray,
