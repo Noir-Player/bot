@@ -1,3 +1,4 @@
+import traceback
 from typing import Any
 
 import disnake
@@ -42,18 +43,20 @@ async def on_error(
     error: commands.CommandError,
 ):
 
-    log.debug(f"Error in {inter.guild_id}: {error.__class__.__name__} - {error}")
+    log.debug(
+        f"Error in {inter.guild_id}: {error.__class__.__name__} - {error}\n{traceback.format_exc()}"
+    )
 
     embed = ErrorEmbed(
         title="Something went wrong",
         description=f"`{error.__class__.__name__}`: {error}",
     )
 
-    if inter.response.is_done():
-        await inter.edit_original_response(embed=embed)
+    # if inter.response.is_done():
+    #     await inter.edit_original_response(embed=embed)
 
-    else:
-        await inter.send(embed=embed, ephemeral=True)
+    # else:
+    await inter.send(embed=embed, ephemeral=True)
 
 
 async def on_view_error(
@@ -62,15 +65,17 @@ async def on_view_error(
     inter: ApplicationCommandInteraction | Any,
 ):
 
-    log.debug(f"Error in {inter.guild_id}: {error.__class__.__name__} - {error}")
+    log.debug(
+        f"Error in {inter.guild_id}: {error.__class__.__name__} - {error}\n{traceback.format_exc()}"
+    )
 
     embed = ErrorEmbed(
         title="Something went wrong",
         description=f"`{error.__class__.__name__}`: {error}",
     )
 
-    if inter.response.is_done():
-        await inter.edit_original_response(embed=embed)
+    # if inter.response.is_done():
+    #     await inter.edit_original_response(embed=embed)
 
-    else:
-        await inter.send(embed=embed, ephemeral=True)
+    # else:
+    await inter.send(embed=embed, ephemeral=True)
