@@ -26,7 +26,7 @@ class NoirQueue(Queue):
     # Основные функции
 
     async def put_relayted(self, item: Track, limit: int = 10) -> None:
-        async for track in await self.api.ongoing(item, limit):  # type: ignore
+        async for track in self.api.ongoing(item, limit):
             await self.put(track)
 
     def _get(self) -> Track | None:
@@ -35,12 +35,12 @@ class NoirQueue(Queue):
 
         return super()._get()
 
-    async def put(self, item: Track) -> None:
+    async def put(self, item: Track) -> None:  # type: ignore
         if self.is_full:
             return
         super().put(item)
 
-    async def put_list(self, item: List[Track]) -> None:
+    async def put_list(self, item: List[Track]) -> None:  # type: ignore
         if self.is_full:
             return
         super().put_list(item)
@@ -88,22 +88,16 @@ class NoirQueue(Queue):
         if item != self.player.current:
             await self.player.play(item, noReplace=False)
         self._loose_mode = True
-        await self.clear()
+        self.clear()
         await self.put_relayted(item)
 
     async def stop_autoplay(self) -> None:
         self._loose_mode = False
 
-    async def set_loop_mode(self, mode: LoopMode | None = None) -> None:
+    async def set_loop_mode(self, mode: LoopMode | None = None) -> None:  # type: ignore
         if self._queue:
             self._loop_mode = mode
             await self.player.update_controller_once()
-            await self.update_state(
-                "loop", str(self.loop_mode.value if self.loop_mode else None)
-            )
 
-    async def remove(self, item_or_index: Track | int) -> None:
-        await self.update_state(
-            "remove", self.find_position(self._get_item(item_or_index))
-        )
+    async def remove(self, item_or_index: Track | int) -> None:  # type: ignore
         super().remove(item_or_index)
