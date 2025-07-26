@@ -1,6 +1,7 @@
 import time
 
 import disnake
+from assets.emojis import *
 from components.embeds import *
 from components.modals.playlist import PlaylistInfoModal
 from disnake.ext.commands import Paginator
@@ -28,7 +29,7 @@ class QueueButtons(disnake.ui.View):
             self.children = self.children[2:]
 
     @disnake.ui.button(
-        emoji="<:skip_previous_primary:1239113698623225908>",
+        emoji=PREVIOUS,
         row=0,
     )
     @check_player_btn()
@@ -38,7 +39,7 @@ class QueueButtons(disnake.ui.View):
             return await self.embed_queue.generate_pages(interaction)
 
     @disnake.ui.button(
-        emoji="<:skip_next_primary:1239113700594679838>",
+        emoji=NEXT,
         row=0,
     )
     @check_player_btn()
@@ -48,7 +49,7 @@ class QueueButtons(disnake.ui.View):
             return await self.embed_queue.generate_pages(interaction)
 
     @disnake.ui.button(
-        emoji="<:refresh_primary:1243850637112774697>",
+        emoji=REFRESH,
         row=1,
     )
     @check_player_btn()
@@ -56,7 +57,7 @@ class QueueButtons(disnake.ui.View):
         return await self.embed_queue.generate_pages(interaction)
 
     @disnake.ui.button(
-        emoji="<:shuffle_primary:1239115175337001071>",
+        emoji=SHUFFLE,
         row=1,
     )
     @check_player_btn()
@@ -67,7 +68,7 @@ class QueueButtons(disnake.ui.View):
         player.queue.shuffle()
 
     @disnake.ui.button(
-        emoji="<:autoplay_primary:1239113693690859564>",
+        emoji=AUTOPLAY,
         row=1,
     )
     @check_player_btn()
@@ -96,18 +97,18 @@ class QueueButtons(disnake.ui.View):
             await player.queue.stop_autoplay()
 
     @disnake.ui.button(
-        emoji="<:save_primary:1239113692306739210>",
+        emoji=SAVE,
         label="save",
         row=1,
     )
-    @check_player_btn()
+    @check_player_btn(with_defer=False)
     async def save(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
 
         if not player.queue.count:
             return
 
-        await interaction.send_modal(
+        await interaction.response.send_modal(
             PlaylistInfoModal(
                 node=self.node,
                 title="Save to library 💫",
@@ -146,7 +147,7 @@ class EmbedQueue:
                 ind = f"{i + 1}" + (". " if not self.player.queue.loose_mode else f"* ")
 
             self.paginator.add_line(
-                f"{ind}{val.info.title} - {val.info.author} ({val.requester.display_name or 'secret guest'})"
+                f"{ind}{val.info.title} - {val.info.author} ({val.requester.display_name if val.requester else 'secret guest'})"
             )
 
             total += (val.info.length) / 1000
