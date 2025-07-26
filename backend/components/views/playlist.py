@@ -1,9 +1,10 @@
 import disnake
+from assets.emojis import *
 from assets.fallbacks import NO_COVER_URL
 from components.embeds import BaseEmbed, PrimaryEmbed, SecondaryEmbed
 from exceptions import on_view_error
 from services.persiktunes import Album, Node, Playlist, Track
-from validators.player import check_player_btn
+from validators.player import check_player
 
 from .track import EmbedTrack
 
@@ -29,9 +30,9 @@ class PlaylistButtons(disnake.ui.View):
 
         self.track = track
 
-        super().__init__(timeout=600)
-
         self.on_error = on_view_error  # type: ignore
+
+        super().__init__(timeout=600)
 
         if not track:  # Main page
             self.prev.disabled = True
@@ -49,7 +50,7 @@ class PlaylistButtons(disnake.ui.View):
             self.remove_item(self.save)
 
     @disnake.ui.button(
-        emoji="<:skip_previous_primary:1239113698623225908>",
+        emoji=PREVIOUS,
         row=0,
     )
     async def prev(self, button, interaction):
@@ -59,7 +60,7 @@ class PlaylistButtons(disnake.ui.View):
             return await self.embed_playlist.generate_pages()
 
     @disnake.ui.button(
-        emoji="<:skip_next_primary:1239113700594679838>",
+        emoji=NEXT,
         row=0,
     )
     async def next(self, button, interaction):
@@ -69,10 +70,10 @@ class PlaylistButtons(disnake.ui.View):
             return await self.embed_playlist.generate_pages()
 
     @disnake.ui.button(
-        emoji="<:playlist_add_primary:1239115838557126678>",
+        emoji=ADD,
         row=0,
     )
-    @check_player_btn(with_connection=True)
+    @check_player(with_connection=True)
     async def put(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
         await player.queue.put(self.track)  # type: ignore
@@ -80,10 +81,10 @@ class PlaylistButtons(disnake.ui.View):
             await player.play(player.queue.get())  # type: ignore
 
     @disnake.ui.button(
-        emoji="<:autoplay_primary:1239113693690859564>",
+        emoji=AUTOPLAY,
         row=0,
     )
-    @check_player_btn(with_connection=True)
+    @check_player(with_connection=True)
     async def start_autoplay(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)
         await player.queue.start_autoplay(self.track)  # type: ignore
@@ -98,7 +99,7 @@ class PlaylistButtons(disnake.ui.View):
         )
 
     @disnake.ui.button(
-        emoji="<:lyrics_primary:1239113708203020368>",
+        emoji=LYRICS,
         row=0,
     )
     async def lyrics(self, button, interaction):
@@ -126,8 +127,8 @@ class PlaylistButtons(disnake.ui.View):
             )
 
     @disnake.ui.button(
-        emoji="<:save_primary:1239113692306739210>",
-        row=0,
+        emoji=SAVE,
+        row=1,
     )
     async def save(self, button, interaction):
         player = self.node.get_player(interaction.guild_id)  # type: ignore
