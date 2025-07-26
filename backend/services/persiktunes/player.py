@@ -407,7 +407,7 @@ class Player(VoiceProtocol):
         *,
         start: int = 0,
         end: Optional[int] = None,
-        noReplace: bool = True,
+        noReplace: bool = False,
         volume: Optional[int] = None,
     ) -> Track:
         """Plays a track"""
