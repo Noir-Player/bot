@@ -139,10 +139,7 @@ class Soundpad(disnake.ui.View):
     @check_player_btn()
     async def next(self, button, interaction):
         if self.player.queue.loop_mode != LoopMode.TRACK:
-            try:
-                await self.player.play(self.player.queue.next())
-            except:
-                pass
+            await self.player.play(self.player.queue.next())
         else:
             raise TrackIsLooping("You can't skip track, when it's looping")
 
