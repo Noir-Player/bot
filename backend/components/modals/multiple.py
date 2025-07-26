@@ -36,7 +36,7 @@ class AddMultipleModal(disnake.ui.Modal):
                 await self.player.node.rest.abstract_search.search_songs(
                     query=query,
                     ctx=inter,
-                    requester=inter.author.display_name,
+                    requester=inter.author,
                     limit=1,
                 )
                 if not URLRegex.BASE_URL.match(query)
