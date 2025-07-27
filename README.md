@@ -124,21 +124,21 @@ plugins:
       - "ytsearch:%QUERY%" # Will be used if track has no ISRC or no track could be found for the ISRC
     sources:
       spotify: true # Enable Spotify source
-      applemusic: ❌ # Enable Apple Music source
-      deezer: ❌ # Enable Deezer source
+      applemusic: false # Enable Apple Music source
+      deezer: false # Enable Deezer source
       yandexmusic: true # Enable Yandex Music source
-      flowerytts: ❌ # Enable Flowery TTS source
+      flowerytts: false # Enable Flowery TTS source
       youtube: true # Enable YouTube search source (https://github.com/topi314/LavaSearch)
-      vkmusic: ❌ # Enable Vk Music source
-      tidal: ❌ # Enable Tidal source
-      qobuz: ❌ # Enabled qobuz source
-      ytdlp: ❌ # Enable yt-dlp source
+      vkmusic: false # Enable Vk Music source
+      tidal: false # Enable Tidal source
+      qobuz: false # Enabled qobuz source
+      ytdlp: false # Enable yt-dlp source
     lyrics-sources:
       spotify: true # Enable Spotify lyrics source
-      deezer: ❌ # Enable Deezer lyrics source
+      deezer: false # Enable Deezer lyrics source
       youtube: true # Enable YouTube lyrics source
       yandexmusic: true # Enable Yandex Music lyrics source
-      vkmusic: ❌ # Enable Vk Music lyrics source
+      vkmusic: false # Enable Vk Music lyrics source
     spotify:
       # clientId & clientSecret are required for using spsearch
       clientId: "your client id"
@@ -148,8 +148,8 @@ plugins:
       playlistLoadLimit: 6 # The number of pages at 100 tracks each
       albumLoadLimit: 6 # The number of pages at 50 tracks each
       resolveArtistsInSearch: true
-      localFiles: ❌
-      preferAnonymousToken: ❌
+      localFiles: false
+      preferAnonymousToken: false
     yandexmusic:
       accessToken: "your access token" # the token used for accessing the yandex music api. See https://github.com/topi314/LavaSrc#yandex-music
       playlistLoadLimit: 1 # The number of pages at 100 tracks each
@@ -170,21 +170,21 @@ lavalink:
     - dependency: "com.github.topi314.lavalyrics:lavalyrics-plugin:1.0.0"
 
     - dependency: "dev.lavalink.youtube:youtube-plugin:1.13.3"
-      snapshot: ❌
+      snapshot: false
 
   server:
     password: "youshallnotpass"
     sources:
-      youtube: ❌
+      youtube: false
       bandcamp: true
       soundcloud: true
       twitch: true
       vimeo: true
       nico: true
       http: true
-      local: ❌
+      local: false
 
-    nonAllocatingFrameBuffer: ❌ # Setting to true reduces the number of allocations made by each player at the expense of frame rebuilding (e.g. non-instantaneous volume changes)
+    nonAllocatingFrameBuffer: false # Setting to true reduces the number of allocations made by each player at the expense of frame rebuilding (e.g. non-instantaneous volume changes)
     bufferDurationMs: 400 # The duration of the NAS buffer. Higher values fare better against longer GC pauses. Duration <= 0 to disable JDA-NAS. Minimum of 40ms, lower values may introduce pauses.
     frameBufferDurationMs: 5000 # How many milliseconds of audio to keep buffered
     opusEncodingQuality: 10 # Opus encoder quality. Valid values range from 0 to 10, where 10 is best quality but is the most expensive on the CPU.
