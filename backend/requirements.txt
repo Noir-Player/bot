@@ -1,0 +1,15 @@
+disnake
+beanie
+motor
+pymongo
+pydantic
+pydantic_settings
+websockets
+requests
+requests-oauthlib
+colorama
+ytmusicapi
+redis
+hypercorn
+pyfiglet
+spotipy

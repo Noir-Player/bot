@@ -161,8 +161,11 @@ cython_debug/
 # Personal
 **/*.properties
 app/static/css/static
-**/config.py
-config.py
 /.vscode
 **/*oauth.json
+ytm-auth.json
 setup_ytm.py
+privkey.pem
+legacy/
+application.yml
+lavalink/plugins/
