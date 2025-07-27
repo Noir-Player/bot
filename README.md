@@ -10,23 +10,23 @@
 
 **Discord bot for listening music with a lot of features, like using such services as Spotify, Yandex Music, creating playlists directly, interacting via web interface and much more**
 
-## Features
+## Features 👾
 
-- **A lot of sources** listen music from Spotify, Yandex Music, Apple Music, directly in discord and more
+- **A lot of sources 🎶** listen music from Spotify, Yandex Music, Apple Music, directly in discord and more
 
-- **Discord bot UI Kit** use buttons, modals and dropdowns for interacting
+- **Discord bot UI Kit ✨** use buttons, modals and dropdowns for interacting
 
-- **Playlists, liked music, users** bot can keep in mind your favorite music and manage your own playlists
+- **Playlists, liked music, users 📃** bot can keep in mind your favorite music and manage your own playlists
 
-- **Web interface** interacting with bot via web interface in your browser or discord activity page [WIP]
+- **Web interface 💻** interacting with bot via web interface in your browser or discord activity page [WIP]
 
-- **Localization** support for different languages [WIP]
+- **Localization 🈳** support for different languages [WIP]
 
-## Installation and usage
+## Installation and usage 🚀
 
 You can use public instanse as usual bot, but if you want to run your own bot, you can clone this repository and run it yourself.
 
-#### Requirements
+#### Requirements 📦
 
 - `Docker`
 
@@ -34,17 +34,17 @@ OR
 
 - `Python 3.12+`
 - `MongoDB`
-- `Lavalink` (https://github.com/freyacodes/Lavalink)
+- `Lavalink` [github](https://github.com/freyacodes/Lavalink)
 - `Redis` (for web [WIP])
 - `Nginx` (for web [WIP])
 - `NodeJS` (for web [WIP])
 
-if You are using Docker, you can run it after creating bot in developer portal (https://discord.com/developers/applications).
+if You are using Docker, you can run it after creating bot in [developer portal](https://discord.com/developers/applications).
 
 > [!IMPORTANT]
 > Turn on `Presence Intent` for correct work of bot
 
-#### Env & configs
+#### Env & configs 📝
 
 There are two files with config for setup the bot:
 
@@ -124,21 +124,21 @@ plugins:
       - "ytsearch:%QUERY%" # Will be used if track has no ISRC or no track could be found for the ISRC
     sources:
       spotify: true # Enable Spotify source
-      applemusic: false # Enable Apple Music source
-      deezer: false # Enable Deezer source
+      applemusic: ❌ # Enable Apple Music source
+      deezer: ❌ # Enable Deezer source
       yandexmusic: true # Enable Yandex Music source
-      flowerytts: false # Enable Flowery TTS source
+      flowerytts: ❌ # Enable Flowery TTS source
       youtube: true # Enable YouTube search source (https://github.com/topi314/LavaSearch)
-      vkmusic: false # Enable Vk Music source
-      tidal: false # Enable Tidal source
-      qobuz: false # Enabled qobuz source
-      ytdlp: false # Enable yt-dlp source
+      vkmusic: ❌ # Enable Vk Music source
+      tidal: ❌ # Enable Tidal source
+      qobuz: ❌ # Enabled qobuz source
+      ytdlp: ❌ # Enable yt-dlp source
     lyrics-sources:
       spotify: true # Enable Spotify lyrics source
-      deezer: false # Enable Deezer lyrics source
+      deezer: ❌ # Enable Deezer lyrics source
       youtube: true # Enable YouTube lyrics source
       yandexmusic: true # Enable Yandex Music lyrics source
-      vkmusic: false # Enable Vk Music lyrics source
+      vkmusic: ❌ # Enable Vk Music lyrics source
     spotify:
       # clientId & clientSecret are required for using spsearch
       clientId: "your client id"
@@ -148,8 +148,8 @@ plugins:
       playlistLoadLimit: 6 # The number of pages at 100 tracks each
       albumLoadLimit: 6 # The number of pages at 50 tracks each
       resolveArtistsInSearch: true
-      localFiles: false
-      preferAnonymousToken: false
+      localFiles: ❌
+      preferAnonymousToken: ❌
     yandexmusic:
       accessToken: "your access token" # the token used for accessing the yandex music api. See https://github.com/topi314/LavaSrc#yandex-music
       playlistLoadLimit: 1 # The number of pages at 100 tracks each
@@ -170,21 +170,21 @@ lavalink:
     - dependency: "com.github.topi314.lavalyrics:lavalyrics-plugin:1.0.0"
 
     - dependency: "dev.lavalink.youtube:youtube-plugin:1.13.3"
-      snapshot: false
+      snapshot: ❌
 
   server:
     password: "youshallnotpass"
     sources:
-      youtube: false
+      youtube: ❌
       bandcamp: true
       soundcloud: true
       twitch: true
       vimeo: true
       nico: true
       http: true
-      local: false
+      local: ❌
 
-    nonAllocatingFrameBuffer: false # Setting to true reduces the number of allocations made by each player at the expense of frame rebuilding (e.g. non-instantaneous volume changes)
+    nonAllocatingFrameBuffer: ❌ # Setting to true reduces the number of allocations made by each player at the expense of frame rebuilding (e.g. non-instantaneous volume changes)
     bufferDurationMs: 400 # The duration of the NAS buffer. Higher values fare better against longer GC pauses. Duration <= 0 to disable JDA-NAS. Minimum of 40ms, lower values may introduce pauses.
     frameBufferDurationMs: 5000 # How many milliseconds of audio to keep buffered
     opusEncodingQuality: 10 # Opus encoder quality. Valid values range from 0 to 10, where 10 is best quality but is the most expensive on the CPU.
@@ -222,25 +222,25 @@ docker compose up -f docker-compose-with-express.yml
 
 I do not recommended this method, it is not tested and use it if you not accessed to docker only.
 
-## Enviroment variables
+## Enviroment variables 🎛️
 
 | Name                    | Description                                                                                                  | Required | Default         |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------ | -------- | --------------- |
-| `DISCORD_TOKEN`         | Discord bot token                                                                                            | true     | -               |
-| `SYNC_COMMANDS`         | Whether to sync commands (True or False)                                                                     | false    | True            |
-| `SHARD_COUNT`           | Number of shards                                                                                             | false    | 1               |
-| `ACTIVITY_NAME`         | Bot activity name (displayed in Discord status)                                                              | false    | noirplayer.su   |
-| `ACTIVITY_STATUS`       | Activity status (playing, listening, watching and etc. Check it on developer portal)                         | false    | 2               |
-| `REDIS_HOST`            | Redis host                                                                                                   | false    | redis           |
-| `REDIS_PORT`            | Redis port                                                                                                   | false    | 6379            |
-| `MONGO_HOST`            | Mongo DB host                                                                                                | false    | database        |
-| `MONGO_PORT`            | Mongo DB port                                                                                                | false    | 27017           |
-| `LAVALINK_HOST`         | Lavalink host                                                                                                | false    | lavalink        |
-| `LAVALINK_PORT`         | Lavalink port                                                                                                | false    | 2333            |
-| `LAVALINK_PASSWORD`     | Lavalink password                                                                                            | false    | youshallnotpass |
-| `LOG_LEVEL`             | Log level (in uppercase). Avaible any value from `logging` python module (DEBUG, INFO, WARNING, ERROR, etc.) | false    | INFO            |
-| `SPOTIFY_CLIENT_ID`     | Spotify client ID                                                                                            | false    | -               |
-| `SPOTIFY_CLIENT_SECRET` | Spotify client secret                                                                                        | false    | -               |
-| `SUPPORT_SERVER_ID`     | Discord support and testing server. In this server you can use some developer commands, such as `/set` group | false    | -               |
-| `SUPPORT_SERVER_INVITE` | Discord support and testing server invite. Using in `/help` or any fallbacks                                 | false    | -               |
-| `LOGS_CHANNEL_ID`       | Discord channel for logs. Bot will send logs there                                                           | false    | -               |
+| `DISCORD_TOKEN`         | Discord bot token                                                                                            | ✅       | -               |
+| `SYNC_COMMANDS`         | Whether to sync commands (True or False)                                                                     | ❌       | True            |
+| `SHARD_COUNT`           | Number of shards                                                                                             | ❌       | 1               |
+| `ACTIVITY_NAME`         | Bot activity name (displayed in Discord status)                                                              | ❌       | noirplayer.su   |
+| `ACTIVITY_STATUS`       | Activity status (playing, listening, watching and etc. Check it on developer portal)                         | ❌       | 2               |
+| `REDIS_HOST`            | Redis host                                                                                                   | ❌       | redis           |
+| `REDIS_PORT`            | Redis port                                                                                                   | ❌       | 6379            |
+| `MONGO_HOST`            | Mongo DB host                                                                                                | ❌       | database        |
+| `MONGO_PORT`            | Mongo DB port                                                                                                | ❌       | 27017           |
+| `LAVALINK_HOST`         | Lavalink host                                                                                                | ❌       | lavalink        |
+| `LAVALINK_PORT`         | Lavalink port                                                                                                | ❌       | 2333            |
+| `LAVALINK_PASSWORD`     | Lavalink password                                                                                            | ❌       | youshallnotpass |
+| `LOG_LEVEL`             | Log level (in uppercase). Avaible any value from `logging` python module (DEBUG, INFO, WARNING, ERROR, etc.) | ❌       | INFO            |
+| `SPOTIFY_CLIENT_ID`     | Spotify client ID                                                                                            | ❌       | -               |
+| `SPOTIFY_CLIENT_SECRET` | Spotify client secret                                                                                        | ❌       | -               |
+| `SUPPORT_SERVER_ID`     | Discord support and testing server. In this server you can use some developer commands, such as `/set` group | ❌       | -               |
+| `SUPPORT_SERVER_INVITE` | Discord support and testing server invite. Using in `/help` or any fallbacks                                 | ❌       | -               |
+| `LOGS_CHANNEL_ID`       | Discord channel for logs. Bot will send logs there                                                           | ❌       | -               |
