@@ -1,4 +1,4 @@
-disnake
+git+https://github.com/DisnakeDev/disnake.git@feature/components-v2#egg=disnake
 beanie
 motor
 pymongo
