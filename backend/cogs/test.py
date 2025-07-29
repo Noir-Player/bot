@@ -9,21 +9,23 @@ from entities.config import get_instance as get_config
 from entities.node import Node
 from entities.node import get_instance as get_node
 
+config: BotConfig = get_config()
+
 
 class TestCog(commands.Cog):
     def __init__(self, bot: NoirBot):
         self.bot = bot
 
-        self.config: BotConfig = get_config()
-
         self.node: Node = get_node()
 
-    @commands.slash_command(description="⭐ | Testing!")
+    @commands.slash_command(
+        description="⭐ | Testing!", guild_ids=[config.support_server_id]  # type: ignore
+    )
     async def test(self, inter: disnake.ApplicationCommandInteraction):
         pass
 
     @test.sub_command(name="embed", description="⭐ | Test embed")
-    async def test_embed(self, inter: disnake.ApplicationCommandInteraction):
+    async def embed(self, inter: disnake.ApplicationCommandInteraction):
         components: Sequence[ui.UIComponent] = [
             ui.TextDisplay("test"),
             ui.Separator(),
@@ -76,5 +78,5 @@ class TestCog(commands.Cog):
 
 
 def setup(bot: NoirBot):
-
-    bot.add_cog(TestCog(bot))
+    if bot._config.support_server_id:
+        bot.add_cog(TestCog(bot))
