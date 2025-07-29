@@ -538,9 +538,9 @@ class Node:
 
         return Track.model_validate(data, context={"ctx": ctx})
 
-    @typing_extensions.deprecated(
-        "This method is deprecated; use `rest.search` instead."
-    )
+    # @typing_extensions.deprecated(
+    #     "This method is deprecated; use `rest.search` instead."
+    # )
     async def search(
         self,
         query: str,
@@ -672,9 +672,9 @@ class Node:
                 "There was an error while trying to load this track.",
             )
 
-    @typing_extensions.deprecated(
-        "This method is deprecated; use `rest.get_recommendations` instead."
-    )
+    # @typing_extensions.deprecated(
+    #     "This method is deprecated; use `rest.get_recommendations` instead."
+    # )
     async def get_recommendations(
         self,
         *,
