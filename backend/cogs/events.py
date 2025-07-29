@@ -65,7 +65,7 @@ class EventsCog(commands.Cog):
 
         player.queue.clear()
 
-        await player.edit_controller(embed=PrimaryEmbed().set_image(url=NO_TRACK_URL))
+        await player.edit_controller()
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):

@@ -10,7 +10,7 @@ import disnake
 from assets.colors import *
 from assets.emojis import *
 from assets.fallbacks import NO_COVER_URL
-from components.buttons.soundpad import LIKE_BUTTON, SOUNDPAD_BUTTONS
+from components.buttons.soundpad import *
 from components.modals.multiple import AddMultipleModal
 from disnake import ui
 from disnake.ui.item import UIComponent
@@ -24,39 +24,46 @@ from ..views.queue import EmbedQueue
 loop = {LoopMode.QUEUE: "queue", LoopMode.TRACK: "track"}
 
 
-def progress_slider(pos: int, end: int, length: int = 18) -> str:
+def progress_slider(
+    pos: int, end: int, length: int = 17, lowscreen_optimazed: bool = False
+) -> str:
     slider: str = ""
 
     flag: bool = False
+    flag_index = -1
+
+    if lowscreen_optimazed:
+        length = 10
 
     for i in range(length):
-        check: bool = pos / end * length >= i + 1
+        check: bool = pos / end * length >= i + 1  # while True, indicator placed after
 
-        flag = bool(check) and not flag
+        if flag_index == -1 and not check:
+            flag_index = i
+
+        flag = i == flag_index
 
         if i == 0:
             slider += (
                 PROGRESS_START
                 if check
-                else (INDICATOR_START if flag and check else BACKGROUND_START)
+                else (INDICATOR_START if flag else BACKGROUND_START)
             )
         elif i == length - 1:
             slider += (
-                PROGRESS_END
-                if check
-                else (INDICATOR_END if flag and check else BACKGROUND_END)
+                PROGRESS_END if check else (INDICATOR_END if flag else BACKGROUND_END)
             )
         else:
             slider += (
-                PROGRESS_MID
-                if check
-                else (INDICATOR_MID if flag and check else BACKGROUND_MID)
+                PROGRESS_MID if check else (INDICATOR_MID if flag else BACKGROUND_MID)
             )
 
     return slider
 
 
-def progress_timer(current, total, length: int = 29) -> str:
+def progress_timer(
+    current, total, length: int = 28, lowscreen_optimazed: bool = False
+) -> str:
 
     total = (total / 1000) % (24 * 3600)
     curr = (current / 1000) % (24 * 3600)
@@ -74,6 +81,9 @@ def progress_timer(current, total, length: int = 29) -> str:
 
     middle_width = length - len(curr) - len(total)
     filler_padding = "ㅤ" * middle_width
+
+    if lowscreen_optimazed:
+        filler_padding = " / "
 
     formatted_string = f"`{curr}`{filler_padding}`{total}`"
 
@@ -107,7 +117,7 @@ class MoreMenu(disnake.ui.View):
     )
     @check_player_btn(with_message=True)
     async def queue(self, button, interaction: disnake.MessageInteraction):
-        await EmbedQueue(self.player).send(interaction)
+        await EmbedQueue(self.player.node).send(interaction)
 
     @disnake.ui.button(
         emoji=ACTION,
@@ -117,7 +127,43 @@ class MoreMenu(disnake.ui.View):
         await EmbedContext(self.player.node).send(interaction)
 
 
-def state(player) -> Sequence[UIComponent]:  # player: NoirPlayer
+def not_current_fallback(fallback_track=None) -> Sequence[UIComponent]:
+    components = []
+
+    components.append(ui.TextDisplay(f"## Waiting for tracks 👾"))
+
+    components.append(ui.TextDisplay(f"-# Nothing to play from queue..."))
+
+    components.append(ui.Separator())
+
+    components.append(
+        ui.TextDisplay(
+            "You can add tracks to the queue by using the `/play` command ✨"
+        )
+    )
+
+    if fallback_track:
+        components.append(
+            ui.Section(
+                ui.TextDisplay(
+                    f"If you want, you can start autoplay from last track {fallback_track.info.title} by clicking the button in right ✨"
+                ),
+                accessory=START_AUTOPLAY_BUTTON,
+            ),
+        )
+
+    container = ui.Container(
+        *components,
+        accent_colour=disnake.Colour(int(PRIMARY.replace("#", ""), base=16)),
+    )
+
+    return [container]
+
+
+def state(player, fallback_track=None) -> Sequence[UIComponent]:  # player: NoirPlayer
+
+    if not player.current:
+        return not_current_fallback(fallback_track)
 
     components = []
 
@@ -142,6 +188,12 @@ def state(player) -> Sequence[UIComponent]:  # player: NoirPlayer
 
     # Section with titile and add button
 
+    title = "# " + (
+        player.current.info.title[:24] + "..."
+        if len(player.current.info.title) > 25
+        else player.current.info.title
+    )
+
     components.append(
         ui.Section(
             ui.TextDisplay(
@@ -151,14 +203,28 @@ def state(player) -> Sequence[UIComponent]:  # player: NoirPlayer
         ),
     )
 
+    lowscreen_optimazed = (
+        player.current.requester.is_on_mobile()
+        if isinstance(player.current.requester, disnake.Member)
+        else False
+    )
+
     progress = (
-        progress_slider(player.adjusted_position, player.adjusted_length)
+        progress_slider(
+            player.adjusted_position,
+            player.adjusted_length,
+            lowscreen_optimazed=lowscreen_optimazed,
+        )
         if not player.current.info.isStream
         else progress_slider(1, 1, 10) + " **LIVE**"
     )
 
     timer = (
-        progress_timer(player.adjusted_position, player.adjusted_length)
+        progress_timer(
+            player.adjusted_position,
+            player.adjusted_length,
+            lowscreen_optimazed=lowscreen_optimazed,
+        )
         if not player.current.info.isStream
         else ""
     )
