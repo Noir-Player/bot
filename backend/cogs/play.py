@@ -9,7 +9,7 @@ from entities.bot import NoirBot
 from entities.node import Node
 from entities.node import get_instance as get_node
 from entities.player import NoirPlayer
-from services.persiktunes.enums import URLRegex
+from services.persiktunes import Playlist
 from validators.player import check_player
 
 log = get_logger("play")
@@ -30,7 +30,9 @@ class MusicCog(commands.Cog):
         pass
 
     @check_player(with_connection=True)
-    @add.sub_command(description="⭐⭐ | Play track")
+    @add.sub_command(
+        description="⭐⭐ | Play track from any source (ytsearch:, spsearch:, ymsearch:...)"
+    )
     async def search(
         self,
         inter: disnake.ApplicationCommandInteraction,
@@ -39,19 +41,10 @@ class MusicCog(commands.Cog):
 
         player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
 
-        query = (
-            await self.node.rest.abstract_search.search_songs(
-                search,
-                limit=1,
-                ctx=inter,
-                requester=inter.author,
-            )
-            if not URLRegex.BASE_URL.match(search)
-            else await self.node.search(
-                search,
-                ctx=inter,
-                requester=inter.author,
-            )
+        query = await self.node.search(
+            search,
+            ctx=inter,
+            requester=inter.author,
         )
 
         if query is None or await player.queue.put_auto(query) == False:
@@ -69,71 +62,36 @@ class MusicCog(commands.Cog):
         await inter.delete_original_message()  # Clean up after @check_player
 
     @search.autocomplete("search")
-    async def autosearch(self, _, user_input):
+    async def autosearch(self, _, user_input) -> list:
         if not user_input:
             return []
 
         start = time.perf_counter()
 
-        # TODO TODO search via persiktunes and playlists
+        # if URLRegex.BASE_URL.match(user_input):
+        #     return [disnake.OptionChoice(name=f"🔗 | {user_input[:95]}", value=user_input)]
 
-        # if persik.URLRegex.BASE_URL.match(user_input):
-        #     return [disnake.OptionChoice(name=f"🔎 | {user_input}", value=user_input)]
+        search = await self.node.search(query=user_input)
 
-        # search = await self.bot.node.rest.ytmclient.complete_search(query=user_input)
+        if not search:
+            return []
 
-        # result = []
-
-        # for object in search:
-        #     names = []
-
-        #     try:
-        #         if object["resultType"] in ("song", "video"):
-        #             emoji = "⭐"
-        #             (
-        #                 names.append(", ".join([i["name"] for i in object["artists"]]))
-        #                 if object["artists"]
-        #                 else None
-        #             )
-
-        #             uri = "https://youtube.com/watch?v=" + object["videoId"]
-
-        #         elif object["resultType"] == "playlist":
-        #             emoji = "📁"
-        #             (names.append(object["author"]) if object.get("author") else None)
-
-        #             uri = (
-        #                 "https://music.youtube.com/playlist?list="
-        #                 + object["browseId"][2:]
-        #             )
-
-        #         else:
-        #             continue
-        #     except:
-        #         continue
-
-        #     names.append(object["title"])
-
-        #     result.append(
-        #         disnake.OptionChoice(
-        #             name=(f"{emoji} | " + " - ".join(names))[:100],
-        #             value=uri,
-        #         )
-        #     )
+        if isinstance(search, Playlist):
+            return [
+                disnake.OptionChoice(
+                    name=f"📂 | {search.info.name[:95]}", value=search.uri or user_input
+                )
+            ]
 
         result = []
 
-        for suggestion in await self.node.rest.abstract_search.search_suggestions(
-            user_input
-        ):
+        for track in search:
             result.append(
-                disnake.OptionChoice(name=f"🔎 | {suggestion[:95]}", value=suggestion)
+                disnake.OptionChoice(
+                    name=f"🎵 | {track.info.title[:95]}",
+                    value=track.info.uri,  # type: ignore
+                )
             )
-
-        if not result:
-            result = [
-                disnake.OptionChoice(name=f"🔎 | {user_input[:95]}", value=user_input)
-            ]
 
         end = time.perf_counter()
 
@@ -232,6 +190,34 @@ class MusicCog(commands.Cog):
         # return list
 
         return []
+
+    @check_player(with_connection=True)
+    @add.sub_command(name="file", description="⭐ | Play track from file")
+    async def file(
+        self,
+        inter: disnake.ApplicationCommandInteraction,
+        file: disnake.Attachment = commands.Param(description="File to play ✨"),
+    ):
+        player: NoirPlayer = self.node.get_player(inter.guild_id)  # type: ignore
+
+        if not file.filename.endswith(("mp3", "m4a", "wav", "ogg", "flac", "opus")):
+            raise commands.UserInputError(
+                "You can only play mp3, m4a, wav, ogg, flac, opus files 👾"
+            )
+
+        search = await self.node.search(
+            file.url,
+            ctx=inter,
+            requester=inter.author,
+        )
+
+        if not search:
+            raise commands.UserInputError("I cant play this file...")
+
+        state = await player.queue.put_auto(search)
+
+        if not player.current and state:
+            await player.play(player.queue.get())  # type: ignore
 
 
 def setup(bot: NoirBot):
