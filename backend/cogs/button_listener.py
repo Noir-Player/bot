@@ -31,7 +31,7 @@ class ButtonListenerCog(commands.Cog):
             await getattr(self, inter.component.custom_id)(inter)
 
     @check_player()
-    async def loop(self, interaction):
+    async def loop_button_callback(self, interaction):
         player: NoirPlayer = self.node.get_player(interaction.guild.id)  # type: ignore
         if player.queue.loop_mode == LoopMode.QUEUE:
             await player.queue.set_loop_mode(LoopMode.TRACK)
@@ -74,7 +74,7 @@ class ButtonListenerCog(commands.Cog):
         if interaction.guild:
             player: NoirPlayer = self.node.get_player(interaction.guild.id)  # type: ignore
 
-            await interaction.send(view=MoreMenu(player))
+            await interaction.send(view=MoreMenu(player), ephemeral=True)
 
     @check_player()
     async def add_to_star_button_callback(
@@ -95,8 +95,9 @@ class ButtonListenerCog(commands.Cog):
             doc = StarDocument(user_id=interaction.author.id)
 
         if next((obj for obj in doc.tracks if obj.info.uri == item.info.uri), None):
-            await interaction.edit_original_response(
-                embed=PrimaryEmbed(description="Track already in stars! 👾")
+            return await interaction.send(
+                embed=PrimaryEmbed(description="Track already in stars! 👾"),
+                ephemeral=True,
             )
 
         item = item.model_copy(update={"ctx": None, "requester": None})
@@ -105,9 +106,19 @@ class ButtonListenerCog(commands.Cog):
 
         await doc.save()
 
-        await interaction.edit_original_response(
-            embed=PrimaryEmbed(description="Added to stars! 👾")
+        await interaction.send(
+            embed=PrimaryEmbed(
+                description=f"Track `{item.info.title}` added to stars! 👾"
+            ),
+            ephemeral=True,
         )
+
+    @check_player()
+    async def start_autoplay_button_callback(
+        self, interaction: disnake.MessageInteraction
+    ) -> None:
+        await interaction.response.defer(ephemeral=True)
+        # TODO
 
 
 def setup(bot: NoirBot):
