@@ -1,9 +1,11 @@
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Sequence
 
 import disnake
 from assets.colors import PRIMARY
+from components.containers.soundpad import state
 from components.embeds import *
-from components.views import Soundpad, state
+from components.views import Soundpad
+from components.views import state as legacy_state
 from disnake.ext import tasks
 from entities.queue import NoirQueue
 from services import persiktunes
@@ -67,7 +69,7 @@ class NoirPlayer(persiktunes.Player):
                 await self.edit_controller(ctx)
 
             if self._controller:
-                await self._controller.edit(embed=state(self))
+                await self._controller.edit(components=state(self))
 
         except Exception:
             return False
@@ -76,40 +78,63 @@ class NoirPlayer(persiktunes.Player):
         self,
         ctx: disnake.Interaction | Any | None = None,
         embed: Embed | None = None,
+        components: Sequence[disnake.ui.UIComponent | Any] | None = None,
         without_view: bool = False,
     ):
         """
         ### Update controller \n
         If not exist, creating new from `def __init__()` or `ctx`
         """
-        if not embed:
-            embed = state(self)
+        if not embed and not without_view and not components:
+            components = state(self)
+
+        elif without_view and not components and not embed:
+            embed = legacy_state(self)
 
         try:
-            await self._controller.edit(  # type: ignore
-                embed=embed, view=None if without_view else Soundpad(self)
-            )
+            if embed:
+                await self._controller.edit(  # type: ignore
+                    embed=embed, view=None if without_view else Soundpad(self)
+                )
+            elif not without_view:
+                await self._controller.edit(components=components)
+
         except BaseException:
             try:
                 await self._controller.delete()  # type: ignore
             except BaseException:
                 pass
             try:
-                self._controller = await self._webhook.send(  # type: ignore
-                    embed=embed,
-                    username=self._username,
-                    avatar_url=self._icon,
-                    view=None if without_view else Soundpad(player=self),  # type: ignore
-                    wait=True,
-                )
+                if embed:
+                    self._controller = await self._webhook.send(  # type: ignore
+                        embed=embed,
+                        username=self._username,
+                        avatar_url=self._icon,
+                        view=None if without_view else Soundpad(player=self),  # type: ignore
+                        wait=True,
+                    )
+                elif not without_view:
+                    self._controller = await self._webhook.send(  # type: ignore
+                        username=self._username,
+                        avatar_url=self._icon,
+                        components=components,  # type: ignore
+                        wait=True,
+                        flags=disnake.MessageFlags(is_components_v2=True),
+                    )
             except BaseException:
                 try:
-                    self._controller = await ctx.channel.send(  # type: ignore
-                        embed=embed,
-                        view=None if without_view else Soundpad(player=self),  # type: ignore
-                    )
-                except BaseException:
-                    return
+                    if embed:
+                        self._controller = await ctx.channel.send(  # type: ignore
+                            embed=embed,
+                            view=None if without_view else Soundpad(player=self),  # type: ignore
+                        )
+                    elif not without_view:
+                        self._controller = await ctx.channel.send(  # type: ignore
+                            components=components,  # type: ignore
+                            flags=disnake.MessageFlags(is_components_v2=True),
+                        )
+                except BaseException as e:
+                    self._log.error(f"Controller was not created: {e}")
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # Play & stop
@@ -310,5 +335,6 @@ class NoirPlayer(persiktunes.Player):
 
     @property
     def volume_step(self) -> int:
+        return self._volume_step
         return self._volume_step
         return self._volume_step
