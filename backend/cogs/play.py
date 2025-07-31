@@ -79,7 +79,8 @@ class MusicCog(commands.Cog):
         if isinstance(search, Playlist):
             return [
                 disnake.OptionChoice(
-                    name=f"📂 | {search.info.name[:95]}", value=search.uri or user_input
+                    name=f"📂 | {search.info.name}"[:100],
+                    value=search.uri or user_input,
                 )
             ]
 
@@ -88,7 +89,7 @@ class MusicCog(commands.Cog):
         for track in search:
             result.append(
                 disnake.OptionChoice(
-                    name=f"🎵 | {track.info.title[:95]}",
+                    name=f"🎵 | {track.info.author} - {track.info.title}"[:100],
                     value=track.info.uri,  # type: ignore
                 )
             )
