@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Any, Sequence
 if TYPE_CHECKING:
     from entities.player import NoirPlayer
 
+import textwrap
+
 import disnake
 from assets.colors import *
 from assets.emojis import *
@@ -62,7 +64,7 @@ def progress_slider(
 
 
 def progress_timer(
-    current, total, length: int = 28, lowscreen_optimazed: bool = False
+    current, total, length: int = 27, lowscreen_optimazed: bool = False
 ) -> str:
 
     total = (total / 1000) % (24 * 3600)
@@ -188,22 +190,25 @@ def state(player, fallback_track=None) -> Sequence[UIComponent]:  # player: Noir
 
     # Section with titile and add button
 
-    title = "# " + (
-        player.current.info.title[:24] + "..."
-        if len(player.current.info.title) > 25
-        else player.current.info.title
-    )
+    wrapped_title = textwrap.wrap(player.current.info.title, 25)
+    wrapped_author = textwrap.wrap(player.current.info.author, 25)
 
     components.append(
         ui.Section(
             ui.TextDisplay(
-                f"# {player.current.info.title}\n{ARTIST} {player.current.info.author}"
+                f"## {'\n## '.join(wrapped_title)}\n### {ARTIST} {'\n### '.join(wrapped_author)}"
             ),
             accessory=LIKE_BUTTON,
         ),
     )
 
-    lowscreen_optimazed = (
+    NOW_PLAYING_CONTAINER = ui.Container(*components)
+
+    ## END OF NOW PLAYING CONTAINER
+
+    components.clear()
+
+    lowscreen_optimazed = (  # If user is on mobile, show shorter progress and less buttons
         player.current.requester.is_on_mobile()
         if isinstance(player.current.requester, disnake.Member)
         else False
@@ -216,7 +221,7 @@ def state(player, fallback_track=None) -> Sequence[UIComponent]:  # player: Noir
             lowscreen_optimazed=lowscreen_optimazed,
         )
         if not player.current.info.isStream
-        else progress_slider(1, 1, 10) + " **LIVE**"
+        else "### 🔴 **LIVE STREAM**"
     )
 
     timer = (
@@ -237,15 +242,47 @@ def state(player, fallback_track=None) -> Sequence[UIComponent]:  # player: Noir
     if player.queue.loop_mode:
         info_string.append(f"loop: {loop[player.queue.loop_mode]}")
 
-    components.append(ui.TextDisplay(f"{progress}\n{timer}\n{' • '.join(info_string)}"))
+    components.append(
+        ui.TextDisplay(
+            f"{progress}\n{timer}\n{'-# ' if info_string else ''}{' • '.join(info_string)}"
+        )
+    )
 
     components.append(ui.Separator(divider=False))
 
     components.append(ui.ActionRow(*SOUNDPAD_BUTTONS))
 
-    container = ui.Container(
+    CONTROLLER_CONTAINER = ui.Container(
         *components,
         accent_colour=disnake.Colour(int(PRIMARY.replace("#", ""), base=16)),
     )
 
-    return [container]
+    # END OF CONTROLLER CONTAINER
+
+    components.clear()
+
+    if not player.queue.check_next():
+        return [NOW_PLAYING_CONTAINER, CONTROLLER_CONTAINER]
+
+    next_item = player.queue.check_next()
+
+    wrapped_title = textwrap.wrap(next_item.info.title, 25)
+    wrapped_author = textwrap.wrap(next_item.info.author, 25)
+
+    components.append(
+        ui.Section(
+            ui.TextDisplay(
+                f"## {'\n## '.join(wrapped_title)}\n### {ARTIST_ALT} {'\n### '.join(wrapped_author)}\n-# Next track in queue"
+            ),
+            accessory=ui.Thumbnail(
+                media={"url": next_item.info.artworkUrl or NO_COVER_URL}
+            ),
+        )
+    )
+
+    NEXT_TRACK_CONTAINER = ui.Container(
+        *components,
+        accent_colour=disnake.Colour(int(SECONDARY.replace("#", ""), base=16)),
+    )
+
+    return [NOW_PLAYING_CONTAINER, CONTROLLER_CONTAINER, NEXT_TRACK_CONTAINER]
