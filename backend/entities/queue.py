@@ -26,12 +26,17 @@ class NoirQueue(Queue):
     # Основные функции
 
     async def put_relayted(self, item: Track, limit: int = 10) -> None:
-        async for track in self.api.ongoing(item, limit):
-            await self.put(track)
+        recs = await self.player.node.get_recommendations(track=item)
+
+        if isinstance(recs, list):
+            await self.put_list(recs[:limit])
+
+        elif isinstance(recs, Playlist):
+            await self.put_list(recs.tracks)
 
     def _get(self) -> Track | None:
         if self.loose_mode and self.count <= 1:
-            self.player.bot.loop.create_task(self.put_relayted(self._current_item))
+            self.player.bot.loop.create_task(self.put_relayted(self._current_item))  # type: ignore
 
         return super()._get()
 
@@ -83,8 +88,6 @@ class NoirQueue(Queue):
         return True
 
     async def start_autoplay(self, item: Track) -> None:
-        if item.info.sourceName != "youtube":
-            return
         if item != self.player.current:
             await self.player.play(item, noReplace=False)
         self._loose_mode = True
@@ -97,7 +100,21 @@ class NoirQueue(Queue):
     async def set_loop_mode(self, mode: LoopMode | None = None) -> None:  # type: ignore
         if self._queue:
             self._loop_mode = mode
-            await self.player.update_controller_once()
+            await self.player.update_controller_once()  # type: ignore
 
     async def remove(self, item_or_index: Track | int) -> None:  # type: ignore
         super().remove(item_or_index)
+
+    def check_next(self) -> Track | None:
+        if self.count < 2:
+            return
+
+        # return self._current_item
+
+        if self.loose_mode or not self._current_item:
+            return self._queue[0]
+
+        if self._current_item in self._queue:
+            index = self._queue.index(self._current_item)
+            if index < self.count - 1:
+                return self._queue[index + 1]
