@@ -11,6 +11,7 @@ import logging
 import random
 import re
 import time
+import traceback
 from os import path
 from pathlib import Path
 from typing import (
@@ -491,7 +492,7 @@ class Node:
         if resp.status >= 300:
             resp_data: dict = await resp.json()
             raise NodeRestException(
-                f'Error from Node {self._identifier} fetching from Lavalink REST api: {resp.status} {resp.reason}: {resp_data["message"]}',
+                f'Error from Node {self._identifier} fetching from Lavalink REST api: {resp.status} {resp.reason}: {resp_data["message"]}\n{traceback.print_exc()}',
             )
 
         if method == "DELETE" or resp.status == 204:
