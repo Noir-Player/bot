@@ -34,7 +34,7 @@ class EventsCog(commands.Cog):
         if not track.info.isStream:
             try:  # I don't know why it's raising an exception, but it works
                 player.update_controller.change_interval(
-                    seconds=track.info.length / 1000 / 20
+                    seconds=track.info.length / 1000 / 40
                 )
             except:
                 pass
