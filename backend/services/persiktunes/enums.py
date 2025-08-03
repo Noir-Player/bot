@@ -354,6 +354,25 @@ class YoutubeIdMatchingRegex:
     SONG = re.compile(r"(?:v=|youtu\.be\/)(\w*)")
 
 
+class Reason(Enum):
+    """
+    ## The enum for all the Reasons in use by PersikTunes.
+
+    `Reason.FINISHED` returns the Finished Reason.
+
+    `Reason.STOPPED` returns the Stopped Reason.
+
+    `Reason.REPLACED` returns the Replaced Reason.
+
+    """
+
+    FINISHED = "finished"
+
+    STOPPED = "stopped"
+
+    REPLACED = "replaced"
+
+
 class LogLevel(IntEnum):
     """
     ## The enum for specifying the logging level within PersikTunes.

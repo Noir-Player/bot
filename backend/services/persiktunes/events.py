@@ -15,6 +15,8 @@ from .models import Track
 from .player import Player
 from .pool import NodePool
 
+from .enums import Reason
+
 
 class PersikEvent(ABC):
     """The base class for all events dispatched by a node.
@@ -61,7 +63,7 @@ class TrackEndEvent(PersikEvent):
     def __init__(self, data: dict, player: Player):
         self.player: Player = player
         self.track: Track = Track.model_validate(data["track"])
-        self.reason: str = data["reason"].lower()
+        self.reason: Reason = Reason[data["reason"].upper()]
 
         # on_persik_track_end(player, track, reason)
         self.handler_args = self.player, self.track, self.reason
