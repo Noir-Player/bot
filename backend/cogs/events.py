@@ -1,7 +1,5 @@
 from _logging import get_logger
-from assets.fallbacks import NO_TRACK_URL
-from components.embeds import PrimaryEmbed
-from disnake.ext import commands
+from disnake.ext import commands, tasks
 from entities.bot import NoirBot
 from entities.node import get_instance as get_node
 from entities.player import NoirPlayer
@@ -24,7 +22,7 @@ class EventsCog(commands.Cog):
     async def on_persik_track_start(self, player: NoirPlayer, track: persiktunes.Track):
         await player.edit_controller(player.current.ctx)  # type: ignore
 
-        log.debug(f"{track} started with context {track.ctx} | {player.current.ctx}")
+        log.debug(f"{track} started with context {track.ctx} | {player.current.ctx}")  # type: ignore
 
         if player.update_controller.is_running():
             player.update_controller.restart()
@@ -44,28 +42,29 @@ class EventsCog(commands.Cog):
 
         log.debug(f"{track} started")
 
+        self.autoplay_task.cancel()
+
     @commands.Cog.listener()
     async def on_persik_track_end(
-        self, player: NoirPlayer, track: persiktunes.Track, reason: str
+        self, player: NoirPlayer, track: persiktunes.Track, reason: persiktunes.Reason
     ):
         player.update_controller.stop()
 
-        log.debug(f"{track} ended. Reason: {reason}")
+        log.debug(f"{track} ended. Reason: {reason.value}")
 
-        if reason in (
-            "finished",
-            "stopped",
-        ):
+        if reason.value in ("finished", "stopped"):
 
             if item := player.queue.get():
                 return await player.play(item)
 
-        elif reason == "replaced":
+        elif reason.value == "replaced":
             return
 
         player.queue.clear()
 
         await player.edit_controller()
+
+        self.autoplay_task.start(player)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
@@ -74,8 +73,26 @@ class EventsCog(commands.Cog):
         if not player:
             return
 
-        if member.id == self.bot.user.id and before.channel and not after.channel:
+        if (
+            member.id == self.bot.user.id and before.channel and not after.channel
+        ):  # if bot was kicked
+            return await player.destroy()
+
+        if len(player.channel.members) < 2:  # handle if bot single
+            self.destroy_task.start(player)
+        else:
+            self.destroy_task.cancel()  # cancel task
+
+    @tasks.loop(seconds=30)
+    async def destroy_task(self, player: NoirPlayer):
+        if player.is_connected:
             await player.destroy()
+
+    @tasks.loop(minutes=1)
+    async def autoplay_task(self, player: NoirPlayer):
+        if player.is_connected:
+            # await player.autoplay()
+            pass  # TODO
 
 
 def setup(bot: NoirBot):
