@@ -24,6 +24,23 @@ class WebhookModel(BaseModel):
         description="Image URL of the webhook.",
     )
 
+class VoteSkipModel(BaseModel):
+    """
+    Represents a webhook configuration in the database.
+    This model is used to store vote skip mode for the application.
+    """
+
+    enabled: bool = Field(
+        True, description="Flag indicating whether voting to skip is enabled."
+    )
+
+    percentage: int = Field(
+        5
+        gt=0,
+        le=10,
+         description="The percentage of votes required to skip a song from 1 to 10."
+    )
+
 
 class SetupModel(BaseModel):
     """
@@ -56,7 +73,11 @@ class SetupModel(BaseModel):
         None, description="Configuration for the webhook associated with this setup."
     )
 
-    radio: bool = Field(False)
+    vote_skip: bool = Field(
+        True, description="Flag indicating whether voting to skip is enabled."
+    )
+
+
 
 
 class SetupDocument(SetupModel, Document):
